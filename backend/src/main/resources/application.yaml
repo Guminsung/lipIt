@@ -5,6 +5,9 @@ spring:
     active: prod
   application:
     name: Lip It
+  messages:
+    basename: ValidationMessages
+    encoding: UTF-8
   datasource:
     url: jdbc:postgresql://localhost:5432/lipit_db?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&serverTimezone=Asia/Seoul
     username: arizona
@@ -28,7 +31,10 @@ spring:
     paths-to-match:
       - /api/** # swagger-ui에 표시할 api의 엔드포인트 패턴
     api-docs:
-      path: /api/v3/api-docs  # ✅ OpenAPI 문서 경로를 /api로 설정
+      path: /api/v3/api-docs  # OpenAPI 문서 경로를 /api로 설정
+    swagger-ui:
+      operationsSorter: method  # API 정의된 순서대로 정렬
+      tagsSorter: alpha  # 태그는 알파벳 순서로 정렬
   servlet:
     multipart:
       enabled: true           # 파일 업로드 기능 활성화
