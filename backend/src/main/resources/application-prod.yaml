@@ -1,0 +1,8 @@
+spring:
+  data:
+    redis:
+      host: lipit-redis # Docker Compose의 서비스명
+      port: 6379
+      password: "ssafyd102"
+  jackson:
+    time-zone: Asia/Seoul

@@ -1,7 +1,5 @@
 package com.arizona.lipit.global.exception;
 
-import com.arizona.lipit.global.util.ErrorCode;
-
 import lombok.Getter;
 
 @Getter

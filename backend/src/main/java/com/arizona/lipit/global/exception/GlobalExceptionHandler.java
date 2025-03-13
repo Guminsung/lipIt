@@ -14,7 +14,6 @@ import org.springframework.web.client.HttpServerErrorException.GatewayTimeout;
 import org.springframework.web.client.HttpServerErrorException.ServiceUnavailable;
 
 import com.arizona.lipit.global.response.ErrorResponse;
-import com.arizona.lipit.global.util.ErrorCode;
 
 import jakarta.persistence.EntityNotFoundException;
 

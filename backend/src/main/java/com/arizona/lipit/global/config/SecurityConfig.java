@@ -11,7 +11,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.arizona.lipit.global.jwt.JwtAuthenticationFilter;
-import com.arizona.lipit.global.jwt.JwtTokenProvider;
+import com.arizona.lipit.global.jwt.JwtProvider;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,7 +26,7 @@ public class SecurityConfig {
 		return new BCryptPasswordEncoder();
 	}
 
-	private final JwtTokenProvider jwtTokenProvider;
+	private final JwtProvider jwtProvider;
 
 	@SuppressWarnings("checkstyle:Indentation")
 	@Bean
@@ -54,7 +54,9 @@ public class SecurityConfig {
 						.anyRequest().authenticated();
 				}
 			})
-			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+			.addFilterBefore(new JwtAuthenticationFilter(jwtProvider),
+				UsernamePasswordAuthenticationFilter.class); // JWT 필터 추가
+		// JwtAuthenticationFilter가 UsernamePasswordAuthenticationFilter 전에 실행됨
 
 		return http.build();
 	}

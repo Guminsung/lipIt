@@ -30,7 +30,7 @@ public interface SignupApiSpec {
 				""",
 			content = @Content()),
 		@ApiResponse(responseCode = "500",
-			description = "`[SIGNUP-003]` 회원 가입 중 서버 내부 오류가 발생했습니다.",
+			description = "`[SIGNUP-003]` 회원 가입 처리 중 서버 내부 오류가 발생했습니다.",
 			content = @Content())
 	})
 	ResponseEntity<CommonResponse<MemberDto>> createMember(@Valid @RequestBody SignupRequestDto request);

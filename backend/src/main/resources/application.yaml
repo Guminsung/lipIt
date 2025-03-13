@@ -26,15 +26,7 @@ spring:
     show-sql:
       true
   sql:
-    init: 실행 시 init.sql 실행
-  springdoc: # Swagger
-    paths-to-match:
-      - /api/** # swagger-ui에 표시할 api의 엔드포인트 패턴
-    api-docs:
-      path: /api/v3/api-docs  # OpenAPI 문서 경로를 /api로 설정
-    swagger-ui:
-      operationsSorter: method  # API 정의된 순서대로 정렬
-      tagsSorter: alpha  # 태그는 알파벳 순서로 정렬
+    init: 실행 시 # init.sql 실행
   servlet:
     multipart:
       enabled: true           # 파일 업로드 기능 활성화
@@ -55,3 +47,16 @@ server:
       force: true
 api:
   openai_key: ${OPENAI_API_KEY}  # 환경변수 없으면 기본값 사용
+jwt:
+  access-token-expiration: 900000  # 액세스 토큰 만료 시간 (15분, 단위: 밀리초)
+  refresh-token-expiration: 604800000  # 리프레시 토큰 만료 시간 (7일, 단위: 밀리초)
+springdoc: # Swagger
+  #  paths-to-match:
+  #    - /api/** # swagger-ui에 표시할 api의 엔드포인트 패턴
+  #  api-docs:
+  #    path: /api/v3/api-docs  # OpenAPI 문서 경로를 /api로 설정
+  swagger-ui:
+    operationsSorter: method  # API 정의된 순서대로 정렬
+    tagsSorter: alpha  # 태그는 알파벳 순서로 정렬
+    default-model-expand-depth: 0  # 모델 자동 확장 비활성화
+    default-models-expand-depth: -1  # 모델 자동 확장 비활성화 (example 제거)

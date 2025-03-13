@@ -10,7 +10,7 @@ import com.arizona.lipit.domain.auth.entity.Member;
 import com.arizona.lipit.domain.auth.mapper.MemberMapper;
 import com.arizona.lipit.domain.auth.repository.MemberRepository;
 import com.arizona.lipit.global.exception.CustomException;
-import com.arizona.lipit.global.util.ErrorCode;
+import com.arizona.lipit.global.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +22,9 @@ public class SignupService {
 	private final MemberMapper memberMapper;
 	private final PasswordEncoder passwordEncoder;
 
+	/**
+	 * 회원 가입
+	 */
 	@Transactional
 	public MemberDto saveMember(SignupRequestDto request) {
 		// 이메일 중복 체크

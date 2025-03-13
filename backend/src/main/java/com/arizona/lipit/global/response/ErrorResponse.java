@@ -2,7 +2,7 @@ package com.arizona.lipit.global.response;
 
 import java.util.List;
 
-import com.arizona.lipit.global.util.ErrorCode;
+import com.arizona.lipit.global.exception.ErrorCode;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;

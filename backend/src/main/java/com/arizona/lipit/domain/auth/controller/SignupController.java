@@ -23,8 +23,8 @@ public class SignupController implements SignupApiSpec {
 	private final SignupService signupService;
 
 	@PostMapping
-	public ResponseEntity<CommonResponse<MemberDto>> createMember(@Valid @RequestBody SignupRequestDto request) {
-		MemberDto userDto = signupService.saveMember(request);
+	public ResponseEntity<CommonResponse<MemberDto>> createMember(@Valid @RequestBody SignupRequestDto requestDto) {
+		MemberDto userDto = signupService.saveMember(requestDto);
 		return ResponseEntity.ok(CommonResponse.created("회원가입이 완료되었습니다.", userDto));
 	}
 }
