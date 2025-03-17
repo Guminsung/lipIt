@@ -29,7 +29,7 @@ public enum ErrorCode {
 	ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH-003", "만료된 Access Token입니다."),
 	ACCESS_TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "AUTH-004", "Access Token이 누락되었습니다."),
 	INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-005", "유효하지 않은 Refresh Token입니다."),
-	REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH-006", "만료된 Refresh Token입니다."),
+	REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH-006", "만료된 Refresh Token입니다. 다시 로그인해주세요."),
 	REFRESH_TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "AUTH-007", "Refresh Token이 누락되었습니다."),
 	AUTHENTICATION_FAILED(HttpStatus.UNAUTHORIZED, "AUTH-008", "인증에 실패했습니다."),
 	FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "AUTH-009", "접근이 거부되었습니다. 권한을 확인해주세요."),
