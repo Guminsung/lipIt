@@ -579,4 +579,7 @@ obj/
 
 !/gradle/wrapper/gradle-wrapper.jar
 
+# 환경 변수 파일
+.env
+
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,java,intellij+all,gradle,redis,visualstudiocode,git,androidstudio,android,kotlin,python,jupyternotebooks
