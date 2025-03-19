@@ -1,18 +1,23 @@
 spring:
   jackson:
-    time-zone: Asia/Seoul
+    time-zone: ${TZ}
+
   profiles:
     active: prod
+
   application:
     name: Lip It
+
   messages:
     basename: ValidationMessages
     encoding: UTF-8
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/lipit_db?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&serverTimezone=Asia/Seoul
-    username: arizona
-    password: ssafyd102
+    url: ${POSTGRES_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
+
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -23,21 +28,27 @@ spring:
         format_sql: false
         jdbc:
           time_zone: Asia/Seoul
-    show-sql:
-      true
+    show-sql: true
+
   sql:
     init: 실행 시 # init.sql 실행
+
   servlet:
     multipart:
-      enabled: true           # 파일 업로드 기능 활성화
-      max-file-size: 10MB     # 업로드 가능한 개별 파일의 최대 크기를 10MB로 설정
-      max-request-size: 10MB  # 전체 요청(Request)의 최대 크기를 10MB로 설정
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
   mvc:
-    pathmatch:
+    path match:
       matching-strategy: ant_path_matcher
+
   data:
     redis:
-      timeout: 6000
+      host: redis # Docker Compose의 서비스명
+      port: 6379
+      password: ${REDIS_PASSWORD}
+
 server:
   servlet:
     context-path: /api
@@ -45,11 +56,11 @@ server:
       charset: UTF-8
       enabled: true
       force: true
-api:
-  openai_key: ${OPENAI_API_KEY}  # 환경변수 없으면 기본값 사용
+
 jwt:
   access-token-expiration: 900000  # 액세스 토큰 만료 시간 (15분, 단위: 밀리초)
   refresh-token-expiration: 604800000  # 리프레시 토큰 만료 시간 (7일, 단위: 밀리초)
+
 springdoc: # Swagger
   #  paths-to-match:
   #    - /api/** # swagger-ui에 표시할 api의 엔드포인트 패턴

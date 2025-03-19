@@ -19,7 +19,7 @@ public class SwaggerConfig {
 	private Info apiInfo() {
 		return new Info()
 			.title("[Lip It] REST API")
-			.description("SSAFY 특화 AI 영상 도메인 프로젝트 **Lip It 서비스의 API 명세서**입니다.")
+			.description("SSAFY AI 영상 도메인 특화 프로젝트 **Lip It 서비스의 API 명세서**입니다.")
 			.version("v1.0")
 			.contact(new Contact().name("Team Arizona")
 				.email("www.arizona.com")
