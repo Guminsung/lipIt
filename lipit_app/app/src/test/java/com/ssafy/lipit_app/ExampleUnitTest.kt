@@ -1,4 +1,4 @@
-package com.ssafy.lipit
+package com.ssafy.lipit_app
 
 import org.junit.Test
 

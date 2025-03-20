@@ -1,4 +1,4 @@
-package com.ssafy.lipit
+package com.ssafy.lipit_app
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
@@ -10,5 +10,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
     }
 }

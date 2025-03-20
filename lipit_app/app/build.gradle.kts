@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.ssafy.lipit"
+    namespace = "com.ssafy.lipit_app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.ssafy.lipit"
+        applicationId = "com.ssafy.lipit_app"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
