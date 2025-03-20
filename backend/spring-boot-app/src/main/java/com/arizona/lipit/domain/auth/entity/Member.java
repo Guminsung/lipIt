@@ -51,6 +51,9 @@ public class Member {
 	@Column
 	private String fcmToken;
 
+	@Column(columnDefinition = "TEXT")
+	private String interest;
+
 	@CreationTimestamp
 	private Timestamp createdAt;
 
