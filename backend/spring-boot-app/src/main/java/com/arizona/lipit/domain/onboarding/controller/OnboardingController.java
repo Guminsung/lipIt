@@ -29,37 +29,37 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/onboarding")
 public class OnboardingController implements OnboardingApiSpec {
 
-    private final CallScheduleService callScheduleService;
-    private final UserInterestService userInterestService;
-    private final MemberRepository memberRepository; // 추가
+	private final CallScheduleService callScheduleService;
+	private final UserInterestService userInterestService;
+	private final MemberRepository memberRepository; // 추가
 
-    @PostMapping("/alarm")
-    public ResponseEntity<CommonResponse<CallScheduleResponseDto>> createCallSchedule(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @Valid @RequestBody CallScheduleRequestDto requestDto) {
+	@PostMapping("/alarm")
+	public ResponseEntity<CommonResponse<CallScheduleResponseDto>> createCallSchedule(
+		@AuthenticationPrincipal UserDetails userDetails,
+		@Valid @RequestBody CallScheduleRequestDto requestDto) {
 
-        String email = userDetails.getUsername(); // 이메일 추출
-        Long userId = memberRepository.findByEmail(email)
-                .map(Member::getUserId)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+		String email = userDetails.getUsername(); // 이메일 추출
+		Long userId = memberRepository.findByEmail(email)
+			.map(Member::getMemberId)
+			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        CallScheduleResponseDto responseDto = callScheduleService.saveCallSchedule(userId, requestDto);
+		CallScheduleResponseDto responseDto = callScheduleService.saveCallSchedule(userId, requestDto);
 
-        return ResponseEntity.ok(CommonResponse.created("일정이 성공적으로 저장되었습니다.", responseDto));
-    }
+		return ResponseEntity.ok(CommonResponse.created("일정이 성공적으로 저장되었습니다.", responseDto));
+	}
 
-    @PostMapping("/interesting")
-    public ResponseEntity<CommonResponse<MemberDto>> createUserInterest(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody UserInterestRequestDto requestDto) {
+	@PostMapping("/interesting")
+	public ResponseEntity<CommonResponse<MemberDto>> createUserInterest(
+		@AuthenticationPrincipal UserDetails userDetails,
+		@RequestBody UserInterestRequestDto requestDto) {
 
-        String email = userDetails.getUsername(); // 이메일 추출
-        Long userId = memberRepository.findByEmail(email)
-                .map(Member::getUserId)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+		String email = userDetails.getUsername(); // 이메일 추출
+		Long userId = memberRepository.findByEmail(email)
+			.map(Member::getMemberId)
+			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        MemberDto memberDto = userInterestService.saveUserInterest(userId, requestDto);
+		MemberDto memberDto = userInterestService.saveUserInterest(userId, requestDto);
 
-        return ResponseEntity.ok(CommonResponse.created("관심 사항이 성공적으로 저장되었습니다.", memberDto));
-    }
+		return ResponseEntity.ok(CommonResponse.created("관심 사항이 성공적으로 저장되었습니다.", memberDto));
+	}
 }
