@@ -28,7 +28,6 @@ public class SecurityConfig {
 
 	private final JwtProvider jwtProvider;
 
-	@SuppressWarnings("checkstyle:Indentation")
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		boolean isDevMode = "dev".equals(System.getenv("SPRING_PROFILES_ACTIVE"));
@@ -60,5 +59,4 @@ public class SecurityConfig {
 
 		return http.build();
 	}
-
 }

@@ -53,10 +53,42 @@ public class SwaggerConfig {
 	}
 
 	@Bean
-	public GroupedOpenApi studyApi() {
+	public GroupedOpenApi onboardingApi() {
 		return GroupedOpenApi.builder()
-			.group("2. 영어 학습")
-			.pathsToMatch("/shadowing")
+			.group("2. 온보딩")
+			.pathsToMatch("/onboarding/**")
+			.build();
+	}
+
+	@Bean
+	public GroupedOpenApi voiceApi() {
+		return GroupedOpenApi.builder()
+			.group("3. 설정 - 음성 관리")
+			.pathsToMatch("/voices/**", "/users/voices/**")
+			.build();
+	}
+
+	@Bean
+	public GroupedOpenApi todaySentenceApi() {
+		return GroupedOpenApi.builder()
+			.group("4. 오늘의 문장")
+			.pathsToMatch("/voices/**", "/users/voices/**")
+			.build();
+	}
+
+	@Bean
+	public GroupedOpenApi reportApi() {
+		return GroupedOpenApi.builder()
+			.group("5. 학습 리포트")
+			.pathsToMatch("/reports/**")
+			.build();
+	}
+
+	@Bean
+	public GroupedOpenApi fcmTestApi() {
+		return GroupedOpenApi.builder()
+			.group("6. FCM 테스트")
+			.pathsToMatch("/notifications/**")
 			.build();
 	}
 }

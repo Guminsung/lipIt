@@ -12,12 +12,6 @@ spring:
     basename: ValidationMessages
     encoding: UTF-8
 
-  datasource:
-    url: ${POSTGRES_URL}
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -27,7 +21,7 @@ spring:
         show_sql: true
         format_sql: false
         jdbc:
-          time_zone: Asia/Seoul
+          time_zone: ${TZ}
     show-sql: true
 
   sql:
@@ -42,12 +36,6 @@ spring:
   mvc:
     path match:
       matching-strategy: ant_path_matcher
-
-  data:
-    redis:
-      host: redis # Docker Compose의 서비스명
-      port: 6379
-      password: ${REDIS_PASSWORD}
 
 server:
   servlet:

@@ -129,5 +129,4 @@ public class JwtProvider {
 			.getBody()
 			.getSubject();
 	}
-
 }
