@@ -36,6 +36,9 @@ public class Member {
 	@Column(nullable = false)
 	private String username;
 
+	@Column(columnDefinition = "TEXT")
+	private String interest;
+
 	@CreationTimestamp
 	private Timestamp createdAt;
 
