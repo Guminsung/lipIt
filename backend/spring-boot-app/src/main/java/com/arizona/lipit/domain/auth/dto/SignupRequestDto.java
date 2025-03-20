@@ -25,5 +25,8 @@ public class SignupRequestDto {
 
 	@Schema(description = "사용자 이름", example = "test")
 	@NotBlank(message = "{username.required}")
-	private String username;
+	private String name;
+
+	@Schema(description = "사용자 성별", example = "FEMALE")
+	private Gender gender;
 }

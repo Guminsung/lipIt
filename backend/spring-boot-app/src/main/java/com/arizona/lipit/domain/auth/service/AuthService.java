@@ -44,9 +44,9 @@ public class AuthService {
 		redisTokenService.saveRefreshToken(member.getEmail(), refreshToken, jwtProvider.getRefreshTokenExpiration());
 
 		return LoginResponseDto.builder()
-			.userId(member.getUserId())
+			.memberId(member.getMemberId())
 			.email(member.getEmail())
-			.username(member.getUsername())
+			.name(member.getName())
 			.accessToken(accessToken)
 			.refreshToken(refreshToken)
 			.build();

@@ -8,13 +8,13 @@ import lombok.Getter;
 @Builder
 public class LoginResponseDto {
 	@Schema(description = "사용자 ID")
-	private Long userId;
+	private Long memberId;
 
 	@Schema(description = "사용자 이메일")
 	private String email;
 
 	@Schema(description = "사용자 이름")
-	private String username;
+	private String name;
 
 	@Schema(description = "액세스 토큰")
 	private String accessToken;

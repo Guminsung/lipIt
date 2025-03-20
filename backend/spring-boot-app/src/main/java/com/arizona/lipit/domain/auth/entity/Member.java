@@ -3,7 +3,10 @@ package com.arizona.lipit.domain.auth.entity;
 import java.sql.Timestamp;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import com.arizona.lipit.domain.auth.dto.Gender;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,7 +28,7 @@ import lombok.Setter;
 public class Member {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long userId;
+	private Long memberId;
 
 	@Column(nullable = false, unique = true)
 	private String email;
@@ -34,10 +37,25 @@ public class Member {
 	private String password;
 
 	@Column(nullable = false)
-	private String username;
+	private String name;
+
+	@Column(nullable = false)
+	private Gender gender;
+
+	@Column
+	private String interest;
+
+	@Column
+	private Long selectedVoiceId;
+
+	@Column
+	private String fcmToken;
 
 	@CreationTimestamp
 	private Timestamp createdAt;
+
+	@UpdateTimestamp
+	private Timestamp updatedAt;
 
 	// 비밀번호 암호화 적용 메서드
 	public void encodePassword(PasswordEncoder passwordEncoder) {

@@ -16,8 +16,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/auth/login")
+@RequiredArgsConstructor
 public class LoginController implements LoginApiSpec {
 
 	private final AuthService authService;

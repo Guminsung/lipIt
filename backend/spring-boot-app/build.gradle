@@ -60,6 +60,12 @@ dependencies {
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-cache' // 캐시 사용
+
+    // Firebase Admin SDK
+    implementation 'com.google.firebase:firebase-admin:8.0.0'
+
+    // OkHttp
+    implementation 'com.squareup.okhttp3:okhttp:4.9.2'
 }
 
 tasks.named('test') {

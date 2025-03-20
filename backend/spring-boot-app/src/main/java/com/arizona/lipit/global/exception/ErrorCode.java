@@ -15,6 +15,16 @@ public enum ErrorCode {
 	// EMAIL_REQUIRED(HttpStatus.BAD_REQUEST, "VALIDATION-003", "이메일을 입력해 주세요."),
 	// PASSWORD_REQUIRED(HttpStatus.BAD_REQUEST, "VALIDATION-004", "비밀번호를 입력해 주세요."),
 
+	// 공통 에러
+	INVALID_REQUEST(HttpStatus.BAD_REQUEST, "VALIDATION-001", "잘못된 요청입니다. 입력 값을 확인해주세요."),
+	RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "RESOURCE-001", "요청하신 리소스를 찾을 수 없습니다."),
+	DATA_CONFLICT(HttpStatus.CONFLICT, "CONFLICT-001", "이미 존재하는 데이터입니다. 중복을 확인해주세요."),
+	INVALID_DATA(HttpStatus.UNPROCESSABLE_ENTITY, "VALIDATION-002", "요청 데이터를 처리할 수 없습니다. 입력 값을 확인해주세요."),
+	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SERVER-001", "서버 내부 오류가 발생했습니다. 관리자에게 문의하세요."),
+	BAD_GATEWAY(HttpStatus.BAD_GATEWAY, "SERVER-002", "서버가 잘못된 응답을 받았습니다."),
+	SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "SERVER-003", "현재 서버가 점검 중입니다. 잠시 후 다시 시도해주세요."),
+	GATEWAY_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "SERVER-004", "서버 요청 시간이 초과되었습니다. 다시 시도해주세요."),
+
 	// 로그인 관련 에러
 	INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "LOGIN-001", "잘못된 비밀번호입니다."),
 	MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "LOGIN-002", "해당 이메일을 가진 사용자가 없습니다."),
@@ -50,16 +60,10 @@ public enum ErrorCode {
 	STUDY_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "MYPAGE-002", "학습 내역을 찾을 수 없습니다."),
 	MYPAGE_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "MYPAGE-003", "학습 내역 조회 중 서버 오류가 발생했습니다."),
 
-	// 공통 에러
-	INVALID_REQUEST(HttpStatus.BAD_REQUEST, "VALIDATION-001", "잘못된 요청입니다. 입력 값을 확인해주세요."),
-	RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "RESOURCE-001", "요청하신 리소스를 찾을 수 없습니다."),
-	DATA_CONFLICT(HttpStatus.CONFLICT, "CONFLICT-001", "이미 존재하는 데이터입니다. 중복을 확인해주세요."),
-	INVALID_DATA(HttpStatus.UNPROCESSABLE_ENTITY, "VALIDATION-002", "요청 데이터를 처리할 수 없습니다. 입력 값을 확인해주세요."),
-	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SERVER-001", "서버 내부 오류가 발생했습니다. 관리자에게 문의하세요."),
-	BAD_GATEWAY(HttpStatus.BAD_GATEWAY, "SERVER-002", "서버가 잘못된 응답을 받았습니다."),
-	SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "SERVER-003", "현재 서버가 점검 중입니다. 잠시 후 다시 시도해주세요."),
-	GATEWAY_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "SERVER-004", "서버 요청 시간이 초과되었습니다. 다시 시도해주세요.");
-
+	// 회원(Member) 관련 에러
+	MEMBER_ID_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER-001", "해당 ID를 가진 사용자를 찾을 수 없습니다."),
+	INVALID_FCM_TOKEN(HttpStatus.BAD_REQUEST, "FCM-001", "유효하지 않은 FCM 토큰 값입니다.");
+	
 	private final HttpStatus status;
 	private final String errorCode;
 	private final String message;

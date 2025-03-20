@@ -45,7 +45,8 @@ public class SignupService {
 		Member member = Member.builder()
 			.email(request.getEmail())
 			.password(passwordEncoder.encode(request.getPassword1()))
-			.username(request.getUsername())
+			.name(request.getName())
+			.gender(request.getGender())
 			.build();
 
 		// DB 저장

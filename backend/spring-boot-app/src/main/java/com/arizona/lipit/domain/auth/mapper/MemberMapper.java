@@ -21,4 +21,3 @@ public interface MemberMapper {
 	@Mapping(source = "encodedPassword", target = "password")
 	Member toEntity(SignupRequestDto request, String encodedPassword);
 }
-
