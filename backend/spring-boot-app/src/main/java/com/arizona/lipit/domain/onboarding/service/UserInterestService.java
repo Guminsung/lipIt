@@ -17,9 +17,9 @@ public class UserInterestService {  // 클래스명 수정
     private final MemberRepository memberRepository;
 
     @Transactional
-    public MemberDto saveUserInterest(Long userId, UserInterestRequestDto requestDto) {  // 메서드명 수정
+    public MemberDto saveUserInterest(Long memberId, UserInterestRequestDto requestDto) {  // 메서드명 수정
         // 회원 조회
-        Member member = memberRepository.findById(userId).orElse(null);
+        Member member = memberRepository.findById(memberId).orElse(null);
 
         if (member != null) {
             // 관심사항 업데이트
@@ -33,9 +33,9 @@ public class UserInterestService {  // 클래스명 수정
         return null;
     }
 
-    public MemberDto getUserInterest(Long userId) {  // 메서드명 수정
+    public MemberDto getUserInterest(Long memberId) {  // 메서드명 수정
         // 회원 조회
-        Member member = memberRepository.findById(userId).orElse(null);
+        Member member = memberRepository.findById(memberId).orElse(null);
 
         if (member != null) {
             // MemberMapper를 사용하여 DTO 변환
