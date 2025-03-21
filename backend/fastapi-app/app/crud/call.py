@@ -1,90 +1,129 @@
-from app.db.session import mongodb
+import os
+import json, time
+import httpx
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.models.call import Call
+from app.schemas.call import (
+    AIMessageResponse,
+    CallRequest,
+    CallResponse,
+    Message,
+    UserMessageRequest,
+)
 from datetime import datetime
-from bson.objectid import ObjectId
-from typing import Optional
-import random
 
 
-# AI의 첫 메시지를 생성하는 함수 (임시)
-def generate_ai_first_message(topic: str) -> str:
-    topic_messages = {
-        "SPORTS": "Did you watch the latest NBA game? That last-minute three-pointer was insane!",
-        "MUSIC": "Have you heard the latest album from Taylor Swift? It's amazing!",
-        "MOVIES": "What's the last movie you watched? Did you enjoy it?",
-    }
-    return topic_messages.get(topic, "Let's talk about something interesting!")
-
-
-# 통화 생성 함수
-async def create_call(
-    user_id: int, voice_id: int, voice_audio_url: Optional[str], topic: str
-):
-    start_time = datetime.utcnow()
-    ai_first_message = generate_ai_first_message(topic)
-
-    call_data = {
-        "user_id": user_id,
-        "voice_id": voice_id,
-        "voice_audio_url": voice_audio_url,  # 커스텀 음성 URL 저장
-        "topic": topic,
-        "start_time": start_time,
-        "end_time": None,
-        "duration": None,
-        "messages": [{"role": "ai", "text": ai_first_message, "timestamp": start_time}],
-    }
-
-    result = await mongodb.db["calls"].insert_one(call_data)
-    return {
-        "callId": str(result.inserted_id),
-        "startTime": start_time,
-        "aiFirstMessage": ai_first_message,
-    }
-
-
-# AI의 종료 메시지를 생성하는 함수 (임시)
-def generate_ai_end_message(end_reason: str) -> str:
-    end_messages = {
-        "USER_REQUEST": "It was great talking with you today! Have a wonderful day!",
-        "TIMEOUT": "Looks like we got disconnected. Hope to chat again soon!",
-        "AI_DECISION": "Our conversation has come to a natural end. See you next time!",
-    }
-    return end_messages.get(end_reason, "Goodbye! Talk to you soon!")
-
-
-# 대화 종료 처리 함수 (사용자 응답도 저장)
-async def end_call(call_id: str, user_response: str, end_reason: str):
-    # MongoDB에서 통화 기록 조회
-    call = await mongodb.db["calls"].find_one({"_id": ObjectId(call_id)})
-
-    if not call:
-        return None  # 통화 기록 없음 (404 예외 처리 예정)
-
-    # 현재 시간 기준으로 종료 시간 및 지속 시간 계산
-    end_time = datetime.utcnow()
-    start_time = call.get("start_time")
-    duration = (end_time - start_time).seconds if start_time else 0
-
-    # AI 종료 메시지 생성
-    ai_end_message = generate_ai_end_message(end_reason)
-
-    # 사용자 메시지와 AI 종료 메시지를 추가
-    new_messages = [
-        {"role": "user", "text": user_response, "timestamp": end_time},
-        {"role": "ai", "text": ai_end_message, "timestamp": end_time},
-    ]
-
-    # MongoDB에 종료 정보 업데이트
-    await mongodb.db["calls"].update_one(
-        {"_id": ObjectId(call_id)},
-        {
-            "$set": {"end_time": end_time, "duration": duration},
-            "$push": {"messages": {"$each": new_messages}},
-        },
+async def create_call(db: AsyncSession, request: CallRequest) -> CallResponse:
+    """새로운 통화 레코드 생성 및 AI 첫 메시지 저장"""
+    ai_message = Message(
+        role="ai",
+        text="Test Message",  # 실제로는 OpenAI API 응답
+        text_kor=None,
+        audio_url=None,
+        timestamp=int(time.time()),
     )
 
-    return {
-        "callId": call_id,
-        "endTime": end_time,
-        "duration": duration,
-        "aiEndMessage": ai_end_message,
+    new_call = Call(
+        call_history_id=request.userId,
+        messages=json.dumps([ai_message.dict()]),  # JSON 직렬화
+        start_time=datetime.now(),
+        end_time=None,
+    )
+
+    db.add(new_call)
+    await db.commit()
+    await db.refresh(new_call)
+
+    return CallResponse(
+        callId=new_call.call_id,
+        startTime=new_call.start_time,
+        aiFirstMessage=ai_message.text,
+    )
+
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+S3_BASE_URL = "https://s3.amazonaws.com/ai_audio/"  # AI 음성 파일 저장 경로
+
+
+async def generate_ai_response(user_message: str) -> str:
+    """사용자 메시지를 기반으로 AI 응답 생성"""
+    async with httpx.AsyncClient() as client:
+        # response = await client.post(
+        #     "https://api.openai.com/v1/chat/completions",
+        #     headers={
+        #         "Authorization": f"Bearer {OPENAI_API_KEY}",
+        #         "Content-Type": "application/json",
+        #     },
+        #     json={
+        #         "model": "gpt-4",
+        #         "messages": [{"role": "user", "content": user_message}],
+        #     },
+        # )
+        # if response.status_code == 200:
+        #     return response.json()["choices"][0]["message"]["content"]
+        # else:
+        #     raise Exception("OpenAI API 호출 실패")
+        return "AI Response"
+
+
+async def create_ai_audio(ai_message: str) -> str:
+    """AI 응답 메시지를 기반으로 음성 파일 생성 (S3 저장 경로 반환)"""
+    audio_file_id = f"response_{int(datetime.utcnow().timestamp())}.mp3"
+    return f"{S3_BASE_URL}{audio_file_id}"
+
+
+async def add_message_to_call(
+    db: AsyncSession, callId: int, request: UserMessageRequest
+) -> AIMessageResponse:
+    """사용자 메시지를 저장하고, AI 응답을 생성하여 통화 메시지 리스트에 추가"""
+    result = await db.execute(select(Call).where(Call.call_id == callId))
+    call_record = result.scalars().first()
+
+    if not call_record:
+        raise Exception("해당 통화 기록을 찾을 수 없습니다.")
+
+    # 사용자 메시지 생성
+    user_message_data = {
+        "role": "user",
+        "text": request.userMessage,
+        "text_kor": request.userMessageKor,
+        "audio_url": str(request.userAudioUrl) if request.userAudioUrl else None,
+        "timestamp": int(time.time()),
     }
+
+    # AI 응답 생성
+    ai_message_text = await generate_ai_response(request.userMessage)
+    ai_audio_url = await create_ai_audio(ai_message_text)
+
+    ai_message_data = {
+        "role": "ai",
+        "text": ai_message_text,
+        "text_kor": None,  # AI가 한국어 번역을 지원하면 추가 가능
+        "audio_url": str(ai_audio_url),
+        "timestamp": int(time.time()),
+    }
+
+    # 기존 messages 데이터 로드 (str이면 JSON으로 변환)
+    if call_record.messages:
+        if isinstance(call_record.messages, str):
+            call_record.messages = json.loads(call_record.messages)
+    else:
+        call_record.messages = []
+
+    # 리스트에 새로운 메시지 추가
+    new_messages = call_record.messages + [
+        user_message_data,
+        ai_message_data,
+    ]  # 새로운 리스트 생성
+
+    # SQLAlchemy에 필드 업데이트를 명확하게 인식시키기 위해 새로운 객체로 설정
+    call_record.messages = new_messages
+    call_record.updated_at = datetime.utcnow()
+
+    # 데이터베이스에 변경사항 저장
+    db.add(call_record)  # 🔥 변경된 객체를 명확하게 SQLAlchemy에 추가
+    await db.commit()
+    await db.refresh(call_record)
+
+    return AIMessageResponse(aiMessage=ai_message_text, aiAudioUrl=ai_audio_url)

@@ -1,31 +1,28 @@
-from motor.motor_asyncio import AsyncIOMotorClient
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
-
-MONGO_URI = os.getenv(
-    "MONGO_URI",
-    "mongodb://arizona:ssafyd102@localhost:27017/lipit_db?authSource=admin",  # authSource=admin을 반드시 추가해야 함 (MongoDB의 기본 인증 데이터베이스가 admin이기 때문)
+DATABASE_URL = os.getenv(
+    "POSTGRES_URI", "postgresql+asyncpg://arizona:ssafyd102@localhost:5432/lipit_db"
 )
 
+# 비동기 엔진 생성
+engine = create_async_engine(DATABASE_URL, echo=True, future=True)
 
-class MongoDB:
-    """MongoDB 연결 관리 클래스"""
+# 세션 팩토리 생성
+SessionLocal = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
-    def __init__(self):
-        self.client = None
-        self.db = None
-
-    async def connect(self):
-        """MongoDB 연결"""
-        self.client = AsyncIOMotorClient(MONGO_URI)
-        self.db = self.client.get_database("lipit_db")
-
-    async def close(self):
-        """MongoDB 연결 종료"""
-        if self.client:
-            self.client.close()
+# Base 클래스 (ORM 테이블 정의에 필요)
+Base = declarative_base()
 
 
-mongodb = MongoDB()
+# 비동기 세션 생성 의존성 (FastAPI의 `Depends(get_db)`에서 사용)
+async def get_db():
+    async with SessionLocal() as session:
+        yield session
+
+
+# 데이터베이스 초기화 (테이블 생성)
+async def init_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)

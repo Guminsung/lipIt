@@ -1,44 +1,50 @@
-# CallBase가 없으면 아래처럼 추가해줘
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 from datetime import datetime
-from typing import Optional, List
-from app.schemas.message import Message
+from typing import Generic, Optional, TypeVar, List
+
+# Generic을 위한 타입 변수 선언
+T = TypeVar("T")
 
 
-class CallBase(BaseModel):  # CallBase 정의 추가
+# 공통 API 응답 형식 (Generic 적용)
+class APIResponse(BaseModel, Generic[T]):
+    status: int
+    message: str
+    data: Optional[T] = None
+
+
+# AI의 첫 메시지 형식
+class Message(BaseModel):
+    role: str  # "ai" 또는 "user"
+    text: str  # 메시지 내용
+    text_kor: Optional[str] = None  # 한글 번역
+    audio_url: Optional[str] = None  # 음성 파일 URL
+    timestamp: int  # 생성 시간
+
+
+# 요청 DTO
+class CallRequest(BaseModel):
     userId: int
     voiceId: int
-    voiceAudioUrl: Optional[str] = None
-    topic: str
-    startTime: datetime
-    messages: List[Message] = []
-
-
-# 대화 시작 요청 DTO
-class CallCreate(BaseModel):
-    userId: int
-    voiceId: int
-    voiceAudioUrl: Optional[str] = None  # 커스텀 음성일 경우 S3 URL 저장
+    voiceAudioUrl: str
     topic: str
 
 
-# 대화 시작 응답 DTO
+# 응답 DTO
 class CallResponse(BaseModel):
-    callId: str
+    callId: int
     startTime: datetime
     aiFirstMessage: str
-    messages: List[Message] = []
 
 
-# 대화 종료 요청 DTO
-class CallEndRequest(BaseModel):
-    userResponse: str
-    endReason: str  # 종료 사유 (USER_REQUEST, TIMEOUT, AI_DECISION)
+# 사용자 메시지 요청 DTO
+class UserMessageRequest(BaseModel):
+    userMessage: str
+    userMessageKor: Optional[str] = None
+    userAudioUrl: Optional[HttpUrl] = None
 
 
-# 대화 종료 응답 DTO
-class CallEndResponse(BaseModel):
-    callId: str
-    endTime: datetime
-    duration: int
-    aiEndMessage: str
+# AI 응답 DTO
+class AIMessageResponse(BaseModel):
+    aiMessage: str
+    aiAudioUrl: Optional[HttpUrl] = None

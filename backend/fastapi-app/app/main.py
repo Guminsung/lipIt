@@ -1,24 +1,22 @@
 from fastapi import FastAPI
-from app.db.session import mongodb
-from app.api.v1.routers import router as api_router  # 통합된 라우터 가져오기
-
-app = FastAPI()
-
-
-@app.on_event("startup")
-async def startup():
-    await mongodb.connect()
+from contextlib import asynccontextmanager
+from app.db.session import init_db
+from app.api.v1.routers import router as calls_router
 
 
-@app.on_event("shutdown")
-async def shutdown():
-    await mongodb.close()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """애플리케이션 시작 시 DB 테이블 생성"""
+    await init_db()
+    yield
 
 
-# `routers.py`에서 통합한 라우터를 등록
-app.include_router(api_router, prefix="/api")
+app = FastAPI(lifespan=lifespan)
+
+# 라우터 등록
+app.include_router(calls_router)
 
 
 @app.get("/")
 async def root():
-    return {"message": "FastAPI & MongoDB Call API"}
+    return {"message": "FastAPI & PostgreSQL API"}
