@@ -24,5 +24,5 @@ public interface CallScheduleMapper {
 
     // 요청 DTO와 추가 정보로 Entity 생성
     @Mapping(target = "callScheduleId", ignore = true)
-    CallSchedule toEntity(CallScheduleRequestDto requestDto, Long userId, DayOfWeek scheduledDay, TopicCategory topicCategory);
+    CallSchedule toEntity(CallScheduleRequestDto requestDto, Long memberId, DayOfWeek scheduledDay, TopicCategory topicCategory);
 }
