@@ -582,4 +582,7 @@ obj/
 # 환경 변수 파일
 .env
 
+# Firebase 서비스 계정 키
+backend/spring-boot-app/src/main/resources/firebase/firebase_service_key.json
+
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,java,intellij+all,gradle,redis,visualstudiocode,git,androidstudio,android,kotlin,python,jupyternotebooks
