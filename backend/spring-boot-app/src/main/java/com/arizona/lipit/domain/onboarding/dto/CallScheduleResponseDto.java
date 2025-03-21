@@ -12,7 +12,7 @@ public class CallScheduleResponseDto {
     private Long callScheduleId;
 
     @Schema(description = "사용자 ID", example = "1")
-    private Long userId;
+    private Long memberId;
 
     @Schema(description = "사용자 선택 요일", example = "MONDAY")
     private String scheduledDay;

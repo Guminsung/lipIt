@@ -9,8 +9,5 @@ import java.util.Optional;
 @Repository
 public interface CallScheduleRepository extends JpaRepository<CallSchedule, Long> {
 
-    Optional<CallSchedule> findByUserId(Long userId);
-    Optional<CallSchedule> findByUserIdAndScheduledDay(Long userId, com.arizona.lipit.domain.onboarding.entity.DayOfWeek scheduledDay);
-    boolean existsByUserId(Long userId);
-    void deleteByUserId(Long userId);
+    Optional<CallSchedule> findBymemberId(Long memberId);
 }
