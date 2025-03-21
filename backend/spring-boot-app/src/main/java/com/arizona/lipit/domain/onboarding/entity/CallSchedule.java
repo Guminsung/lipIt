@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "call_schedule")
 @Getter
 @Setter
 @Builder
@@ -16,7 +15,7 @@ public class CallSchedule {
     private Long callScheduleId;
 
     @Column(nullable = false)
-    private Long userId;
+    private Long memberId;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

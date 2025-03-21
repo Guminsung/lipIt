@@ -39,11 +39,11 @@ public class OnboardingController implements OnboardingApiSpec {
 		@Valid @RequestBody CallScheduleRequestDto requestDto) {
 
 		String email = userDetails.getUsername(); // 이메일 추출
-		Long userId = memberRepository.findByEmail(email)
+		Long memberId = memberRepository.findByEmail(email)
 			.map(Member::getMemberId)
 			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-		CallScheduleResponseDto responseDto = callScheduleService.saveCallSchedule(userId, requestDto);
+		CallScheduleResponseDto responseDto = callScheduleService.saveCallSchedule(memberId, requestDto);
 
 		return ResponseEntity.ok(CommonResponse.created("일정이 성공적으로 저장되었습니다.", responseDto));
 	}
@@ -54,11 +54,11 @@ public class OnboardingController implements OnboardingApiSpec {
 		@RequestBody UserInterestRequestDto requestDto) {
 
 		String email = userDetails.getUsername(); // 이메일 추출
-		Long userId = memberRepository.findByEmail(email)
+		Long memberId = memberRepository.findByEmail(email)
 			.map(Member::getMemberId)
 			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-		MemberDto memberDto = userInterestService.saveUserInterest(userId, requestDto);
+		MemberDto memberDto = userInterestService.saveUserInterest(memberId, requestDto);
 
 		return ResponseEntity.ok(CommonResponse.created("관심 사항이 성공적으로 저장되었습니다.", memberDto));
 	}
