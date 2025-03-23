@@ -41,7 +41,7 @@ fun MainScreen(
             .padding(horizontal = 20.dp, vertical = 60.dp)
     ){
         UserInfoSection(state.userName) // 상단의 유저 이름, 등급 부분
-        TodaysSentence() // 오늘의 문장
+        TodaysSentence(state.sentenceOriginal, state.sentenceTranslated) // 오늘의 문장
 //        WeeklyCallsSection(
 //            selectedDay = state.selectedDay,
 //            callItems = state.items,
@@ -63,7 +63,7 @@ fun UserInfoSection(userName: String) {
     ){
         //  사용자 이름
         Text(
-            text = "Hello, Sarah",
+            text = "Hello, $userName",
             style = androidx.compose.ui.text.TextStyle(
                 fontSize = 20.sp,
                 lineHeight = 50.sp,
@@ -86,7 +86,7 @@ fun UserInfoSection(userName: String) {
 
 // 오늘의 문장
 @Composable
-fun TodaysSentence(){
+fun TodaysSentence(sentenceOriginal: String, sentenceTranslated: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -114,7 +114,7 @@ fun TodaysSentence(){
                     .padding(top = 21.dp, start = 27.dp, bottom = 21.dp, end = 6.dp)
                 ) {
                 Text(
-                    text = "With your talent and hard work, sky’s the limit!",
+                    text = sentenceOriginal,
                     style = TextStyle(
                         fontSize = 15.sp,
                         lineHeight = 20.sp,
@@ -127,7 +127,7 @@ fun TodaysSentence(){
                 Spacer(modifier = Modifier.height(7.dp))
 
                 Text(
-                    text = "너의 재능과 노력이라면, 한계란 없지!  ✦˚",
+                    text = "$sentenceTranslated  ✦˚",
                     style = TextStyle(
                         fontSize = 14.sp,
                         lineHeight = 20.sp,
@@ -166,7 +166,9 @@ fun MainScreenPreview() {
             sentenceProgress = 90,
             wordProgress = 50,
             attendanceCount = 20,
-            attendanceTotal = 20
+            attendanceTotal = 20,
+            sentenceOriginal = "With your talent and hard work, sky’s the limit!",
+            sentenceTranslated = "너의 재능과 노력이라면, 한계란 없지!"
         ),
         onIntent = {}
     )
