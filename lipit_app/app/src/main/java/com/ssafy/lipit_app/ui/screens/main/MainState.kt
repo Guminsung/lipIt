@@ -10,7 +10,9 @@ data class MainState(
     val sentenceProgress: Int = 90,
     val wordProgress: Int = 50,
     val attendanceCount: Int = 20,
-    val attendanceTotal: Int = 20
+    val attendanceTotal: Int = 20,
+    val sentenceOriginal: String="",
+    val sentenceTranslated: String = ""
 )
 
 data class CallItem(
