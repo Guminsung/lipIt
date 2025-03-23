@@ -14,7 +14,6 @@ import com.ssafy.lipit_app.theme.LipItTheme
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
         setContent{ //compose ui 액티비티에 표시
             LipItTheme{ //공통 테마

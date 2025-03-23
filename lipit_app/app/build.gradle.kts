@@ -127,4 +127,12 @@ dependencies {
 
     // location
     implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation(kotlin("script-runtime"))
+
+    implementation("androidx.activity:activity-compose:1.8.2")
+    implementation("androidx.compose.material3:material3:1.1.2")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.5.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+    implementation("androidx.compose.ui:ui-tooling:1.5.1") // Preview용
+
 }
