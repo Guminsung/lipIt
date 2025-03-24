@@ -1,4 +1,4 @@
-package com.arizona.lipit.domain.onboarding.dto;
+package com.arizona.lipit.domain.schedule.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -6,8 +6,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class CallScheduleResponseDto {
-
+public class ScheduleResponseDto {
     @Schema(description = "전화 일정 ID", example = "1")
     private Long callScheduleId;
 
