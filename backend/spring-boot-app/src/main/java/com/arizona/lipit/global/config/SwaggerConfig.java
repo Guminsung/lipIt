@@ -91,4 +91,12 @@ public class SwaggerConfig {
 			.pathsToMatch("/notifications/**")
 			.build();
 	}
+
+	@Bean
+	public GroupedOpenApi scheduleApi() {
+		return GroupedOpenApi.builder()
+				.group("7. 일정 관리")
+				.pathsToMatch("/schedule/**")
+				.build();
+	}
 }
