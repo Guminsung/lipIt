@@ -80,8 +80,6 @@ public class FcmWithDataService {
 		for (String targetToken : targetTokens) {
 			if (targetToken != null && !targetToken.trim().isEmpty()) {  // 공백 및 개행 문자 제거
 				String cleanedToken = targetToken.trim();  // FCM 토큰 정리
-				log.info("📨 정리된 FCM 토큰: {}", cleanedToken);
-
 				sendMessage(cleanedToken, requestDto);
 			}
 		}
@@ -122,9 +120,6 @@ public class FcmWithDataService {
 	private boolean sendDataMessage(String message) throws IOException {
 		RequestBody requestBody = RequestBody.create(message, MediaType.get("application/json; charset=utf-8"));
 		String accessToken = getAccessToken();
-
-		log.info("📨 FCM 요청: {}", message);
-		log.info("🔑 FCM 인증 토큰: {}", accessToken);
 
 		Request request = new Request.Builder()
 			.url(Constants.API_URL)
