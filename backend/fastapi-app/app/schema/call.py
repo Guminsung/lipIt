@@ -1,16 +1,6 @@
 from pydantic import BaseModel, HttpUrl
 from datetime import datetime
-from typing import Generic, Optional, TypeVar, List
-
-# Generic을 위한 타입 변수 선언
-T = TypeVar("T")
-
-
-# 공통 API 응답 형식 (Generic 적용)
-class APIResponse(BaseModel, Generic[T]):
-    status: int
-    message: str
-    data: Optional[T] = None
+from typing import Optional
 
 
 # AI의 첫 메시지 형식
@@ -23,7 +13,7 @@ class Message(BaseModel):
 
 
 # 요청 DTO
-class CallRequest(BaseModel):
+class StartCallRequest(BaseModel):
     userId: int
     voiceId: int
     voiceAudioUrl: str
@@ -31,7 +21,7 @@ class CallRequest(BaseModel):
 
 
 # 응답 DTO
-class CallResponse(BaseModel):
+class StartCallResponse(BaseModel):
     callId: int
     startTime: datetime
     aiFirstMessage: str
@@ -48,3 +38,15 @@ class UserMessageRequest(BaseModel):
 class AIMessageResponse(BaseModel):
     aiMessage: str
     aiAudioUrl: Optional[HttpUrl] = None
+
+
+class EndCallRequest(BaseModel):
+    userResponse: str
+    endReason: str  # 예: "USER_REQUEST", "TIMEOUT", "AI_DECISION"
+
+
+class EndCallResponse(BaseModel):
+    callId: int
+    endTime: datetime
+    duration: int
+    aiEndMessage: str

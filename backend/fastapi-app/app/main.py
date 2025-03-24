@@ -1,7 +1,14 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
+from app.api.v1 import get_routers
 from app.db.session import init_db
-from app.api.v1.routers import router as calls_router
+from app.exception.custom_exceptions import APIException
+from app.util.docs.error_code_reference import get_error_code_reference
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -11,12 +18,27 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    debug=True,
+    lifespan=lifespan,
+    title="[Lip It] REST API",
+    description="SSAFY AI 영상 도메인 특화 프로젝트 **Lip It 서비스의 API 명세서**입니다."
+    + get_error_code_reference(),
+    version="1.0.0",
+)
 
 # 라우터 등록
-app.include_router(calls_router)
+for router in get_routers():
+    app.include_router(router)
 
 
-@app.get("/")
-async def root():
-    return {"message": "FastAPI & PostgreSQL API"}
+@app.exception_handler(APIException)
+async def api_exception_handler(request: Request, exc: APIException):
+    logger.error(f"APIException - {exc.status_code}: {exc.detail}", exc_info=True)
+    return JSONResponse(status_code=exc.status_code, content=exc.detail)
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
