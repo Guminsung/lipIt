@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.model.call import Call
+from app.rag.store import store_call_history_embedding
 from app.schema.call import (
     AIMessageResponse,
     StartCallRequest,
@@ -51,12 +52,12 @@ async def create_call(db: AsyncSession, request: StartCallRequest) -> StartCallR
         text=ai_text,
         text_kor=None,
         audio_url=ai_audio_url,
-        timestamp=int(time.time()),
+        timestamp=datetime.now(KST).isoformat(),
     )
 
     new_call = Call(
         call_history_id=request.userId,
-        messages=[ai_message.dict()],
+        messages=[ai_message.model_dump()],
         start_time=datetime.now(KST),
         end_time=None,
     )
@@ -115,7 +116,7 @@ async def generate_ai_response(user_input: str, is_topic_prompt: bool = False) -
 
 async def create_ai_audio(ai_message: str) -> str:
     try:
-        audio_file_id = f"response_{int(datetime.utcnow().timestamp())}.mp3"
+        audio_file_id = f"response_{int(datetime.now().timestamp())}.mp3"
         return f"{S3_BASE_URL}{audio_file_id}"
     except Exception:
         raise APIException(500, "AI 음성 파일 생성 실패", ErrorCode.CALL_TTS_FAILED)
@@ -137,7 +138,7 @@ async def add_message_to_call(
         text=request.userMessage,
         text_kor=request.userMessageKor,
         audio_url=str(request.userAudioUrl) if request.userAudioUrl else None,
-        timestamp=int(time.time()),
+        timestamp=datetime.now(KST).isoformat(),
     )
 
     ai_message_text = await generate_ai_response(request.userMessage)
@@ -148,10 +149,16 @@ async def add_message_to_call(
         text=ai_message_text,
         text_kor=None,
         audio_url=ai_audio_url,
-        timestamp=int(time.time()),
+        timestamp=datetime.now(KST).isoformat(),
     )
 
     append_messages_to_call(call_record, [user_message, ai_message])
+
+    # DB 저장
+    db.add(call_record)
+    await db.commit()
+    await db.refresh(call_record)
+
     return AIMessageResponse(aiMessage=ai_message_text, aiAudioUrl=ai_audio_url)
 
 
@@ -169,21 +176,22 @@ async def end_call(
     if call_record.end_time is not None:
         raise APIException(400, "이미 종료된 통화입니다.", ErrorCode.CALL_ALREADY_ENDED)
 
+    # 종료 시간 및 duration 계산
     end_time = datetime.now(KST)
     duration = int((end_time - call_record.start_time).total_seconds())
 
+    # 사용자 마지막 메시지
     user_message = Message(
         role="user",
         text=request.userResponse,
-        text_kor=None,
         audio_url=None,
-        timestamp=int(time.time()),
+        timestamp=datetime.now(KST).isoformat(),
     )
 
-    # ai_message_text = await generate_ai_response(
-    #     "End the phone conversation in a friendly and natural way."
-    # )
-    ai_message_text = "Bye"
+    # AI 종료 멘트 생성 및 음성
+    ai_message_text = await generate_ai_response(
+        "End the phone conversation in a friendly and natural way."
+    )
     ai_audio_url = await create_ai_audio(ai_message_text)
 
     ai_message = Message(
@@ -191,19 +199,25 @@ async def end_call(
         text=ai_message_text,
         text_kor=None,
         audio_url=ai_audio_url,
-        timestamp=int(time.time()),
+        timestamp=datetime.now(KST).isoformat(),
     )
 
     append_messages_to_call(call_record, [user_message, ai_message])
 
-    print(call_record.messages)
-
     call_record.end_time = end_time
     call_record.updated_at = end_time
 
+    # DB 저장
     db.add(call_record)
     await db.commit()
-    # await db.refresh(call_record)
+    await db.refresh(call_record)
+
+    # RAG 벡터 저장
+    await store_call_history_embedding(
+        call_id=call_record.call_id,
+        user_id=call_record.call_history_id,
+        messages=[Message(**m) for m in call_record.messages],
+    )
 
     return EndCallResponse(
         callId=call_record.call_id,
