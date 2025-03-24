@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.main
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,6 +21,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,12 +38,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
 
+
 @Composable
 fun MainScreen(
-    // todo: 추후 기능 구현시 collectAsState 사용하는 코드로 변경할 것!!
     state: MainState,
     onIntent: (MainIntent) -> Unit
 ) {
+    //val state by viewModel.state.collectAsState()
+    var selectedDay by remember { mutableStateOf(state.selectedDay) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -48,9 +56,13 @@ fun MainScreen(
         UserInfoSection(state.userName) // 상단의 유저 이름, 등급 부분
         TodaysSentence(state.sentenceOriginal, state.sentenceTranslated) // 오늘의 문장
         WeeklyCallsSection(
-            selectedDay = state.selectedDay,
+            selectedDay = selectedDay, //state의 selectedDay -> screen 안에서 정의한 selectedDay로 변경
             callItems = state.items,
-            onIntent = onIntent
+            onIntent = {
+                if(it is MainIntent.OnDaySelected){
+                    selectedDay = it.day
+                }
+            }
         )
         //todo: 레벨업, Call Log 버튼, 전화 걸기 버튼 부분 추가
 
@@ -213,23 +225,29 @@ fun WeeklyCallsSection(
 
         // 전화 일정 출력 영역
         // 요일 선택 커스텀 탭
+
         DaySelector(
-            selectedDay,
             onDaySelected = { day ->
                 onIntent(MainIntent.OnDaySelected(day))
-            }
+                Log.d("selectedDay", "selectedDay: $day")
+             },
+            selectedDay
         )
 
         // todo: 스케줄 카드뷰
+        //dailyCallSchedule
     }
 }
 
 @Composable
 fun DaySelector(
-    selectedDay: String,
-    onDaySelected: (String) -> Unit
+    onDaySelected: (String) -> Unit,
+    selectedDay: String
 ) {
     val days = listOf("월", "화", "수", "목", "금", "토", "일")
+    val selectedIndex = days.indexOf(selectedDay)
+
+    // 애니메이션 효과 추가
 
     Row(
         modifier = Modifier
@@ -242,8 +260,6 @@ fun DaySelector(
             .padding(horizontal = 3.dp)
     ) {
         days.forEach { day ->
-            val isSelected = day == selectedDay
-
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -251,17 +267,19 @@ fun DaySelector(
                     .height(26.dp)
                     .padding(horizontal = 4.dp)
                     .background(
-                        if (isSelected) Color(0xFFA37BBD) else Color(0xB2F3E7F9),
+                        if (day == selectedDay) Color(0xFFA37BBD) else Color(0xB2F3E7F9),
                         shape = RoundedCornerShape(size = 50.dp)
                     )
-                    .clickable{onDaySelected(day)}
+                    .clickable {
+                        onDaySelected(day)
+                    }
                     .align(Alignment.CenterVertically),
                 Alignment.Center
             ){
                 Text(
                     text = day,
-                    fontWeight = if(isSelected) FontWeight(600) else FontWeight(400),
-                    color = if(isSelected) Color.White else Color.Black,
+                    fontWeight = if(day == selectedDay) FontWeight(600) else FontWeight(400),
+                    color = if(day == selectedDay) Color.White else Color.Black,
                     textAlign = TextAlign.Center
                 )
             }
@@ -288,7 +306,7 @@ fun MainScreenPreview() {
             sentenceOriginal = "With your talent and hard work, sky’s the limit!",
             sentenceTranslated = "너의 재능과 노력이라면, 한계란 없지!"
         ),
-        onIntent = {}
+        onIntent = { }
     )
 }
 

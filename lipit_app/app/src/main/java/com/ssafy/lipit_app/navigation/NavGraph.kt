@@ -1,6 +1,8 @@
 package com.ssafy.lipit_app.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -8,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ssafy.lipit_app.ui.screens.main.CallItem
 import com.ssafy.lipit_app.ui.screens.main.MainScreen
 import com.ssafy.lipit_app.ui.screens.main.MainState
+import com.ssafy.lipit_app.ui.screens.main.MainViewModel
 
 @Composable
 fun NavGraph(
@@ -17,9 +20,13 @@ fun NavGraph(
         navController = navController,
         startDestination = "main" // 로그인 이후 첫 진입화면으로 설정
     ){
-        composable("main"){ MainScreen(
-            state = dummyState,
-            onIntent = {} // 아무것도 하지 않음 (todo: 추후 수정 필요)
+        composable("main"){
+            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<MainViewModel>()
+            val state by viewModel.state.collectAsState()
+
+            MainScreen(
+                state = state,
+                onIntent = {viewModel.onIntent(it)}
             )
         }
 

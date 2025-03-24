@@ -11,8 +11,8 @@ data class MainState(
     val wordProgress: Int = 50,
     val attendanceCount: Int = 20,
     val attendanceTotal: Int = 20,
-    val sentenceOriginal: String="",
-    val sentenceTranslated: String = ""
+    val sentenceOriginal: String="With your talent and hard work, sky’s the limit!",
+    val sentenceTranslated: String = "너의 재능과 노력이라면, 한계란 없지!"
 )
 
 data class CallItem(
