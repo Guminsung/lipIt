@@ -39,8 +39,8 @@ val dummyState = MainState(
     userName = "Sarah",
     isLoading = false,
     selectedDay = "월",
-    items = listOf(
-        CallItem(1, "Harry Potter", "자유주제", "08:00")
+    callItems = listOf(
+        CallItem(1, "Harry Potter", "자유주제", "08:00", "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png", "월")
     ),
     sentenceProgress = 90,
     wordProgress = 50,

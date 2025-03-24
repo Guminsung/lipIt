@@ -1,6 +1,7 @@
 package com.ssafy.lipit_app.ui.screens.main
 
 import android.util.Log
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -27,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -36,6 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.ssafy.lipit_app.R
 
 
@@ -57,7 +61,7 @@ fun MainScreen(
         TodaysSentence(state.sentenceOriginal, state.sentenceTranslated) // 오늘의 문장
         WeeklyCallsSection(
             selectedDay = selectedDay, //state의 selectedDay -> screen 안에서 정의한 selectedDay로 변경
-            callItems = state.items,
+            callItems = state.callItems,
             onIntent = {
                 if(it is MainIntent.OnDaySelected){
                     selectedDay = it.day
@@ -225,7 +229,6 @@ fun WeeklyCallsSection(
 
         // 전화 일정 출력 영역
         // 요일 선택 커스텀 탭
-
         DaySelector(
             onDaySelected = { day ->
                 onIntent(MainIntent.OnDaySelected(day))
@@ -234,11 +237,102 @@ fun WeeklyCallsSection(
             selectedDay
         )
 
-        // todo: 스케줄 카드뷰
-        //dailyCallSchedule
+        // 스케줄 카드뷰
+        dailyCallSchedule(callItems)
     }
 }
 
+// 요일별 call 카드뷰
+@Composable
+fun dailyCallSchedule(callItems: List<CallItem>) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 2.dp)
+    ) {
+        // 배경 박스
+        Image(
+            painter = painterResource(id = R.drawable.main_weekly_calls_background),
+            contentDescription = "요일별 Calls 스케줄 카드",
+            contentScale = ContentScale.FillWidth,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+        )
+
+        // 내용
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                //todo: 현재는 임시로 패딩을 통해 위치 지정 했는데 시간 남으면
+                //todo: 박스랑 상대적인 위치를 고려해서 중앙 배치 수정하기!
+                .padding(top = 24.dp, start = 22.dp, end = 20.dp)
+        ) {
+            // url을 통해 이미지 받아오기
+            AsyncImage(
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(CircleShape),
+                model = callItems[0].imageUrl, //임시
+                contentDescription = "voice 프로필 사진"
+            )
+
+            Log.d("ImageCheck", "URL: ${callItems.getOrNull(0)?.imageUrl}")
+
+
+            Column(
+                modifier = Modifier
+                    .padding(start = 15.dp, end = 105.dp)
+                    .align(Alignment.CenterVertically)
+
+            ) {
+                // 보이스 이름
+                Text(
+                    text = callItems[0].name,
+                    style = TextStyle(
+                        fontSize = 16.sp,
+                        lineHeight = 15.sp,
+                        fontWeight = FontWeight(590),
+                        color = Color(0xFF000000))
+                )
+
+                // 대화 주제 (토픽)
+                Text(
+                    text = callItems[0].topic,
+                    style = TextStyle(
+                        fontSize = 15.sp,
+                        lineHeight = 15.sp,
+                        fontWeight = FontWeight(400),
+                        color = Color(0xFF5F5F61),
+
+                        )
+                )
+            }
+
+            // 정해진 call 시간
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Bottom)
+                    .padding(bottom = 7.dp)
+            ){
+                Text(
+                    text = "At " + callItems[0].time,
+                    style = TextStyle(
+                        fontSize = 12.sp,
+                        lineHeight = 15.sp,
+                        fontWeight = FontWeight(400),
+                        color = Color(0xFF5F5F61),
+                        //textAlign = TextAlign.End
+                    )
+                )
+            }
+
+
+        }
+    }
+}
+
+// 커스텀 탭 레이아웃
 @Composable
 fun DaySelector(
     onDaySelected: (String) -> Unit,
@@ -248,6 +342,12 @@ fun DaySelector(
     val selectedIndex = days.indexOf(selectedDay)
 
     // 애니메이션 효과 추가
+    // 슬라이딩 형식으로 배경 이동
+    val itemWidth = 41.dp // 박스 가로 길이
+    val animatedOffsetX by animateDpAsState(
+        targetValue = (selectedIndex * 48).dp,
+        label="offsetX"
+    )
 
     Row(
         modifier = Modifier
@@ -296,15 +396,15 @@ fun MainScreenPreview() {
         state = MainState(
             userName = "Sarah",
             selectedDay = "월",
-            items = listOf(
-                CallItem(id = 1, name = "Harry Potter", topic = "자유주제", time = "08:00")
+            callItems = listOf(
+                CallItem(id = 1, name = "Harry Potter", topic = "자유주제", time = "08:00", imageUrl = "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png", "월")
             ),
             sentenceProgress = 90,
             wordProgress = 50,
             attendanceCount = 20,
             attendanceTotal = 20,
             sentenceOriginal = "With your talent and hard work, sky’s the limit!",
-            sentenceTranslated = "너의 재능과 노력이라면, 한계란 없지!"
+            sentenceTranslated = "너의 재능과 노력이라면, 한계란 없지!",
         ),
         onIntent = { }
     )
