@@ -2,8 +2,11 @@ package com.ssafy.lipit_app.ui.screens.main
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,9 +26,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,14 +44,14 @@ fun MainScreen(
             .fillMaxSize()
             .background(Color(0xFFFDF8FF))
             .padding(horizontal = 20.dp, vertical = 60.dp)
-    ){
+    ) {
         UserInfoSection(state.userName) // 상단의 유저 이름, 등급 부분
         TodaysSentence(state.sentenceOriginal, state.sentenceTranslated) // 오늘의 문장
-//        WeeklyCallsSection(
-//            selectedDay = state.selectedDay,
-//            callItems = state.items,
-//            onIntentt = onIntent
-//        )
+        WeeklyCallsSection(
+            selectedDay = state.selectedDay,
+            callItems = state.items,
+            onIntent = onIntent
+        )
         //todo: 레벨업, Call Log 버튼, 전화 걸기 버튼 부분 추가
 
 
@@ -60,14 +65,13 @@ fun MainScreen(
 fun UserInfoSection(userName: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically
-    ){
+    ) {
         //  사용자 이름
         Text(
             text = "Hello, $userName",
             style = androidx.compose.ui.text.TextStyle(
                 fontSize = 20.sp,
                 lineHeight = 50.sp,
-                fontFamily = FontFamily(Font(R.font.sf_pro)),
                 fontWeight = FontWeight.Medium,
                 color = Color(0xFF000000),
             )
@@ -106,19 +110,19 @@ fun TodaysSentence(sentenceOriginal: String, sentenceTranslated: String) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(110.dp)
-            ) {
-                // 오늘의 문장 원문 + 번역 텍스트
+        ) {
+            // 오늘의 문장 원문 + 번역 텍스트
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
                     .align(Alignment.CenterVertically)
                     .padding(top = 21.dp, start = 27.dp, bottom = 21.dp, end = 6.dp)
-                ) {
+            ) {
                 Text(
                     text = sentenceOriginal,
                     style = TextStyle(
                         fontSize = 15.sp,
                         lineHeight = 20.sp,
-                        fontFamily = FontFamily(Font(R.font.sf_pro)),
                         fontWeight = FontWeight(400),
                         color = Color(0xFFFFFFFF),
                     )
@@ -131,7 +135,6 @@ fun TodaysSentence(sentenceOriginal: String, sentenceTranslated: String) {
                     style = TextStyle(
                         fontSize = 14.sp,
                         lineHeight = 20.sp,
-                        fontFamily = FontFamily(Font(R.font.sf_pro)),
                         fontWeight = FontWeight(700),
                         color = Color(0xFFFFFFFF),
                     )
@@ -147,6 +150,121 @@ fun TodaysSentence(sentenceOriginal: String, sentenceTranslated: String) {
                     .align(Alignment.Top)
                     .padding(start = 0.dp, top = 12.dp, bottom = 20.dp, end = 15.dp)
             )
+        }
+
+    }
+}
+
+// 주간 전화 일정 한 눈에 보기
+@Composable
+fun WeeklyCallsSection(
+    selectedDay: String,
+    callItems: List<CallItem>,
+    onIntent: (MainIntent) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .padding(top = 25.dp)
+    ) {
+        // 제목 + 버튼 영역
+        Row(
+            Modifier.padding(bottom = 14.dp)
+        ) {
+            Text(
+                text = "Weekly Calls",
+                style = TextStyle(
+                    fontSize = 25.sp,
+                    lineHeight = 50.sp,
+                    fontWeight = FontWeight(700),
+                    color = Color(0xFF000000),
+                )
+            )
+
+            // 편집 버튼
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Button(
+                    onClick = { /*todo: 전화 일정 편집 화면으로 넘어감*/ },
+                    Modifier
+                        .width(50.dp)
+                        .height(25.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFA37BBD)
+                    ),
+                    contentPadding = PaddingValues(0.dp) // 내부 여백 (기본 여백 제거해서 텍스트에 맞춰서 재설정)
+                ) {
+                    Text(
+                        text = "편집",
+                        style = TextStyle(
+                            fontSize = 12.sp,
+                            lineHeight = 15.sp,
+                            fontWeight = FontWeight(590),
+                            color = Color(0xFFFFFFFF),
+                            textAlign = TextAlign.Center
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+
+        }
+
+        // 전화 일정 출력 영역
+        // 요일 선택 커스텀 탭
+        DaySelector(
+            selectedDay,
+            onDaySelected = { day ->
+                onIntent(MainIntent.OnDaySelected(day))
+            }
+        )
+
+        // todo: 스케줄 카드뷰
+    }
+}
+
+@Composable
+fun DaySelector(
+    selectedDay: String,
+    onDaySelected: (String) -> Unit
+) {
+    val days = listOf("월", "화", "수", "목", "금", "토", "일")
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(36.dp)
+            .background(
+                color = Color(0xB2F3E7F9),
+                shape = RoundedCornerShape(size = 20.dp)
+            )
+            .padding(horizontal = 3.dp)
+    ) {
+        days.forEach { day ->
+            val isSelected = day == selectedDay
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .height(26.dp)
+                    .padding(horizontal = 4.dp)
+                    .background(
+                        if (isSelected) Color(0xFFA37BBD) else Color(0xB2F3E7F9),
+                        shape = RoundedCornerShape(size = 50.dp)
+                    )
+                    .clickable{onDaySelected(day)}
+                    .align(Alignment.CenterVertically),
+                Alignment.Center
+            ){
+                Text(
+                    text = day,
+                    fontWeight = if(isSelected) FontWeight(600) else FontWeight(400),
+                    color = if(isSelected) Color.White else Color.Black,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
 
     }
