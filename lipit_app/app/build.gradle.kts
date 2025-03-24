@@ -127,4 +127,7 @@ dependencies {
 
     // location
     implementation("com.google.android.gms:play-services-location:21.0.1")
+
+    // indicator
+    implementation("mx.platacard:compose-pager-indicator:0.0.8")
 }
