@@ -11,10 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.arizona.lipit.domain.auth.dto.MemberDto;
 import com.arizona.lipit.domain.auth.entity.Member;
 import com.arizona.lipit.domain.auth.repository.MemberRepository;
-import com.arizona.lipit.domain.onboarding.dto.CallScheduleRequestDto;
-import com.arizona.lipit.domain.onboarding.dto.CallScheduleResponseDto;
 import com.arizona.lipit.domain.onboarding.dto.UserInterestRequestDto;
-import com.arizona.lipit.domain.onboarding.service.CallScheduleService;
 import com.arizona.lipit.domain.onboarding.service.UserInterestService;
 import com.arizona.lipit.global.docs.onboarding.OnboardingApiSpec;
 import com.arizona.lipit.global.exception.CustomException;
@@ -29,34 +26,22 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/onboarding")
 public class OnboardingController implements OnboardingApiSpec {
 
-	private final CallScheduleService callScheduleService;
+	// CallScheduleService 주입 제거
 	private final UserInterestService userInterestService;
-	private final MemberRepository memberRepository; // 추가
+	private final MemberRepository memberRepository;
 
-	@PostMapping("/alarm")
-	public ResponseEntity<CommonResponse<CallScheduleResponseDto>> createCallSchedule(
-		@AuthenticationPrincipal UserDetails userDetails,
-		@Valid @RequestBody CallScheduleRequestDto requestDto) {
-
-		String email = userDetails.getUsername(); // 이메일 추출
-		Long memberId = memberRepository.findByEmail(email)
-			.map(Member::getMemberId)
-			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
-
-		CallScheduleResponseDto responseDto = callScheduleService.saveCallSchedule(memberId, requestDto);
-
-		return ResponseEntity.ok(CommonResponse.created("일정이 성공적으로 저장되었습니다.", responseDto));
-	}
+	// 일정 관련 엔드포인트 제거
+	// @PostMapping("/alarm") 메서드 전체 삭제
 
 	@PostMapping("/interesting")
 	public ResponseEntity<CommonResponse<MemberDto>> createUserInterest(
-		@AuthenticationPrincipal UserDetails userDetails,
-		@RequestBody UserInterestRequestDto requestDto) {
+			@AuthenticationPrincipal UserDetails userDetails,
+			@RequestBody UserInterestRequestDto requestDto) {
 
 		String email = userDetails.getUsername(); // 이메일 추출
 		Long memberId = memberRepository.findByEmail(email)
-			.map(Member::getMemberId)
-			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+				.map(Member::getMemberId)
+				.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
 		MemberDto memberDto = userInterestService.saveUserInterest(memberId, requestDto);
 
