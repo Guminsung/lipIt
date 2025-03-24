@@ -38,7 +38,7 @@ public class SwaggerConfig {
 	@Bean
 	public OpenAPI openApi() {
 		return new OpenAPI()
-			.addServersItem(new Server().url("/api"))
+			.addServersItem(new Server().url("/spring/api"))
 			.addSecurityItem(new SecurityRequirement().addList("Bearer Authentication"))
 			.components(new Components().addSecuritySchemes("Bearer Authentication", createApiKeyScheme()))
 			.info(apiInfo());
@@ -95,8 +95,8 @@ public class SwaggerConfig {
 	@Bean
 	public GroupedOpenApi scheduleApi() {
 		return GroupedOpenApi.builder()
-				.group("7. 일정 관리")
-				.pathsToMatch("/schedule/**")
-				.build();
+			.group("7. 일정 관리")
+			.pathsToMatch("/schedule/**")
+			.build();
 	}
 }
