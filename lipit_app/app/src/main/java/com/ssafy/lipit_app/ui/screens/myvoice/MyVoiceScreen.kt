@@ -2,8 +2,7 @@ package com.ssafy.lipit_app.ui.screens.myvoice
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,13 +14,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,15 +41,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.util.lerp
 import com.ssafy.lipit_app.R
 import mx.platacard.pagerindicator.PagerIndicator
-import mx.platacard.pagerindicator.PagerIndicatorOrientation
-import kotlin.math.absoluteValue
 
 @Composable
 fun MyVoiceScreen() {
 
+
+    var selectedTab by remember { mutableStateOf("Celebrity") }
     val pagerState = rememberPagerState(pageCount = { 10 })
 
     Column(
@@ -85,7 +86,7 @@ fun MyVoiceScreen() {
                     clip = false
                 }
                 .drawBehind {
-                    // 여러 개의 겹친 흰색 테두리로 흐릿한 효과 만들기
+                    // 여러 개의 겹친 흰색 테두리로 홀리 그림자 효과 만들기
                     for (i in 1..13) {
                         drawRoundRect(
                             color = Color.White.copy(alpha = 0.1f),
@@ -132,113 +133,60 @@ fun MyVoiceScreen() {
         }
 
         Spacer(modifier = Modifier.height(30.dp))
+
         // Celebrity Custom
         Row {
             Text(
                 text = "Celebrity",
                 fontSize = 20.sp,
-                color = Color.White
+                color = if (selectedTab == "Celebrity") Color.White else Color.White.copy(0.4f),
+                modifier = Modifier.clickable {
+                    // TODO:: Celebrity 선택 시 화면
+                    selectedTab = "Celebrity"
+                }
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
                 text = "Custom",
                 fontSize = 20.sp,
-                color = Color.White.copy(0.4f)
+                color = if (selectedTab == "Custom") Color.White else Color.White.copy(0.4f),
+                modifier = Modifier.clickable {
+                    // TODO:: Custom 선택 시 화면
+                    selectedTab = "Custom"
+                }
             )
         }
 
         Spacer(modifier = Modifier.height(26.dp))
 
-        HorizontalPager(state = pagerState) { page ->
-            Card(
-                Modifier
-                    .fillMaxWidth()
-                    .height(450.dp)
-                    .padding(horizontal = 16.dp)
-                    .graphicsLayer {
-                        val pageOffset = (
-                                (pagerState.currentPage - page) + pagerState
-                                    .currentPageOffsetFraction
-                                ).absoluteValue
-
-                        // We animate the alpha, between 50% and 100%
-                        alpha = lerp(
-                            start = 0.5f,
-                            stop = 1f,
-                            fraction = 1f - pageOffset.coerceIn(0f, 1f)
-                        )
-                    }
-                    .border(
-                        width = 1.dp,
-                        color = Color.White,
-                        shape = RoundedCornerShape(32.dp)
-                    ),
-                shape = RoundedCornerShape(32.dp),
-                backgroundColor = Color(0xFF9370DB).copy(0.7f)
-            ) {
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Spacer(modifier = Modifier.height(32.dp))
-
-                        // 3D 캐릭터 이미지
-                        Image(
-                            painter = painterResource(id = R.drawable.avatar_3d),
-                            contentDescription = "3D Avatar",
-                            modifier = Modifier
-                                .size(200.dp)
-                                .weight(1f),
-                            contentScale = ContentScale.Fit
-                        )
-
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 32.dp)
-                        ) {
-                            Text(
-                                text = "Harry Potter",
-                                color = Color.White,
-                                fontSize = 28.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Text(
-                                text = "the United Kingdom",
-                                color = Color.White.copy(alpha = 0.8f),
-                                fontSize = 16.sp
-                            )
-                        }
-                    }
+        when (selectedTab) {
+            "Celebrity" -> {
+                HorizontalPager(state = pagerState) { page ->
+                    CelebVoiceScreen(pagerState, page)
                 }
+
+                // PageIndicator는 Celebrity 탭에서만 표시
+                Spacer(modifier = Modifier.height(10.dp))
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    PagerIndicator(
+                        pagerState = pagerState,
+                        activeDotColor = Color(0xff503D75),
+                        dotColor = Color.LightGray,
+                        dotCount = 5,
+                        activeDotSize = 8.dp
+                    )
+                }
+            }
+
+            "Custom" -> {
+                // Custom 음성
+                CustomVoiceScreen()
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // PageIndicator 라이브러리 사용
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
-            PagerIndicator(
-                pagerState = pagerState,
-                activeDotColor = Color(0xff503D75),
-                dotColor = Color.LightGray,
-                dotCount = 5,
-                activeDotSize = 8.dp
-            )
-        }
     }
 }
 
