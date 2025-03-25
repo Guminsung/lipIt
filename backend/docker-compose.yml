@@ -7,9 +7,9 @@ services:
     container_name: lipit-spring-boot
     ports:
       - "8080:8080"
-    depends_on:
-      - postgres
-      - redis
+    # depends_on:
+    #   - postgres
+    #   - redis
     env_file:
       - .env # .env 파일을 불러오기
     environment:
@@ -28,62 +28,40 @@ services:
     container_name: lipit-fastapi
     ports:
       - "8000:8000"
-    env_file:
-      - .env
-    environment:
-      - MONGO_URI=${MONGO_URI}
-    depends_on:
-      - mongo
-      - postgres
+    # depends_on:
+    #   - postgres
     networks:
       - app-network
 
-  postgres:
-    image: postgres:latest
-    container_name: lipit-postgres
-    env_file:
-      - .env
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    ports:
-      - "5432:5432"
-    networks:
-      - app-network
-    volumes:
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - postgres_data:/var/lib/postgresql/data
+  # postgres:
+  #   image: postgres:latest
+  #   container_name: lipit-postgres
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     - POSTGRES_DB=${POSTGRES_DB}
+  #     - POSTGRES_USER=${POSTGRES_USER}
+  #     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  #   ports:
+  #     - "5432:5432"
+  #   networks:
+  #     - app-network
+  #   volumes:
+  #     - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+  #     - postgres_data:/var/lib/postgresql/data
 
-  mongo:
-    image: mongo:latest
-    container_name: lipit-mongo
-    restart: always
-    env_file:
-      - .env
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
-      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-    networks:
-      - app-network
-
-  redis:
-    image: redis:latest
-    container_name: lipit-redis
-    restart: always
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
-    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
-    networks:
-      - app-network
+  # redis:
+  #   image: redis:latest
+  #   container_name: lipit-redis
+  #   restart: always
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #     - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+  #   command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
+  #   networks:
+  #     - app-network
 
   nginx:
     image: nginx:latest
