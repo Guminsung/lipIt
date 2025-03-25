@@ -14,7 +14,8 @@ class Message(BaseModel):
 
 # 요청 DTO
 class StartCallRequest(BaseModel):
-    userId: int
+    callRequestId: int
+    memberId: int
     voiceId: int
     voiceAudioUrl: str
     topic: str

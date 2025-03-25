@@ -4,7 +4,14 @@ from app.api.v1.endpoint.call import (
     end_call_endpoint,
 )
 from app.core.base_router import BaseRouter
-from app.schema.call import AIMessageResponse, EndCallResponse, StartCallResponse
+from app.schema.call import (
+    AIMessageResponse,
+    EndCallRequest,
+    EndCallResponse,
+    StartCallRequest,
+    StartCallResponse,
+    UserMessageRequest,
+)
 from app.schema.common import APIResponse
 from app.exception.error_code import ErrorCode
 
@@ -14,7 +21,15 @@ router.api_doc(
     path="/",
     endpoint=create_call_endpoint,
     methods=["POST"],
+    request_model=StartCallRequest,
     response_model=APIResponse[StartCallResponse],
+    request_example={
+        "callRequestId": 1,
+        "memberId": 1,
+        "voiceId": 1,
+        "voiceAudioUrl": "https://s3_address.com/",
+        "topic": "SPORTS",
+    },
     success_model=StartCallResponse,
     success_example={
         "callId": 1,
@@ -35,8 +50,13 @@ router.api_doc(
     path="/{callId}/messages",
     endpoint=add_message_to_call_endpoint,
     methods=["PATCH"],
+    request_model=UserMessageRequest,
     response_model=APIResponse[AIMessageResponse],
     success_model=AIMessageResponse,
+    request_example={
+        "userMessage": "I don't like sports that much",
+        "userAudioUrl": "https://s3_address.com/",
+    },
     success_example={
         "aiMessage": "That sounds interesting!",
         "aiAudioUrl": "https://s3.amazonaws.com/ai_audio/response_1234567890.mp3",
@@ -59,8 +79,10 @@ router.api_doc(
     path="/{callId}/end",
     endpoint=end_call_endpoint,
     methods=["PATCH"],
+    request_model=EndCallRequest,
     response_model=APIResponse[EndCallResponse],
     success_model=EndCallResponse,
+    request_example={"userResponse": "Bye", "endReason": "USER_REQUEST"},
     success_example={
         "callId": 1,
         "endTime": "2025-03-14T14:25:45.678Z",

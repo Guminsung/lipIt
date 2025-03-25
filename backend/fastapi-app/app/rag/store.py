@@ -5,7 +5,7 @@ from app.rag.pinecone_client import get_index
 
 
 async def store_call_history_embedding(
-    call_id: int, user_id: int, messages: List[Message]
+    call_id: int, member_id: int, messages: List[Message]
 ):
     """통화 메시지 리스트를 하나의 텍스트로 묶어 벡터 저장 + 원문도 저장"""
     joined_text = "\n".join([f"{m.role}: {m.text}" for m in messages])
@@ -18,7 +18,7 @@ async def store_call_history_embedding(
                 "id": f"call-{call_id}",
                 "values": embedding,
                 "metadata": {
-                    "user_id": str(user_id),
+                    "member_id": str(member_id),
                     "call_id": str(call_id),
                     "content": joined_text,  # 검색 후 원문 활용 가능
                 },

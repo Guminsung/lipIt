@@ -3,7 +3,7 @@ from typing import List
 
 
 class RAGTestRequest(BaseModel):
-    userId: int
+    memberId: int
     query: str
 
 
