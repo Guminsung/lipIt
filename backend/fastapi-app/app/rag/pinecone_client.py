@@ -6,7 +6,7 @@ from pinecone import Pinecone, ServerlessSpec
 load_dotenv()
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
-INDEX_NAME = os.getenv("PINECONE_INDEX")
+INDEX_NAME = os.getenv("PINECONE_INDEX_PROD", os.getenv("PINECONE_INDEX_DEV"))
 
 
 def get_index():
