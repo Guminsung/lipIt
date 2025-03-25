@@ -48,7 +48,7 @@ import mx.platacard.pagerindicator.PagerIndicator
 fun MyVoiceScreen() {
 
 
-    var selectedTab by remember { mutableStateOf("Custom") }
+    var selectedTab by remember { mutableStateOf("Celebrity") }
     val pagerState = rememberPagerState(pageCount = { 10 })
 
     Column(
@@ -157,7 +157,7 @@ fun MyVoiceScreen() {
             )
         }
 
-        Spacer(modifier = Modifier.height(26.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         when (selectedTab) {
             "Celebrity" -> {
@@ -166,7 +166,7 @@ fun MyVoiceScreen() {
                 }
 
                 // PageIndicator는 Celebrity 탭에서만 표시
-                Spacer(modifier = Modifier.height(10.dp))
+//                Spacer(modifier = Modifier.height(2.dp))
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
