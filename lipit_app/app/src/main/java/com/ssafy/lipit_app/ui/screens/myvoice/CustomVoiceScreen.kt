@@ -7,16 +7,22 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,8 +50,31 @@ fun CustomVoiceScreen() {
      */
 
     // UI 그리는데 필요한 데이터 : 이미지, 음성 이름
-    Column {
-        CustomColumn(imageUrl = "", voiceName = "SSAFY")
+    Column(
+        modifier = Modifier
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        for (cnt in 1..3) {
+            CustomColumn(imageUrl = "", voiceName = "SSAFY")
+            Spacer(modifier = Modifier.height(15.dp))
+        }
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        FloatingActionButton(
+            onClick = { /*TODO*/ },
+            modifier = Modifier.padding(bottom = 16.dp),
+            backgroundColor = Color(0xffA37BBD),
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Add Custom Voice",
+                tint = Color(0xff603981),
+                modifier = Modifier.size(30.dp)
+            )
+        }
+
     }
 
 }

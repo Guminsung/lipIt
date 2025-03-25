@@ -48,7 +48,7 @@ import mx.platacard.pagerindicator.PagerIndicator
 fun MyVoiceScreen() {
 
 
-    var selectedTab by remember { mutableStateOf("Celebrity") }
+    var selectedTab by remember { mutableStateOf("Custom") }
     val pagerState = rememberPagerState(pageCount = { 10 })
 
     Column(
