@@ -38,7 +38,7 @@ public class SwaggerConfig {
 	@Bean
 	public OpenAPI openApi() {
 		return new OpenAPI()
-			.addServersItem(new Server().url("/api"))
+			.addServersItem(new Server().url("/spring/api"))
 			.addSecurityItem(new SecurityRequirement().addList("Bearer Authentication"))
 			.components(new Components().addSecuritySchemes("Bearer Authentication", createApiKeyScheme()))
 			.info(apiInfo());
@@ -63,31 +63,23 @@ public class SwaggerConfig {
 	@Bean
 	public GroupedOpenApi voiceApi() {
 		return GroupedOpenApi.builder()
-			.group("3. 설정 - 음성 관리")
+			.group("3. 음성 관리")
 			.pathsToMatch("/voices/**", "/users/voices/**")
 			.build();
 	}
 
 	@Bean
-	public GroupedOpenApi todaySentenceApi() {
+	public GroupedOpenApi scheduleApi() {
 		return GroupedOpenApi.builder()
-			.group("4. 오늘의 문장")
-			.pathsToMatch("/voices/**", "/users/voices/**")
-			.build();
-	}
-
-	@Bean
-	public GroupedOpenApi reportApi() {
-		return GroupedOpenApi.builder()
-			.group("5. 학습 리포트")
-			.pathsToMatch("/reports/**")
+			.group("4. 일정 관리")
+			.pathsToMatch("/schedule/**")
 			.build();
 	}
 
 	@Bean
 	public GroupedOpenApi fcmTestApi() {
 		return GroupedOpenApi.builder()
-			.group("6. FCM 테스트")
+			.group("5. FCM 테스트")
 			.pathsToMatch("/notifications/**")
 			.build();
 	}

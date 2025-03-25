@@ -39,7 +39,7 @@ spring:
 
 server:
   servlet:
-    context-path: /api
+    context-path: /spring/api
     encoding:
       charset: UTF-8
       enabled: true

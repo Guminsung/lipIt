@@ -9,7 +9,7 @@ class Message(BaseModel):
     text: str  # 메시지 내용
     text_kor: Optional[str] = None  # 한글 번역
     audio_url: Optional[str] = None  # 음성 파일 URL
-    timestamp: int  # 생성 시간
+    timestamp: str  # 생성 시간
 
 
 # 요청 DTO

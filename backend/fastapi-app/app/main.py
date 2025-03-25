@@ -19,6 +19,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
+    root_path="/fastapi",
     debug=True,
     lifespan=lifespan,
     title="[Lip It] REST API",

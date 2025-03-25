@@ -1,4 +1,3 @@
-# app/api/v1/call_routes.py
 from app.api.v1.endpoint.call import (
     create_call_endpoint,
     add_message_to_call_endpoint,

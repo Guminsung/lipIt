@@ -42,7 +42,7 @@ public class FcmWithDataService {
 	private String getAccessToken() throws IOException {
 		GoogleCredentials googleCredentials = GoogleCredentials
 			.fromStream(new ClassPathResource(Constants.FIREBASE_KEY_FILE).getInputStream())
-			.createScoped(List.of("https://www.googleapis.com/auth/firebase.messaging")); // ✅ 올바른 권한 설정
+			.createScoped(List.of("https://www.googleapis.com/auth/firebase.messaging")); // 올바른 권한 설정
 
 		googleCredentials.refreshIfExpired();
 		String token = googleCredentials.getAccessToken().getTokenValue();

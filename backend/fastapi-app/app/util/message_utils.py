@@ -35,4 +35,4 @@ def append_messages_to_call(
     call.messages = updated_messages  # 새 리스트로 재할당해야 변경 감지됨
 
     if update_timestamp:
-        call.updated_at = datetime.utcnow()
+        call.updated_at = datetime.now()
