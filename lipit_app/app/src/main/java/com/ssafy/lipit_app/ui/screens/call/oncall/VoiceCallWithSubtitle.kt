@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.call
+package com.ssafy.lipit_app.ui.screens.call.oncall
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
@@ -12,8 +12,8 @@ import androidx.compose.ui.unit.sp
 // Voice 버전 - 자막 O
 @Composable
 fun CallWithSubtitle(
-    state: OnCallState,
-    onIntent:(OnCallIntent) -> Unit
+    state: VoiceCallState,
+    onIntent:(VoiceCallIntent) -> Unit
 ) {
     // 1-1-1. 번역 ver
     turnOnTranslate(state)
@@ -22,7 +22,7 @@ fun CallWithSubtitle(
 }
 
 @Composable
-fun turnOnTranslate(state: OnCallState) {
+fun turnOnTranslate(state: VoiceCallState) {
     Column(
 
     ) {

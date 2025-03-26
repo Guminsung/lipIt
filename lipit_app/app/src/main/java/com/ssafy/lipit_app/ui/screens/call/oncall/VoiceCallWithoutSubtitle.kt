@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.call
+package com.ssafy.lipit_app.ui.screens.call.oncall
 
 import androidx.compose.runtime.Composable
 

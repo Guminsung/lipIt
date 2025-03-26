@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.call
+package com.ssafy.lipit_app.ui.screens.call.incoming
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
