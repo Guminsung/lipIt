@@ -1,4 +1,5 @@
 # app/graph/nodes/llm.py
+import json
 from langchain_openai import ChatOpenAI
 
 llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.8)
@@ -11,10 +12,13 @@ async def llm_node(state: dict) -> dict:
     chat_prompt = state["chat_prompt"]
     response = await llm.ainvoke(chat_prompt)
 
-    # 후처리: 'AI:' 제거
-    content = response.content.strip()
-    if content.lower().startswith("ai:"):
-        content = content[3:].lstrip()
+    try:
+        response_json = json.loads(response.content.strip())
+        state["ai_response"] = response_json.get("en")
+        state["ai_response_kor"] = response_json.get("ko")
+    except json.JSONDecodeError:
+        # 예외 처리: JSON 파싱 실패 시 전체 content 저장
+        state["ai_response"] = response.content.strip()
+        state["ai_response_kor"] = None
 
-    state["ai_response"] = content
     return state

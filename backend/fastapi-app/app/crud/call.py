@@ -1,7 +1,4 @@
 # app/crud/call.py (LangGraph 기반 재작성)
-import os
-from datetime import datetime, timezone, timedelta
-from dotenv import load_dotenv
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -30,12 +27,6 @@ from app.graph.nodes.memory import (
     safe_convert_message_to_dict,
 )
 
-load_dotenv()
-
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-S3_BASE_URL = "https://s3.amazonaws.com/ai_audio/"
-
-
 create_call_graph = build_create_call_graph()
 add_message_graph = build_add_message_graph()
 end_call_graph = build_end_call_graph()
@@ -56,8 +47,6 @@ async def create_call(db: AsyncSession, request: StartCallRequest) -> StartCallR
             500, "AI 응답 생성에 실패했습니다.", ErrorCode.CALL_AI_FAILED
         )
 
-    ai_text = result.get("ai_response")
-    ai_audio_url = result.get("ai_audio_url")
     ai_message = result["messages"][-1]
 
     new_call = Call(
@@ -75,7 +64,9 @@ async def create_call(db: AsyncSession, request: StartCallRequest) -> StartCallR
     return StartCallResponse(
         callId=new_call.call_id,
         startTime=new_call.start_time,
-        aiFirstMessage=ai_text,
+        aiMessage=result.get("ai_response"),
+        aiMessageKor=result.get("ai_response_kor"),
+        aiAudioUrl=result.get("ai_audio_url"),
     )
 
 
@@ -84,6 +75,9 @@ async def add_message_to_call(
 ) -> AIMessageResponse:
     result = await db.execute(select(Call).where(Call.call_id == callId))
     call_record = result.scalars().first()
+
+    if call_record.end_time is not None:
+        raise APIException(400, "이미 종료된 통화입니다.", ErrorCode.CALL_ALREADY_ENDED)
 
     if not call_record:
         raise APIException(
@@ -116,6 +110,7 @@ async def add_message_to_call(
 
     return AIMessageResponse(
         aiMessage=result.get("ai_response"),
+        aiMessageKor=result.get("ai_response_kor"),
         aiAudioUrl=result.get("ai_audio_url"),
     )
 
@@ -169,8 +164,9 @@ async def end_call(
     )
 
     return EndCallResponse(
-        callId=call_record.call_id,
         endTime=end_time,
         duration=duration,
-        aiEndMessage=result.get("ai_response"),
+        aiMessage=result.get("ai_response"),
+        aiMessageKor=result.get("ai_response_kor"),
+        aiAudioUrl=result.get("ai_audio_url"),
     )

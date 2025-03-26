@@ -15,10 +15,10 @@ from app.schema.call import (
 from app.schema.common import APIResponse
 from app.exception.error_code import ErrorCode
 
-router = BaseRouter(prefix="/api/calls", tags=["Calls"])
+router = BaseRouter(prefix="/api/calls", tags=["Call"])
 
 router.api_doc(
-    path="/",
+    path="",
     endpoint=create_call_endpoint,
     methods=["POST"],
     request_model=StartCallRequest,
@@ -33,8 +33,10 @@ router.api_doc(
     success_model=StartCallResponse,
     success_example={
         "callId": 1,
-        "startTime": "2025-03-14T14:00:00.000Z",
-        "aiFirstMessage": "Hi! Do you like sports?",
+        "startTime": "2025-03-14T14:20:30.123Z",
+        "aiMessage": "Hello! How are you doing? I heard you're a big sports enthusiast. What's your favorite sport to watch or play?",
+        "aiMessageKor": "안녕하세요! 어떻게 지내고 계신가요? 스포츠 애호가라고 들었는데요. 가장 좋아하는 스포츠는 무엇인가요?",
+        "aiAudioUrl": "https://dlxayir1dj7sa.cloudfront.net/audio/ff76e36c-b488-4f7c-9264-6c9b5670dba2.mp3",
     },
     errors={
         500: {
@@ -54,12 +56,13 @@ router.api_doc(
     response_model=APIResponse[AIMessageResponse],
     success_model=AIMessageResponse,
     request_example={
-        "userMessage": "I don't like sports that much",
-        "userAudioUrl": "https://s3_address.com/",
+        "userMessage": "I don't like sports that much.",
+        "userMessageKor": "저는 스포츠를 그다지 좋아하지 않습니다.",
     },
     success_example={
-        "aiMessage": "That sounds interesting!",
-        "aiAudioUrl": "https://s3.amazonaws.com/ai_audio/response_1234567890.mp3",
+        "aiMessage": "That's totally fine! Sports aren't for everyone. So, besides listening to music, what else do you enjoy doing in your free time?",
+        "aiMessageKor": "괜찮습니다! 스포츠가 모든 사람을 위한 것은 아닙니다. 그렇다면 음악을 듣는 것 외에도 여가 시간에 즐기는 것은 무엇인가요?",
+        "aiAudioUrl": "https://dlxayir1dj7sa.cloudfront.net/audio/bc789f57-732a-4d66-9256-55a5aa3cbfb4.mp3",
     },
     errors={
         404: {
@@ -82,12 +85,17 @@ router.api_doc(
     request_model=EndCallRequest,
     response_model=APIResponse[EndCallResponse],
     success_model=EndCallResponse,
-    request_example={"userMessage": "Bye", "endReason": "USER_REQUEST"},
+    request_example={
+        "userMessage": "I think that’s all for today.",
+        "userMessageKor": "오늘은 여기까지인 것 같습니다.",
+        "endReason": "USER_REQUEST",
+    },
     success_example={
-        "callId": 1,
         "endTime": "2025-03-14T14:25:45.678Z",
         "duration": 315,
-        "aiEndMessage": "It was great talking with you today! Have a wonderful day!",
+        "aiMessage": "Alright, sounds good! If you have any more questions in the future, feel free to reach out. Have a great day!",
+        "aiMessageKor": "좋아요, 좋아요! 앞으로 더 궁금한 점이 있으면 언제든지 질문해 주세요. 좋은 하루 되세요!",
+        "aiAudioUrl": "https://dlxayir1dj7sa.cloudfront.net/audio/65991ce5-5332-435a-8c23-4be6c92749a9.mp3",
     },
     errors={
         400: {
