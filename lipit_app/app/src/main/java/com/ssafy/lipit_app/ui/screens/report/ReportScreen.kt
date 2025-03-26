@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -61,7 +62,7 @@ fun ReportScreen() {
                 painter = painterResource(id = R.drawable.bg_myvoice),
                 contentScale = ContentScale.FillBounds
             )
-            .padding(24.dp)
+            .padding(top = 24.dp, start = 24.dp, end = 24.dp)
     ) {
         Text(
             text = "Reports",
@@ -209,12 +210,42 @@ fun ReportFront() {
     ) {
 
         Column {
-            Text(
-                text = "2025년 03월 20일",
-                color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom  // 여기에 baseline 정렬 추가
+            ) {
+                Text(
+                    text = "2025년 03월 20일",
+                    color = Color.White,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Row(
+                    verticalAlignment = Alignment.Bottom,
+                    modifier = Modifier.clickable {
+                        // TODO: ReportDetail로 이동
+
+                    }
+                ) {
+                    Text(
+                        "상세보기 ",
+                        color = Color.White.copy(0.3f),
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Image(
+                        painter = painterResource(id = R.drawable.btn_report_detail),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(18.dp)
+                    )
+                }
+
+            }
 
             Text(
                 "착신 통화 4분 20초",
