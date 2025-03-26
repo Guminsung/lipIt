@@ -4,11 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,17 +25,17 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallState
 @Composable
 fun TextCallwithOriginalOnly(state: TextCallState) {
     val chatMessages = state.messages
+    val scrollState = rememberScrollState()
 
     // 일단 리스트로 구현했으나 백 연동 시 다시 고려
-    LazyColumn(
-    modifier = Modifier
-    .fillMaxWidth()
-    .padding(top = 24.dp),
-    verticalArrangement = Arrangement.spacedBy(17.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(top = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(17.dp)
     ) {
-        items(chatMessages.size) { index ->
-            val message = chatMessages[index]
-
+        chatMessages.forEach { message  ->
             Column(
                 modifier = Modifier
                     .fillMaxWidth(),
