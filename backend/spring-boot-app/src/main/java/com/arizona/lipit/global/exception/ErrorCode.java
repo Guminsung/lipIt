@@ -62,7 +62,15 @@ public enum ErrorCode {
 
 	// 회원(Member) 관련 에러
 	MEMBER_ID_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER-001", "해당 ID를 가진 사용자를 찾을 수 없습니다."),
-	INVALID_FCM_TOKEN(HttpStatus.BAD_REQUEST, "FCM-001", "유효하지 않은 FCM 토큰 값입니다.");
+	INVALID_FCM_TOKEN(HttpStatus.BAD_REQUEST, "FCM-001", "유효하지 않은 FCM 토큰 값입니다."),
+	UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "AUTH-010", "권한이 없습니다."),
+
+	// 추가 에러 코드를 HttpStatus 타입으로 수정
+	BAD_REQUEST(HttpStatus.BAD_REQUEST, "VOICE-001", "필수 정보가 누락되었습니다."),
+	INVALID_FORMAT(HttpStatus.BAD_REQUEST, "VOICE-002", "음성 정보 형식이 올바르지 않습니다."),
+	CONFLICT(HttpStatus.CONFLICT, "VOICE-004", "이미 존재하는 음성 이름입니다."),
+	INVALID_URL(HttpStatus.BAD_REQUEST, "VOICE-005", "유효하지 않은 URL 형식입니다."),
+	URL_RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "VOICE-006", "제공된 URL에서 리소스를 찾을 수 없습니다.");
 	
 	private final HttpStatus status;
 	private final String errorCode;
