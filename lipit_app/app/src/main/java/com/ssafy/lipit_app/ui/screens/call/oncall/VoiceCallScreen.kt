@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.call
+package com.ssafy.lipit_app.ui.screens.call.oncall
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
@@ -40,8 +40,8 @@ import com.ssafy.lipit_app.R
 
 @Composable
 fun OnCallScreen(
-    state: OnCallState,
-    onIntent: (OnCallIntent) -> Unit
+    state: VoiceCallState,
+    onIntent: (VoiceCallIntent) -> Unit
 ) {
 
     Box(
@@ -225,7 +225,7 @@ fun CallActionButtons() {
 
 // Voice 버전 전화
 @Composable
-fun VoiceVersionCall(state: OnCallState, onIntent: (OnCallIntent) -> Unit) {
+fun VoiceVersionCall(state: VoiceCallState, onIntent: (VoiceCallIntent) -> Unit) {
     // 1-1. 자막 ver
     CallWithSubtitle(state, onIntent)
 
@@ -323,7 +323,7 @@ fun ModeChangeBtn(currentMode: String) {
 @Composable
 fun OnCallScreenPreview() {
     OnCallScreen(
-        state = OnCallState(
+        state = VoiceCallState(
             voiceName = "Harry Potter",
             leftTime = "04:23",
 

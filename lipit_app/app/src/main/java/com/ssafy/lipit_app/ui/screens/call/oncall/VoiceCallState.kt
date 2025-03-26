@@ -1,6 +1,6 @@
-package com.ssafy.lipit_app.ui.screens.call
+package com.ssafy.lipit_app.ui.screens.call.oncall
 
-data class OnCallState (
+data class VoiceCallState (
     val voiceName: String = "Harry Potter",
     val leftTime: String = "04:50",
 
