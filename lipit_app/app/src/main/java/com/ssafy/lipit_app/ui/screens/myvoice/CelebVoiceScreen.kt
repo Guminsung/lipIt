@@ -114,7 +114,8 @@ fun CelebVoiceScreen(pagerState: PagerState, page: Int) {
 
                     // 3D 캐릭터 이미지
                     Image(
-                        painter = painterResource(id = R.drawable.avatar_3d),
+//                        painter = painterResource(id = R.drawable.avatar_3d),
+                        painter = painterResource(id = R.drawable.bg_myvoice_card),
                         contentDescription = "3D Avatar",
                         modifier = Modifier
                             .size(200.dp)
