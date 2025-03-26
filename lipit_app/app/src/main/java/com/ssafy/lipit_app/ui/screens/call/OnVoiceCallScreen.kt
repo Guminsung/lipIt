@@ -75,7 +75,7 @@ fun OnCallScreen(
 
             // 통화 내용
             // 1. 보이스 버전일 경우
-            VoiceVersionCall()
+            VoiceVersionCall(state, onIntent)
 
             // todo: 2. 텍스트 버전일 경우 -> 디자인 마무리 후 추가 예정
 
@@ -146,6 +146,7 @@ fun CallActionButtons() {
                             .width(30.dp)
                             .height(30.dp),
                         tint = Color(0xFFFDF8FF)
+                        //todo: 클릭하면 CallWithSubtitle 켜기(원문만)
                     )
                 }
             }
@@ -224,26 +225,14 @@ fun CallActionButtons() {
 
 // Voice 버전 전화
 @Composable
-fun VoiceVersionCall() {
+fun VoiceVersionCall(state: OnCallState, onIntent: (OnCallIntent) -> Unit) {
     // 1-1. 자막 ver
-    CallWithSubtitle()
+    CallWithSubtitle(state, onIntent)
 
     // 1-2. no 자막 ver
     CallWithoutSubtitle()
 }
 
-// Voice 버전 - 자막 X
-@Composable
-fun CallWithoutSubtitle() {
-    // 1-2-1. 자막 없을 경우 번역 버튼 막기
-}
-
-// Voice 버전 - 자막 O
-@Composable
-fun CallWithSubtitle() {
-    // 1-1-1. 번역 ver
-    // 1-1-2. no 번역 ver
-}
 
 // 대화하는 AI 정보 (이름, 남은 시간)
 @Composable
