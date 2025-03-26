@@ -67,7 +67,7 @@ fun CallActionButtons(
                     Spacer(modifier = Modifier.height(30.dp))
 
                     // 자막 버튼
-                    val subtitleIcon = if(state.showSubtitle) R.drawable.oncall_off_subtitle_icon else R.drawable.oncall_on_subtitle_icon
+                    val subtitleIcon = if(state.showSubtitle) R.drawable.oncall_on_subtitle_icon else R.drawable.oncall_off_subtitle_icon
 
                     Icon(
                         painterResource(id = subtitleIcon),
@@ -75,22 +75,16 @@ fun CallActionButtons(
                         modifier = Modifier
                             .width(30.dp)
                             .height(30.dp)
-                            //클릭하면 CallWithSubtitle 켜기(원문만)
+
+                            //클릭하면 자막 켜기
                             .clickable {
                                 if (!state.showSubtitle) {
                                     onIntent(VoiceCallIntent.SubtitleOn(true))
                                 } else {
                                     onIntent(VoiceCallIntent.SubtitleOff(false))
                                 }
-                            }
-
-
-                        ,
+                            },
                         tint = Color(0xFFFDF8FF)
-
-                        //todo: -> state의 showSubtitle을 true / showTranslation false로 변경
-                        //todo: 클릭 시 자막 버튼 아이콘 바꾸기
-                        //todo: 클릭 시 번역 버튼 활성화
                     )
 
                     Spacer(modifier = Modifier.height(25.dp))
@@ -103,8 +97,21 @@ fun CallActionButtons(
                         contentDescription = "번역 켜기",
                         modifier = Modifier
                             .width(30.dp)
-                            .height(30.dp),
-                        tint = Color(0xFFFDF8FF)
+                            .height(30.dp)
+                            
+                            //클릭하면 번역 켜기
+                            .clickable (
+                                enabled = state.showSubtitle, // 번역 꺼져있으면 클릭 비활성화
+                                onClick = {
+                                    if (!state.showTranslation) {
+                                        onIntent(VoiceCallIntent.TranslationOn(true))
+                                    } else {
+                                        onIntent(VoiceCallIntent.TranslationOff(false))
+                                    }
+                                }
+                            ),
+                        // 자막 켜져 있으면 밝게 출력하고, 꺼져있으면 비활(어둡게 처리)
+                        tint = if(state.showSubtitle) Color(0xFFFDF8FF) else Color(0x66FDF8FF)
                     )
                 }
             }
