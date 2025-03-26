@@ -7,8 +7,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.ssafy.lipit_app.ui.screens.call.oncall.OnCallScreen
-import com.ssafy.lipit_app.ui.screens.call.oncall.VoiceCallViewModel
+import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallScreen
+import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallViewModel
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallScreen
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
 import com.ssafy.lipit_app.ui.screens.main.CallItem
 import com.ssafy.lipit_app.ui.screens.main.MainScreen
 import com.ssafy.lipit_app.ui.screens.main.MainState
@@ -20,7 +22,7 @@ fun NavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = "onCall" // 로그인 이후 첫 진입화면으로 설정
+        startDestination = "onTextCall" // 첫 진입 화면
     ){
         composable("main"){
             val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<MainViewModel>()
@@ -32,11 +34,21 @@ fun NavGraph(
             )
         }
 
-        composable("onCall") { // 테스트용
+        composable("onVoiceCall") {
             val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<VoiceCallViewModel>()
             val state by viewModel.state.collectAsState()
 
-            OnCallScreen(
+            VoiceCallScreen(
+                state = state,
+                onIntent = {viewModel.onIntent(it)}
+            )
+        }
+
+        composable("onTextCall") {
+            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<TextCallViewModel>()
+            val state by viewModel.state.collectAsState()
+
+            TextCallScreen(
                 state = state,
                 onIntent = {viewModel.onIntent(it)}
             )

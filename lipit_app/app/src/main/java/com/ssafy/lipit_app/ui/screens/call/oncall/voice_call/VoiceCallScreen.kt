@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.call.oncall
+package com.ssafy.lipit_app.ui.screens.call.oncall.voice_call
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -16,16 +16,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ssafy.lipit_app.R
-import com.ssafy.lipit_app.ui.screens.call.oncall.components.CallActionButtons
-import com.ssafy.lipit_app.ui.screens.call.oncall.components.CallInfoHeader
-import com.ssafy.lipit_app.ui.screens.call.oncall.components.ModeChangeButton
-import com.ssafy.lipit_app.ui.screens.call.oncall.components.Subtitle.CallWithSubtitleAndTranslate
-import com.ssafy.lipit_app.ui.screens.call.oncall.components.Subtitle.CallWithSubtitleOriginalOnly
-import com.ssafy.lipit_app.ui.screens.call.oncall.components.Subtitle.CallWithoutSubtitle
-
+import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.CallActionButtons
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.Subtitle.CallWithSubtitleAndTranslate
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.Subtitle.CallWithSubtitleOriginalOnly
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.Subtitle.CallWithoutSubtitle
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.VoiceCallHeader
 
 @Composable
-fun OnCallScreen(
+fun VoiceCallScreen(
     state: VoiceCallState,
     onIntent: (VoiceCallIntent) -> Unit
 ) {
@@ -56,10 +55,10 @@ fun OnCallScreen(
 
             Column {
                 // 텍스트 - 보이스 모드 전환 버튼
-                ModeChangeButton(state.CurrentMode)
+                ModeChangeButton(state.currentMode)
 
                 // 통화 정보 (상대방 정보)
-                CallInfoHeader(state.voiceName, state.leftTime)
+                VoiceCallHeader(state.voiceName, state.leftTime)
 
                 Spacer(modifier = Modifier.height(28.dp))
 
@@ -100,12 +99,12 @@ fun VoiceVersionCall(state: VoiceCallState, onIntent: (VoiceCallIntent) -> Unit)
 
 @Preview(showBackground = true)
 @Composable
-fun OnCallScreenPreview() {
-    OnCallScreen(
+fun VoiceCallScreenPreview() {
+    VoiceCallScreen(
         state = VoiceCallState(
             voiceName = "Harry Potter",
             leftTime = "04:50",
-            CurrentMode = "Voice",
+            currentMode = "Voice",
             AIMessageOriginal = "Hey! Long time no see! How have you been? Tell me something fun.",
             AIMessageTranslate = "오! 오랜만이야! 잘 지냈어? 재밌는 이야기 하나 해줘!",
             showSubtitle = false,

@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.call.oncall
+package com.ssafy.lipit_app.ui.screens.call.oncall.voice_call
 
 sealed interface VoiceCallIntent {
     //자막 이벤트

@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.call.oncall.components
+package com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -27,8 +27,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.ssafy.lipit_app.R
-import com.ssafy.lipit_app.ui.screens.call.oncall.VoiceCallIntent
-import com.ssafy.lipit_app.ui.screens.call.oncall.VoiceCallState
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallIntent
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallState
 
 // 하단 버튼 모음
 @Composable
@@ -171,7 +171,7 @@ fun CallActionButtons(
                 .clip(CircleShape)
                 .background(color = Color(0x1AFDF8FF))
                 .clickable {
-                    // todo: 자막 버튼 & 번역 버튼 출력
+                    // todo: 음성 보내기 기능 구현 필요
 
                 },
             contentAlignment = Alignment.Center
