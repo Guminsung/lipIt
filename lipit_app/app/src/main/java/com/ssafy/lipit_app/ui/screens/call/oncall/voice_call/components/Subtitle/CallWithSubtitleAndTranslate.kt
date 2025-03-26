@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.call.oncall.components.Subtitle
+package com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.Subtitle
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -12,7 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ssafy.lipit_app.ui.screens.call.oncall.VoiceCallState
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallState
 
 // 자막과 번역 둘 다 나오는 버전
 @Composable

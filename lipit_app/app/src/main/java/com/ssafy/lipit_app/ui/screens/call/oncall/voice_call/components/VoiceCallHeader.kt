@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.call.oncall.components
+package com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.sp
 
 // 대화하는 AI 정보 (이름, 남은 시간)
 @Composable
-fun CallInfoHeader(voiceName: String, leftTime: String) {
+fun VoiceCallHeader(voiceName: String, leftTime: String) {
     Column(
         modifier = Modifier
             .padding(top = 45.dp)

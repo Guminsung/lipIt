@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.call.oncall.components
+package com.ssafy.lipit_app.ui.screens.call.oncall
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -28,7 +27,6 @@ import com.ssafy.lipit_app.R
 fun ModeChangeButton(currentMode: String) {
     Box(
         modifier = Modifier
-            .padding(end = 23.dp)
             .fillMaxWidth(),
         contentAlignment = Alignment.CenterEnd
     ) {

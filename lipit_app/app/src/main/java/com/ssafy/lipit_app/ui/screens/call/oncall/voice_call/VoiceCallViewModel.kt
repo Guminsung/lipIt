@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.call.oncall
+package com.ssafy.lipit_app.ui.screens.call.oncall.voice_call
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -9,7 +9,7 @@ class VoiceCallViewModel : ViewModel() {
     private val _state = MutableStateFlow(VoiceCallState())
     val state: StateFlow<VoiceCallState> = _state
 
-    fun onIntent(intent:VoiceCallIntent){
+    fun onIntent(intent: VoiceCallIntent){
         when(intent){
             is VoiceCallIntent.SubtitleOn ->{ // 자막 O, 번역 X
                 _state.update {
