@@ -48,10 +48,11 @@ public class VoiceController {
         return ResponseEntity.ok(CommonResponse.ok("음성이 성공적으로 선택되었습니다.", responseDto));
     }
 
-    @PostMapping("/api/voices/recording")
+    @PostMapping("/voices/recording")
     public ResponseEntity<CommonResponse<RecordingVoiceResponseDto>> saveRecordingVoice(
-            @RequestBody RecordingVoiceRequestDto requestDto) {
-        RecordingVoiceResponseDto responseDto = voiceService.saveRecordingVoice(requestDto);
+            @RequestBody RecordingVoiceRequestDto requestDto,
+            @RequestParam Long memberId) {
+        RecordingVoiceResponseDto responseDto = voiceService.saveRecordingVoice(requestDto, memberId);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(CommonResponse.ok("요청이 성공적으로 처리되었습니다.", responseDto));

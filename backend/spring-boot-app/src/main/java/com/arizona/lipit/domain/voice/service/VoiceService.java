@@ -92,9 +92,9 @@ public class VoiceService {
     }
 
     @Transactional
-    public RecordingVoiceResponseDto saveRecordingVoice(RecordingVoiceRequestDto requestDto) {
+    public RecordingVoiceResponseDto saveRecordingVoice(RecordingVoiceRequestDto requestDto, Long memberId) {
         // 필수 필드 검증
-        if (requestDto.getMemberId() == null || requestDto.getVoiceName() == null || requestDto.getAudioUrl() == null) {
+        if (memberId == null || requestDto.getVoiceName() == null || requestDto.getAudioUrl() == null) {
             throw new CustomException(ErrorCode.BAD_REQUEST, "필수 정보가 누락되었습니다.");
         }
 
@@ -109,11 +109,11 @@ public class VoiceService {
         }
 
         // 사용자 존재 여부 확인
-        Member member = memberRepository.findById(requestDto.getMemberId())
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED_USER));
 
         // 중복 음성 이름 확인
-        List<MemberVoice> existingVoices = memberVoiceRepository.findAllVoicesByMemberId(requestDto.getMemberId());
+        List<MemberVoice> existingVoices = memberVoiceRepository.findAllVoicesByMemberId(memberId);
         boolean isDuplicate = existingVoices.stream()
                 .anyMatch(mv -> mv.getVoice().getVoiceName().equals(requestDto.getVoiceName()));
         
