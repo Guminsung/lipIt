@@ -1,5 +1,7 @@
 # app/graph/nodes/tts.py
+from app.core.config import GOOGLE_APPLICATION_CREDENTIALS
 from app.util.datetime_utils import now_kst
+from google.oauth2 import service_account
 from google.cloud import texttospeech
 from app.crud.audio import upload_bytes_to_s3
 
@@ -7,7 +9,11 @@ from app.crud.audio import upload_bytes_to_s3
 async def tts_node(state: dict) -> dict:
     text = state.get("ai_response", "기본 응답입니다.")
 
-    client = texttospeech.TextToSpeechClient()
+    credentials = service_account.Credentials.from_service_account_file(
+        GOOGLE_APPLICATION_CREDENTIALS
+    )
+
+    client = texttospeech.TextToSpeechClient(credentials=credentials)
 
     synthesis_input = texttospeech.SynthesisInput(text=text)
 
