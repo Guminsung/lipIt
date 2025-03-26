@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.call
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,6 +19,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,11 +37,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
 
+
 @Composable
 fun OnCallScreen(
     state: OnCallState,
     onIntent: (OnCallIntent) -> Unit
 ) {
+
     Box(
         modifier = Modifier
             .fillMaxWidth(),
@@ -89,34 +96,83 @@ fun OnCallScreen(
 // 하단 버튼 모음
 @Composable
 fun CallActionButtons() {
+    // 메뉴 버튼 펼침 여부
+    var isMenuExpanded by remember{ mutableStateOf(false) }
+
     Row(
         modifier = Modifier
             .padding(bottom = 60.dp)
             .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.SpaceAround, // 양쪽 끝 정렬
     ) {
-        // 메뉴
-        Box(
-            modifier = Modifier
-                .width(70.dp)
-                .height(70.dp)
-                .clip(CircleShape)
-                .background(color = Color(0x1AFDF8FF))
-                .clickable {
-                    // todo: 자막 버튼 & 번역 버튼 출력
-
-                },
-            contentAlignment = Alignment.Center
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Bottom
         ) {
-            Icon(
-                painterResource(id = R.drawable.oncall_menu_icon),
-                contentDescription = "메뉴",
-                Modifier
-                    .width(39.dp)
-                    .height(62.dp),
-                tint = Color(0xFFFDF8FF)
-            )
+            // 메뉴 -> 번역 / 자막 버튼 나타내기 (애니메이션 올라오기)
+            AnimatedVisibility(visible = isMenuExpanded){
+                Column(
+                    modifier = Modifier
+                        .width(70.dp)
+                        .height(200.dp)
+                        .padding(start = 5.dp, end = 5.dp)
+                        .background(
+                            color = Color(0x1AFDF8FF),
+                            shape = RoundedCornerShape(50.dp)
+                        ),
+                        //.offset(y = (-75).dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                   Spacer(modifier = Modifier.height(30.dp))
+
+                    // 번역 버튼
+                    Icon(
+                        painterResource(id = R.drawable.oncall_off_translate_icon),
+                        contentDescription = "번역 켜기",
+                        modifier = Modifier
+                            .width(30.dp)
+                            .height(30.dp),
+                        tint = Color(0xFFFDF8FF)
+                    )
+
+                    Spacer(modifier = Modifier.height(25.dp))
+
+                    // 자막 버튼
+                    Icon(
+                        painterResource(id = R.drawable.oncall_on_subtitle_icon),
+                        contentDescription = "자막 켜기",
+                        modifier = Modifier
+                            .width(30.dp)
+                            .height(30.dp),
+                        tint = Color(0xFFFDF8FF)
+                    )
+                }
+            }
+
+            // 메뉴
+            Box(
+                modifier = Modifier
+                    .width(70.dp)
+                    .height(70.dp)
+                    .clip(CircleShape)
+                    .background(color = Color(0x1AFDF8FF))
+                    .clickable {
+                        // 자막 버튼 & 번역 버튼 출력
+                        isMenuExpanded = !isMenuExpanded
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painterResource(id = R.drawable.oncall_menu_icon),
+                    contentDescription = "메뉴",
+                    Modifier
+                        .width(39.dp)
+                        .height(62.dp),
+                    tint = Color(0xFFFDF8FF)
+                )
+            }
+
         }
 
         // 통화 끊기
@@ -194,7 +250,7 @@ fun CallWithSubtitle() {
 fun InfoOfCall(voiceName: String, leftTime: String) {
     Column(
         modifier = Modifier
-            .padding(top = 60.dp)
+            .padding(top = 85.dp)
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
