@@ -15,7 +15,7 @@ from app.schema.call import (
 from app.schema.common import APIResponse
 from app.exception.error_code import ErrorCode
 
-router = BaseRouter(prefix="/api/calls", tags=["Calls"])
+router = BaseRouter(prefix="/api/calls", tags=["Call"])
 
 router.api_doc(
     path="/",

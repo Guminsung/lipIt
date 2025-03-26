@@ -1,7 +1,4 @@
 # app/crud/call.py (LangGraph 기반 재작성)
-import os
-from datetime import datetime, timezone, timedelta
-from dotenv import load_dotenv
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -29,12 +26,6 @@ from app.graph.nodes.memory import (
     convert_to_lc_message,
     safe_convert_message_to_dict,
 )
-
-load_dotenv()
-
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-S3_BASE_URL = "https://s3.amazonaws.com/ai_audio/"
-
 
 create_call_graph = build_create_call_graph()
 add_message_graph = build_add_message_graph()

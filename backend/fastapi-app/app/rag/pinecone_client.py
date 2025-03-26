@@ -1,13 +1,10 @@
 # app/graph/pinecone_client.py
-import os
-from dotenv import load_dotenv
 from pinecone import Pinecone, ServerlessSpec
 
+from app.core.config import INDEX_NAME, PINECONE_API_KEY
 
-load_dotenv()
-pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
-INDEX_NAME = os.getenv("PINECONE_INDEX_PROD", os.getenv("PINECONE_INDEX_DEV"))
+pc = Pinecone(api_key=PINECONE_API_KEY)
 
 
 def get_index():

@@ -6,12 +6,12 @@ from app.schema.call import Message
 from app.util.datetime_utils import iso_now_kst
 
 
-def convert_lc_message(m: BaseMessage) -> Message:
+def convert_lc_message(m: BaseMessage, audio_url: str = None) -> Message:
     return Message(
         type=m.type,
         content=m.content,
         content_kor=None,
-        audio_url=None,
+        audio_url=audio_url,
         timestamp=iso_now_kst(),
     )
 
@@ -43,11 +43,14 @@ def memory_node(state: dict) -> dict:
     """
     input_text = state.get("input")
     ai_response = state.get("ai_response")
+    ai_audio_url = state.get("ai_audio_url")
 
     state.setdefault("messages", [])
 
     if ai_response:
-        state["messages"].append(convert_lc_message(AIMessage(content=ai_response)))
+        state["messages"].append(
+            convert_lc_message(AIMessage(content=ai_response), ai_audio_url)
+        )
     elif input_text:
         state["messages"].append(convert_lc_message(HumanMessage(content=input_text)))
 
