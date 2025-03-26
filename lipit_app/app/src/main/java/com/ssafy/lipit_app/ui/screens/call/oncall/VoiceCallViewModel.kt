@@ -13,25 +13,25 @@ class VoiceCallViewModel : ViewModel() {
         when(intent){
             is VoiceCallIntent.SubtitleOn ->{ // 자막 O, 번역 X
                 _state.update {
-                    it.copy(showTranslation = true, showSubtitle = false)
+                    it.copy(showSubtitle = true, showTranslation = false)
                 }
             }
 
             is VoiceCallIntent.SubtitleOff -> { // 자막 X, 번역 X
                 _state.update {
-                    it.copy(showTranslation = false, showSubtitle = false)
+                    it.copy(showSubtitle = false, showTranslation = false)
                 }
             }
             
             is VoiceCallIntent.TranslationOff -> { // 자막 O, 번역 X
                 _state.update {
-                    it.copy(showTranslation = true, showSubtitle = false)
+                    it.copy(showSubtitle = true, showTranslation = false)
                 }
             }
             
             is VoiceCallIntent.TranslationOn -> { // 자막 O, 번역 O
                 _state.update {
-                    it.copy(showTranslation = true, showSubtitle = true)
+                    it.copy(showSubtitle = true, showTranslation = true)
                 }
             }
         }

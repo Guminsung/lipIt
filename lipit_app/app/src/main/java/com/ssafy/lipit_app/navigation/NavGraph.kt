@@ -8,7 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ssafy.lipit_app.ui.screens.call.oncall.OnCallScreen
-import com.ssafy.lipit_app.ui.screens.call.oncall.VoiceCallState
+import com.ssafy.lipit_app.ui.screens.call.oncall.VoiceCallViewModel
 import com.ssafy.lipit_app.ui.screens.main.CallItem
 import com.ssafy.lipit_app.ui.screens.main.MainScreen
 import com.ssafy.lipit_app.ui.screens.main.MainState
@@ -33,17 +33,12 @@ fun NavGraph(
         }
 
         composable("onCall") { // 테스트용
+            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<VoiceCallViewModel>()
+            val state by viewModel.state.collectAsState()
+
             OnCallScreen(
-                state = VoiceCallState(
-                    voiceName = "Harry Potter",
-                    leftTime = "04:50",
-                    CurrentMode = "Voice",
-                    AIMessageOriginal = "Hey! Long time no see! How have you been? Tell me something fun.",
-                    AIMessageTranslate = "오! 오랜만이야! 잘 지냈어? 재밌는 이야기 하나 해줘!",
-                    showSubtitle = false,
-                    showTranslation = false
-                ),
-                onIntent = {}
+                state = state,
+                onIntent = {viewModel.onIntent(it)}
             )
         }
 

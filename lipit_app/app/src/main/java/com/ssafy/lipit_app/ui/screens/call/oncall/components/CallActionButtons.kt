@@ -74,9 +74,20 @@ fun CallActionButtons(
                         contentDescription = "자막 켜기",
                         modifier = Modifier
                             .width(30.dp)
-                            .height(30.dp),
+                            .height(30.dp)
+                            //클릭하면 CallWithSubtitle 켜기(원문만)
+                            .clickable {
+                                if (!state.showSubtitle) {
+                                    onIntent(VoiceCallIntent.SubtitleOn(true))
+                                } else {
+                                    onIntent(VoiceCallIntent.SubtitleOff(false))
+                                }
+                            }
+
+
+                        ,
                         tint = Color(0xFFFDF8FF)
-                        //todo: 클릭하면 CallWithSubtitle 켜기(원문만)
+
                         //todo: -> state의 showSubtitle을 true / showTranslation false로 변경
                         //todo: 클릭 시 자막 버튼 아이콘 바꾸기
                         //todo: 클릭 시 번역 버튼 활성화
