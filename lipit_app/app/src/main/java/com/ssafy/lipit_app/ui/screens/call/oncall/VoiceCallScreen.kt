@@ -77,7 +77,7 @@ fun OnCallScreen(
                     .fillMaxSize(),
                 contentAlignment = Alignment.BottomCenter
             ) {
-                CallActionButtons()
+                CallActionButtons(state, onIntent)
             }
         }
 

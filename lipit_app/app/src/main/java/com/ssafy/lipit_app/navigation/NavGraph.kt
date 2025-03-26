@@ -7,6 +7,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.ssafy.lipit_app.ui.screens.call.oncall.OnCallScreen
+import com.ssafy.lipit_app.ui.screens.call.oncall.VoiceCallState
 import com.ssafy.lipit_app.ui.screens.main.CallItem
 import com.ssafy.lipit_app.ui.screens.main.MainScreen
 import com.ssafy.lipit_app.ui.screens.main.MainState
@@ -18,7 +20,7 @@ fun NavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = "main" // 로그인 이후 첫 진입화면으로 설정
+        startDestination = "onCall" // 로그인 이후 첫 진입화면으로 설정
     ){
         composable("main"){
             val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<MainViewModel>()
@@ -30,7 +32,22 @@ fun NavGraph(
             )
         }
 
-        //todo: 추후 다른 화면들 추가!
+        composable("onCall") { // 테스트용
+            OnCallScreen(
+                state = VoiceCallState(
+                    voiceName = "Harry Potter",
+                    leftTime = "04:50",
+                    CurrentMode = "Voice",
+                    AIMessageOriginal = "Hey! Long time no see! How have you been? Tell me something fun.",
+                    AIMessageTranslate = "오! 오랜만이야! 잘 지냈어? 재밌는 이야기 하나 해줘!",
+                    showSubtitle = false,
+                    showTranslation = false
+                ),
+                onIntent = {}
+            )
+        }
+
+        //todo: 추후 다른 화면들 여기 추가!
     }
 }
 
