@@ -1,12 +1,16 @@
 package com.ssafy.lipit_app.ui.screens.call.oncall.components.Subtitle
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.ui.screens.call.oncall.VoiceCallState
 
@@ -24,13 +28,16 @@ fun CallWithSubtitleAndTranslate(state: VoiceCallState) {
                 textAlign = TextAlign.Center,
             )
         )
+
+        Spacer(modifier = Modifier.height(7.dp))
+
         Text(
             text = state.AIMessageTranslate,
             style = TextStyle(
-                fontSize = 18.sp,
-                lineHeight = 28.sp,
-                fontWeight = FontWeight(400),
-                color = Color(0xFFE0E0E0),
+                fontSize = 17.sp,
+                lineHeight = 30.sp,
+                fontWeight = FontWeight(274),
+                color = Color(0xB2FDF8FF),
                 textAlign = TextAlign.Center,
             )
         )
