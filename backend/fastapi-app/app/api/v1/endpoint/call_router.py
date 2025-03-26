@@ -82,7 +82,7 @@ router.api_doc(
     request_model=EndCallRequest,
     response_model=APIResponse[EndCallResponse],
     success_model=EndCallResponse,
-    request_example={"userResponse": "Bye", "endReason": "USER_REQUEST"},
+    request_example={"userMessage": "Bye", "endReason": "USER_REQUEST"},
     success_example={
         "callId": 1,
         "endTime": "2025-03-14T14:25:45.678Z",

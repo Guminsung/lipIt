@@ -1,4 +1,4 @@
-# rag/search.py
+# app/graph/search.py
 from typing import List
 from app.rag.embedding import get_embedding
 from app.rag.pinecone_client import get_index
