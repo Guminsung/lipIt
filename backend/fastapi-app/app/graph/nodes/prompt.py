@@ -5,21 +5,28 @@ from langchain_core.messages import HumanMessage, AIMessage
 def prompt_node(state: dict) -> dict:
     """
     최근 메시지와 RAG 검색 결과를 기반으로 GPT에 줄 역할 분리 프롬프트 구성
+    JSON 형태의 영어 응답 + 한국어 번역을 포함하도록 구성
     """
     history = state.get("messages", [])[-10:]  # 최근 대화 기록
     context = state.get("retrieved_context", [])
     user_input = state.get("input")
 
-    # 시스템 프롬프트
+    # 시스템 프롬프트 구성
     system_prompt = (
-        "You are on a phone call with the user. "
-        "Speak naturally and casually in English.\n"
-        "Don't prefix your response with 'AI:' or any speaker label. "
-        "Just continue the conversation naturally."
+        "You are an AI speaking on a phone call with a user. "
+        "Respond naturally and casually in English.\n"
+        "Return the response in the following JSON format:\n\n"
+        "{\n"
+        '  "en": "Your English response here",\n'
+        '  "ko": "Translate it into polite, natural Korean as if you’re actually talking on the phone. Use 존댓말 (formal and respectful tone)."\n'
+        "}\n\n"
+        "Do not include any additional text outside the JSON.\n"
+        "Respond as if you're continuing a phone call."
     )
+
     if context:
         system_prompt += (
-            "\n\nRelevant information from previous conversations:\n"
+            "\nHere is relevant information from previous conversations:\n"
             + "\n".join(context)
         )
 
@@ -34,7 +41,8 @@ def prompt_node(state: dict) -> dict:
     # 마지막 user 입력 추가
     chat_prompt.append({"role": "user", "content": user_input})
 
-    # 역할 분리된 프롬프트 전달
+    # state에 저장
     state["chat_prompt"] = chat_prompt
-    state["user_input"] = user_input  # memory_node 저장용
+    state["user_input"] = user_input
+
     return state

@@ -3,14 +3,18 @@ def start_prompt_node(state: dict) -> dict:
     """
     전화 시작 시 topic 기반 system + user prompt 구성
     """
-    print("✅ start_prompt_node 실행됨 with topic:", state.get("topic"))
-
     topic = state.get("topic", "")
 
     system_prompt = (
-        "You are starting a phone call with the user. "
-        "Greet them naturally in English based on the given topic.\n"
-        "Don't prefix your response with 'AI:' or any speaker label."
+        "You are starting a phone call with the user.\n"
+        "Respond naturally in English based on the topic.\n"
+        "Then translate your message into Korean.\n"
+        "Return your response strictly in the following JSON format:\n\n"
+        "{\n"
+        '  "en": "Your natural English response",\n'
+        '  "ko": "Translate it into polite, natural Korean as if you’re actually talking on the phone. Use 존댓말 (formal and respectful tone)."\n'
+        "}\n\n"
+        "Do not include any additional text outside the JSON."
     )
 
     user_prompt = f"Start a phone conversation about this topic: {topic}"

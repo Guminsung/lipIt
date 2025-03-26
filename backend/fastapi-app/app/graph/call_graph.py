@@ -24,6 +24,7 @@ class CallState(TypedDict, total=False):
     topic: Optional[str]
     messages: List[Union[BabylMessage, dict]]  # LangChain 메시지 or dict
     ai_response: str
+    ai_response_kor: str
     ai_audio_url: str
     chat_prompt: List[dict]  # 역할 분리 프롬프트
     retrieved_context: List[str]  # RAG 결과

@@ -20,7 +20,6 @@ async def store_call_history_embedding(
                 "values": embedding,
                 "metadata": {
                     "member_id": str(member_id),
-                    "call_id": str(call_id),
                     "content": joined_text,  # 검색 후 원문 활용 가능
                 },
             }
