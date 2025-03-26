@@ -3,8 +3,10 @@ package com.ssafy.lipit_app.ui.screens.call.oncall.text_call
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.ChatMessage
+import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.TextCallFooter
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.TextCallHeader
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.Translate.TextCallWithTranslate
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.Translate.TextCallwithOriginalOnly
@@ -43,7 +46,7 @@ fun TextCallScreen(
 
         Column(
             modifier = Modifier
-                .padding(top = 55.dp, start = 20.dp, end = 20.dp)
+                .padding(top = 55.dp, start = 20.dp, end = 20.dp, bottom = 40.dp)
                 .fillMaxSize()
         ) {
             // 모드 변경
@@ -53,9 +56,15 @@ fun TextCallScreen(
             TextCallHeader(state.voiceName, state.leftTime)
 
             // 대화 내역(채팅 ver.)
-            TextVersionCall(state, onIntent)
+            Box(
+                modifier = Modifier.weight(1f)) {
+                TextVersionCall(state, onIntent)
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
 
             // 하단 영역 (텍스트 입력 공간, 번역 여부 및 텍스트 보내기 버튼)
+            TextCallFooter(state.inputText, state.showTranslation)
         }
     }
 }
@@ -109,7 +118,7 @@ fun TextCallScreenPreview(){
             currentMode = "Text",
             messages = sampleChatMessages,
             inputText = "",
-             showTranslation = false
+             showTranslation = true
         ),
         onIntent = {}
     )
