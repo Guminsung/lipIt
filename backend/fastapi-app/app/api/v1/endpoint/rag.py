@@ -5,7 +5,7 @@ from app.schema.rag import RAGTestRequest, RAGTestResponse
 
 async def test_rag_memory_search(request: RAGTestRequest):
     results = await search_relevant_call_memory(
-        user_id=request.userId, query=request.query
+        member_id=request.memberId, query=request.query
     )
     return APIResponse(
         status=200,

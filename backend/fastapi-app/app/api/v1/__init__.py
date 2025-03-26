@@ -1,5 +1,5 @@
-from app.api.v1.endpoint.call_route import router as call_router
-from app.api.v1.endpoint.rag_route import router as rag_router
+from app.api.v1.endpoint.call_router import router as call_router
+from app.api.v1.endpoint.rag_router import router as rag_router
 
 
 def get_routers():

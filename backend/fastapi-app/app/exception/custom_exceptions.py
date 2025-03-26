@@ -1,9 +1,4 @@
 # app/exception/custom_exceptions.py
-
-from fastapi import HTTPException
-from starlette.status import HTTP_400_BAD_REQUEST
-
-
 from fastapi import HTTPException
 
 

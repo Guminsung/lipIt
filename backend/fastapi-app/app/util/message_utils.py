@@ -6,6 +6,7 @@ from datetime import datetime
 
 from app.model.call import Call
 from app.schema.call import Message
+from app.util.datetime_utils import now_kst
 
 
 def append_messages_to_call(
@@ -35,4 +36,4 @@ def append_messages_to_call(
     call.messages = updated_messages  # 새 리스트로 재할당해야 변경 감지됨
 
     if update_timestamp:
-        call.updated_at = datetime.now()
+        call.updated_at = now_kst()

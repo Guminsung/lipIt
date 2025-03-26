@@ -5,6 +5,13 @@ from app.api.v1 import get_routers
 from app.db.session import init_db
 from app.exception.custom_exceptions import APIException
 from app.util.docs.error_code_reference import get_error_code_reference
+from app.core.scheduler import (
+    init_scheduler,
+    shutdown_scheduler,
+    crawl_news_job,
+    crawl_weather_job,
+)
+from app.core.logging import setup_logging
 
 import logging
 
@@ -14,8 +21,31 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """애플리케이션 시작 시 DB 테이블 생성"""
+    # 로깅 설정
+    setup_logging()
+    logger.info("서버 시작 중...")
+
+    # DB 초기화
     await init_db()
+
+    # 초기 크롤링 실행
+    # try:
+    # await crawl_news_job()
+    # logger.info("초기 뉴스 크롤링 완료")
+
+    # 날씨 크롤링 추가
+    # await crawl_weather_job()
+    # logger.info("초기 날씨 크롤링 완료")
+    # except Exception as e:
+    #     logger.error(f"초기 크롤링 오류: {str(e)}")
+
+    # 스케줄러 초기화
+    init_scheduler()
+
     yield
+
+    # 서버 종료 시 스케줄러 종료
+    shutdown_scheduler()
 
 
 app = FastAPI(

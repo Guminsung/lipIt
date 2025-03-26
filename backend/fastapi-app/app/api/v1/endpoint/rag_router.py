@@ -2,14 +2,15 @@ from app.api.v1.endpoint.rag import test_rag_memory_search
 from app.core.base_router import BaseRouter
 from app.exception.error_code import ErrorCode
 from app.schema.common import APIResponse
-from app.schema.rag import RAGTestResponse
+from app.schema.rag import RAGTestRequest, RAGTestResponse
 
-router = BaseRouter(prefix="/rag", tags=["RAG"])
+router = BaseRouter(prefix="/api/rag", tags=["RAG"])
 
 router.api_doc(
     path="/test",
     endpoint=test_rag_memory_search,
     methods=["POST"],
+    request_model=RAGTestRequest,
     response_model=APIResponse[RAGTestResponse],
     success_model=RAGTestResponse,
     success_example={

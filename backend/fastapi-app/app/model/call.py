@@ -5,9 +5,9 @@ from app.db.session import Base
 
 class Call(Base):
     __tablename__ = "call"
-
     call_id = Column(BigInteger, primary_key=True, autoincrement=True)
-    call_history_id = Column(BigInteger, nullable=False)  # 통화 기록 ID
+    call_request_id = Column(BigInteger, nullable=False)  # 통화 기록 ID
+    member_id = Column(BigInteger, nullable=False)
     messages = Column(JSONB, nullable=True)  # 대화 메시지 (JSONB 형식)
     start_time = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
