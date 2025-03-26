@@ -12,8 +12,8 @@ data class VoiceCallState (
     val AIMessageTranslate: String = "",
 
     // 자막&번역 출력 여부
-    val showSubtitle: Boolean,
-    val showTranslation: Boolean
+    val showSubtitle: Boolean = false,
+    val showTranslation: Boolean = false
     
     // 대화 내용 - 텍스트(채팅) 모드
 ) {
