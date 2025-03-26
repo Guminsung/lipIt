@@ -1,31 +1,19 @@
-package com.ssafy.lipit_app.ui.screens.call.oncall
+package com.ssafy.lipit_app.ui.screens.call.oncall.components.Subtitle
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.Text
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import com.ssafy.lipit_app.ui.screens.call.oncall.VoiceCallState
 
-// Voice 버전 - 자막 O
+// 자막 원문만 나오는 버전
 @Composable
-fun CallWithSubtitle(
-    state: VoiceCallState,
-    onIntent:(VoiceCallIntent) -> Unit
-) {
-    // 1-1-1. 번역 ver
-    turnOnTranslate(state)
-
-    // 1-1-2. no 번역 ver
-}
-
-@Composable
-fun turnOnTranslate(state: VoiceCallState) {
-    Column(
-
-    ) {
+fun CallWithSubtitleOriginalOnly(state: VoiceCallState) {
+    Column {
         Text(
             text = state.AIMessageOriginal,
             style = TextStyle(
@@ -33,7 +21,6 @@ fun turnOnTranslate(state: VoiceCallState) {
                 lineHeight = 30.sp,
                 fontWeight = FontWeight(590),
                 color = Color(0xFFFDF8FF),
-
                 textAlign = TextAlign.Center,
             )
         )

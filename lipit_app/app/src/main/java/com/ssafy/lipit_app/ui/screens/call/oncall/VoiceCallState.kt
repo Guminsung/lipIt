@@ -9,7 +9,13 @@ data class VoiceCallState (
 
     // 대화 내용 - 보이스 모드
     val AIMessageOriginal: String = "",
-    val AIMessageTranslate: String = ""
+    val AIMessageTranslate: String = "",
+
+    // 자막&번역 출력 여부
+    val showSubtitle: Boolean,
+    val showTranslation: Boolean
     
     // 대화 내용 - 텍스트(채팅) 모드
-)
+) {
+
+}
