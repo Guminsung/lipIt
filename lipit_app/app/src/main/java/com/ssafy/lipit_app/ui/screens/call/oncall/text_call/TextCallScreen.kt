@@ -109,7 +109,7 @@ fun TextCallScreenPreview(){
             currentMode = "Text",
             messages = sampleChatMessages,
             inputText = "",
-             showTranslation = true
+             showTranslation = false
         ),
         onIntent = {}
     )
