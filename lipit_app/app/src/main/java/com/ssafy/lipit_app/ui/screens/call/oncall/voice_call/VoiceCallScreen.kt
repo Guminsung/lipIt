@@ -107,8 +107,8 @@ fun VoiceCallScreenPreview() {
             currentMode = "Voice",
             AIMessageOriginal = "Hey! Long time no see! How have you been? Tell me something fun.",
             AIMessageTranslate = "오! 오랜만이야! 잘 지냈어? 재밌는 이야기 하나 해줘!",
-            showSubtitle = false,
-            showTranslation = false
+            showSubtitle = true,
+            showTranslation = true
         ),
         onIntent = {}
     )

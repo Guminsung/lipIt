@@ -17,6 +17,8 @@ import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.ChatMessage
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.TextCallHeader
+import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.Translate.TextCallWithTranslate
+import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.Translate.TextCallwithOriginalOnly
 
 @Composable
 fun TextCallScreen(
@@ -51,9 +53,19 @@ fun TextCallScreen(
             TextCallHeader(state.voiceName, state.leftTime)
 
             // 대화 내역(채팅 ver.)
+            TextVersionCall(state, onIntent)
 
             // 하단 영역 (텍스트 입력 공간, 번역 여부 및 텍스트 보내기 버튼)
         }
+    }
+}
+
+@Composable
+fun TextVersionCall(state: TextCallState, onIntent: (TextCallIntent) -> Unit) {
+    // 번역 여부에 따라 UI 달라짐
+    when{
+        state.showTranslation -> TextCallWithTranslate(state)
+        else -> TextCallwithOriginalOnly(state)
     }
 }
 
@@ -61,7 +73,7 @@ fun TextCallScreen(
 @Preview(showBackground = true)
 @Composable
 fun TextCallScreenPreview(){
-    // 테스트용 chat 리스트 -> 기능 구현 시 삭제하기!
+// 테스트용 chat 리스트 -> 기능 구현 시 삭제하기!
     val sampleChatMessages = listOf(
         ChatMessage(
             text = "Hey! Long time no see! How have you been?",
@@ -90,7 +102,6 @@ fun TextCallScreenPreview(){
         )
     )
 
-
     TextCallScreen(
         state = TextCallState(
             voiceName = "Harry Potter",
@@ -98,7 +109,7 @@ fun TextCallScreenPreview(){
             currentMode = "Text",
             messages = sampleChatMessages,
             inputText = "",
-             showTranslation = false
+             showTranslation = true
         ),
         onIntent = {}
     )
