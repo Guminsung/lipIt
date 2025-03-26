@@ -3,11 +3,11 @@ from datetime import datetime
 from typing import Optional
 
 
-# AI의 첫 메시지 형식
+# 메시지 형식
 class Message(BaseModel):
-    role: str  # "ai" 또는 "user"
-    text: str  # 메시지 내용
-    text_kor: Optional[str] = None  # 한글 번역
+    type: str  # "ai" 또는 "user"
+    content: str  # 메시지 내용
+    content_kor: Optional[str] = None  # 한글 번역
     audio_url: Optional[str] = None  # 음성 파일 URL
     timestamp: str  # 생성 시간
 
@@ -42,7 +42,8 @@ class AIMessageResponse(BaseModel):
 
 
 class EndCallRequest(BaseModel):
-    userResponse: str
+    userMessage: str
+    userMessageKor: Optional[str] = None
     endReason: str  # 예: "USER_REQUEST", "TIMEOUT", "AI_DECISION"
 
 
