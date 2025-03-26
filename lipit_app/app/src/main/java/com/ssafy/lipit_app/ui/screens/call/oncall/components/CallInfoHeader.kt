@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.sp
 fun CallInfoHeader(voiceName: String, leftTime: String) {
     Column(
         modifier = Modifier
-            .padding(top = 85.dp)
+            .padding(top = 45.dp)
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

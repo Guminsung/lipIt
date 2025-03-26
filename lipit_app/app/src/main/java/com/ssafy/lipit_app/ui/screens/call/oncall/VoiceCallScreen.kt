@@ -2,8 +2,11 @@ package com.ssafy.lipit_app.ui.screens.call.oncall
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -46,21 +49,27 @@ fun OnCallScreen(
         // 화면 구성 요소
         Box(
             modifier = Modifier
-                .padding(top = 55.dp)
+                .padding(top = 55.dp, start = 20.dp, end = 20.dp)
                 .fillMaxSize(),
 
             ) {
-            // 텍스트 - 보이스 모드 전환 버튼
-            ModeChangeButton(state.CurrentMode)
 
-            // 통화 정보 (상대방 정보)
-            CallInfoHeader(state.voiceName, state.leftTime)
+            Column {
+                // 텍스트 - 보이스 모드 전환 버튼
+                ModeChangeButton(state.CurrentMode)
 
-            // 통화 내용
-            // 1. 보이스 버전일 경우
-            VoiceVersionCall(state, onIntent)
+                // 통화 정보 (상대방 정보)
+                CallInfoHeader(state.voiceName, state.leftTime)
 
-            // todo: 2. 텍스트 버전일 경우 -> 디자인 마무리 후 추가 예정
+                Spacer(modifier = Modifier.height(28.dp))
+
+                // 통화 내용
+                // Version 1. 보이스 버전일 경우
+                VoiceVersionCall(state, onIntent)
+
+                // todo: Version 2. 텍스트 버전일 경우
+            }
+
 
             // 하단 버튼들 (메뉴 / 통화 끊기 / 음성 보내기)
             Box(
@@ -77,6 +86,7 @@ fun OnCallScreen(
 }
 
 // Voice 버전 전화
+// 번역 & 자막 선택 상태에 따라서 UI 다르게 불러옴
 @Composable
 fun VoiceVersionCall(state: VoiceCallState, onIntent: (VoiceCallIntent) -> Unit) {
     when {
