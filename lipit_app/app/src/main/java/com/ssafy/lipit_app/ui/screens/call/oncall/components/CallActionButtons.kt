@@ -27,10 +27,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.call.oncall.VoiceCallIntent
+import com.ssafy.lipit_app.ui.screens.call.oncall.VoiceCallState
 
 // 하단 버튼 모음
 @Composable
-fun CallActionButtons() {
+fun CallActionButtons(
+    state: VoiceCallState,
+    onIntent: (VoiceCallIntent) -> Unit
+) {
     // 메뉴 버튼 펼침 여부
     var isMenuExpanded by remember{ mutableStateOf(false) }
 
@@ -62,8 +67,10 @@ fun CallActionButtons() {
                     Spacer(modifier = Modifier.height(30.dp))
 
                     // 자막 버튼
+                    val subtitleIcon = if(state.showSubtitle) R.drawable.oncall_off_subtitle_icon else R.drawable.oncall_on_subtitle_icon
+
                     Icon(
-                        painterResource(id = R.drawable.oncall_on_subtitle_icon),
+                        painterResource(id = subtitleIcon),
                         contentDescription = "자막 켜기",
                         modifier = Modifier
                             .width(30.dp)
@@ -78,8 +85,10 @@ fun CallActionButtons() {
                     Spacer(modifier = Modifier.height(25.dp))
 
                     // 번역 버튼
+                    val descriptionIcon = if(state.showTranslation) R.drawable.oncall_on_translate_icon else R.drawable.oncall_off_translate_icon
+
                     Icon(
-                        painterResource(id = R.drawable.oncall_off_translate_icon),
+                        painterResource(id = descriptionIcon),
                         contentDescription = "번역 켜기",
                         modifier = Modifier
                             .width(30.dp)
