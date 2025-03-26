@@ -45,7 +45,7 @@ public class Member {
 	@Column
 	private String interest;
 
-	@Column(columnDefinition = "TEXT")
+	@Column
 	private Long selectedVoiceId;
 
 	@Column
