@@ -61,18 +61,6 @@ fun CallActionButtons() {
                 ) {
                     Spacer(modifier = Modifier.height(30.dp))
 
-                    // 번역 버튼
-                    Icon(
-                        painterResource(id = R.drawable.oncall_off_translate_icon),
-                        contentDescription = "번역 켜기",
-                        modifier = Modifier
-                            .width(30.dp)
-                            .height(30.dp),
-                        tint = Color(0xFFFDF8FF)
-                    )
-
-                    Spacer(modifier = Modifier.height(25.dp))
-
                     // 자막 버튼
                     Icon(
                         painterResource(id = R.drawable.oncall_on_subtitle_icon),
@@ -82,6 +70,21 @@ fun CallActionButtons() {
                             .height(30.dp),
                         tint = Color(0xFFFDF8FF)
                         //todo: 클릭하면 CallWithSubtitle 켜기(원문만)
+                        //todo: -> state의 showSubtitle을 true / showTranslation false로 변경
+                        //todo: 클릭 시 자막 버튼 아이콘 바꾸기
+                        //todo: 클릭 시 번역 버튼 활성화
+                    )
+
+                    Spacer(modifier = Modifier.height(25.dp))
+
+                    // 번역 버튼
+                    Icon(
+                        painterResource(id = R.drawable.oncall_off_translate_icon),
+                        contentDescription = "번역 켜기",
+                        modifier = Modifier
+                            .width(30.dp)
+                            .height(30.dp),
+                        tint = Color(0xFFFDF8FF)
                     )
                 }
             }
