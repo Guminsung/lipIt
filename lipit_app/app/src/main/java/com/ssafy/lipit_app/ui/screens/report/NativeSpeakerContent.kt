@@ -27,7 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-val purpleDark = Color(0xFF8B54A2)
+val purpleDark = Color(0xFF603981)
 val purpleLight = Color(0xFFE7D1F4)
 
 @Composable
