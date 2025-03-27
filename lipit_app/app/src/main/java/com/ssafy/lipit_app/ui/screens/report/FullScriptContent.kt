@@ -19,7 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ssafy.lipit_app.data.model.response.report.Script
+import com.ssafy.lipit_app.data.model.response.report.TotalScript
 
 
 @Composable
@@ -32,49 +32,49 @@ fun FullScriptContent() {
     ) {
         // 메시지 데이터를 정의하거나 가져옵니다
         val messages = listOf(
-            Script(
+            TotalScript(
                 content = "Hey! Long time no see! How have you been? Tell me something fun.",
-                contentKorean = "오! 오랜만이야! 잘 지냈어? 재밌는 이야기 하나 해줘!",
+                contentKor = "오! 오랜만이야! 잘 지냈어? 재밌는 이야기 하나 해줘!",
                 isAI = true,
                 timestamp = "2025년 12월 20일"
             ),
-            Script(
+            TotalScript(
                 content = "Hey! Yeah, it's been a while! I've been doing great. Oh, guess what? I finally went on that trip I told you about!",
-                contentKorean = "",
+                contentKor = "",
                 isAI = false,
                 timestamp = "2025년 12월 20일"
             ),
-            Script(
+            TotalScript(
                 content = "Wicked! Was it as exciting as a Quidditch match? Or did you run into any mischievous magical creatures?",
-                contentKorean = "멋지다! 퀴디치 경기만큼 신났어? 아니면 장난꾸러기 마법 생물이라도 만났어?",
+                contentKor = "멋지다! 퀴디치 경기만큼 신났어? 아니면 장난꾸러기 마법 생물이라도 만났어?",
                 isAI = true,
                 timestamp = "2025년 12월 20일"
             ),
-            Script(
+            TotalScript(
                 content = "Hey! Yeah, it's been a while!",
-                contentKorean = "",
+                contentKor = "",
                 isAI = false,
                 timestamp = "2025년 12월 20일"
             )
         )
 
         items(messages) { message ->
-            ChatBubble(script = message)
+            ChatBubble(totalScript = message)
         }
     }
 }
 
 @Composable
-fun ChatBubble(script: Script) {
+fun ChatBubble(totalScript: TotalScript) {
     Column(
         modifier = Modifier
             .fillMaxWidth(),
-        horizontalAlignment = if (script.isAI) Alignment.Start else Alignment.End
+        horizontalAlignment = if (totalScript.isAI) Alignment.Start else Alignment.End
     ) {
         Box(
             modifier = Modifier
                 .background(
-                    color = if (script.isAI)
+                    color = if (totalScript.isAI)
                         Color(0xFF483D56) // 진한 보라색
                     else
                         Color(0xFFB19CD9), // 연한 보라색
@@ -86,16 +86,16 @@ fun ChatBubble(script: Script) {
                 modifier = Modifier.fillMaxWidth(fraction = 0.8f)
             ) {
                 Text(
-                    text = script.content,
+                    text = totalScript.content,
                     color = Color.White,
                     fontSize = 16.sp,
                     lineHeight = 24.sp
                 )
 
-                if (script.contentKorean.isNotEmpty()) {
+                if (totalScript.contentKor.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = script.contentKorean,
+                        text = totalScript.contentKor,
                         color = Color.White.copy(alpha = 0.8f),
                         fontSize = 14.sp,
                         lineHeight = 20.sp
