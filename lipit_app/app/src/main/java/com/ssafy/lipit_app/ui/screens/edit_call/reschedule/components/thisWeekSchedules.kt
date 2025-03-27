@@ -2,6 +2,7 @@ package com.ssafy.lipit_app.ui.screens.edit_call.reschedule.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,9 +17,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -47,11 +53,22 @@ fun ThisWeekSchedules(dayList: List<String>, callSchedules: List<CallSchedule>) 
 
         dayList.zip(callSchedules).forEach { (day, schedule) ->
             val isToday = day == koreanDayName
+            var showPopup by remember { mutableStateOf(false) } // 삭제 팝업
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(57.dp)
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onLongPress = {
+                                showPopup = true // 롱프레스 시 팝업 띄우기
+                            },
+                            onTap = {
+                                // todo: 일반 클릭 시 상세로 넘어감 구현
+                            }
+                        )
+                    }
                     .border(
                         width = if (isToday) 1.5.dp else 1.dp,
                         color = if (isToday) Color(0xB28055A6) else Color(0xFFF3E7F9),
@@ -105,7 +122,9 @@ fun ThisWeekSchedules(dayList: List<String>, callSchedules: List<CallSchedule>) 
 
                 Spacer(modifier = Modifier.width(5.dp))
 
-                // todo: 자유롭게 이동하는 버튼
+                // todo: 드래그앤드롭 구현
+                // 이동 버튼
+
                 Icon(painterResource(id = R.drawable.menu_icon),
                     contentDescription = "이동버튼",
                     modifier = Modifier
@@ -115,7 +134,21 @@ fun ThisWeekSchedules(dayList: List<String>, callSchedules: List<CallSchedule>) 
 
                 Spacer(modifier = Modifier.width(12.dp))
 
+
+                // 팝업 커스텀
+
+                if (showPopup) {
+                    DeleteCallDialog(
+                        onDismiss = { showPopup = false },
+                        onConfirm = {
+                            // 삭제 처리
+                            showPopup = false
+                        }
+                    )
+                }
+
             }
         }
     }
 }
+
