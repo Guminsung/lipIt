@@ -22,7 +22,7 @@ public interface LoginApiSpec {
 		""")
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "로그인에 성공했습니다."),
-		@ApiResponse(responseCode = "401", description = "`[LOGIN-001]` 이미 존재하는 이메일입니다.", content = @Content()),
+		@ApiResponse(responseCode = "400", description = "`[LOGIN-001]` 잘못된 비밀번호입니다.", content = @Content()),
 		@ApiResponse(responseCode = "404", description = "`[LOGIN-002]` 해당 이메일을 가진 사용자가 없습니다.", content = @Content()),
 		@ApiResponse(responseCode = "500",
 			description = "`[LOGIN-003]` 로그인 처리 중 서버 오류가 발생했습니다.",

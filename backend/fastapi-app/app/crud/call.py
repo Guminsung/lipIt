@@ -1,4 +1,5 @@
 # app/crud/call.py (LangGraph 기반 재작성)
+import asyncio
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,7 +14,7 @@ from app.schema.call import (
     EndCallResponse,
 )
 from app.exception.custom_exceptions import APIException
-from app.exception.error_code import ErrorCode
+from app.exception.error_code import Error
 from app.util.datetime_utils import now_kst
 from app.util.message_utils import append_messages_to_call
 from app.rag.store import store_call_history_embedding
@@ -26,6 +27,9 @@ from app.graph.nodes.memory import (
     convert_to_lc_message,
     safe_convert_message_to_dict,
 )
+import logging
+
+logger = logging.getLogger(__name__)
 
 create_call_graph = build_create_call_graph()
 add_message_graph = build_add_message_graph()
@@ -43,9 +47,7 @@ async def create_call(db: AsyncSession, request: StartCallRequest) -> StartCallR
     try:
         result = await create_call_graph.ainvoke(state)
     except Exception:
-        raise APIException(
-            500, "AI 응답 생성에 실패했습니다.", ErrorCode.CALL_AI_FAILED
-        )
+        raise APIException(500, Error.CALL_AI_FAILED)
 
     ai_message = result["messages"][-1]
 
@@ -77,12 +79,10 @@ async def add_message_to_call(
     call_record = result.scalars().first()
 
     if call_record.end_time is not None:
-        raise APIException(400, "이미 종료된 통화입니다.", ErrorCode.CALL_ALREADY_ENDED)
+        raise APIException(400, Error.CALL_ALREADY_ENDED)
 
     if not call_record:
-        raise APIException(
-            404, "해당 통화 기록을 찾을 수 없습니다.", ErrorCode.CALL_NOT_FOUND
-        )
+        raise APIException(404, Error.CALL_NOT_FOUND)
 
     state = {
         "call_id": call_record.call_id,
@@ -94,11 +94,7 @@ async def add_message_to_call(
     try:
         result = await add_message_graph.ainvoke(state)
     except Exception:
-        raise APIException(
-            500,
-            "메시지 처리 중 서버 오류가 발생했습니다.",
-            ErrorCode.CALL_INTERNAL_ERROR,
-        )
+        raise APIException(500, Error.CALL_INTERNAL_ERROR)
 
     append_messages_to_call(
         call_record, [safe_convert_message_to_dict(m) for m in result["messages"][-2:]]
@@ -122,12 +118,10 @@ async def end_call(
     call_record = result.scalars().first()
 
     if not call_record:
-        raise APIException(
-            404, "해당 통화 기록을 찾을 수 없습니다.", ErrorCode.CALL_NOT_FOUND
-        )
+        raise APIException(404, Error.CALL_NOT_FOUND)
 
     if call_record.end_time is not None:
-        raise APIException(400, "이미 종료된 통화입니다.", ErrorCode.CALL_ALREADY_ENDED)
+        raise APIException(400, Error.CALL_ALREADY_ENDED)
 
     state = {
         "call_id": call_record.call_id,
@@ -139,9 +133,7 @@ async def end_call(
     try:
         result = await end_call_graph.ainvoke(state)
     except Exception:
-        raise APIException(
-            500, "통화 종료 중 서버 오류가 발생했습니다.", ErrorCode.CALL_INTERNAL_ERROR
-        )
+        raise APIException(500, Error.CALL_INTERNAL_ERROR)
 
     end_time = now_kst()
     duration = int((end_time - call_record.start_time).total_seconds())
@@ -157,10 +149,13 @@ async def end_call(
     await db.commit()
     await db.refresh(call_record)
 
-    await store_call_history_embedding(
-        call_id=call_record.call_id,
-        member_id=call_record.member_id,
-        messages=[Message(**m) for m in call_record.messages],
+    # 비동기 태스크로 따로 실행
+    asyncio.create_task(
+        store_call_history_embedding(
+            call_id=call_record.call_id,
+            member_id=call_record.member_id,
+            messages=[Message(**m) for m in call_record.messages],
+        )
     )
 
     return EndCallResponse(

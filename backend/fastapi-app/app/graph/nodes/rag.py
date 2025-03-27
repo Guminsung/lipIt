@@ -10,7 +10,7 @@ async def rag_node(state: dict) -> dict:
     user_input = state["input"]
 
     matches = await search_relevant_call_memory(
-        member_id=member_id, query=user_input, top_k=10
+        member_id=member_id, query=user_input, top_k=3
     )
 
     # 유사도 필터링 및 상위 3개 선택

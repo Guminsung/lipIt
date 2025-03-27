@@ -3,6 +3,7 @@ package com.arizona.lipit.global.response;
 import java.util.List;
 
 import com.arizona.lipit.global.exception.ErrorCode;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -19,6 +20,7 @@ public class ErrorResponse {
 	@Schema(description = "에러 코드", example = "AUTH-001")
 	private final String errorCode;
 	@Schema(description = "필드별 에러 상세 정보")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final List<FieldErrorDetail> errors;
 
 	// 기본적인 ErrorResponse 생성

@@ -3,7 +3,7 @@ from fastapi import UploadFile, File
 from app.core.base_router import BaseRouter
 from app.crud.audio import upload_file_to_s3
 from app.schema.common import APIResponse
-from app.exception.error_code import ErrorCode
+from app.exception.error_code import Error
 from pydantic import BaseModel
 
 
@@ -23,8 +23,4 @@ async def upload_file(file: UploadFile = File(...)):
             data=AudioUploadResponse(url=url),
         )
     except Exception as e:
-        return APIResponse(
-            status=500,
-            message="파일 업로드 중 서버 오류가 발생했습니다.",
-            code=ErrorCode.CALL_INTERNAL_ERROR,
-        )
+        raise APIResponse(500, Error.AUDIO_UPLOAD_ERROR)

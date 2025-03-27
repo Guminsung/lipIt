@@ -1,7 +1,7 @@
 # app/api/v1/endpoint/rag_router.py
 from app.api.v1.endpoint.rag import test_rag_memory_search
 from app.core.base_router import BaseRouter
-from app.exception.error_code import ErrorCode
+from app.exception.error_code import Error
 from app.schema.common import APIResponse
 from app.schema.rag import RAGTestRequest, RAGTestResponse
 
@@ -30,8 +30,8 @@ router.api_doc(
     },
     errors={
         500: {
-            "message": "RAG 검색 중 서버 오류가 발생했습니다.",
-            "code": ErrorCode.CALL_INTERNAL_ERROR,
+            "message": Error.CALL_INTERNAL_ERROR.message,
+            "code": Error.CALL_INTERNAL_ERROR.code,
         }
     },
     summary="🔍 유사 대화 검색 테스트",

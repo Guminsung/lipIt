@@ -7,7 +7,7 @@ from app.rag.pinecone_client import get_index
 async def search_relevant_call_memory(
     member_id: int, query: str, top_k: int = 3
 ) -> List[dict]:
-    embedding = get_embedding(query)
+    embedding = await get_embedding(query)
     index = get_index()
 
     result = index.query(
@@ -19,7 +19,7 @@ async def search_relevant_call_memory(
 
     return [
         {
-            "callId": match.metadata.get("call_id"),
+            "callId": match.id.split("-")[-1],
             "content": match.metadata.get("content", ""),
             "score": match.score,
         }

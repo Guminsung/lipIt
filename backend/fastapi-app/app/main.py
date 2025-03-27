@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from app.api.v1 import get_routers
 from app.db.session import init_db
 from app.exception.custom_exceptions import APIException
+from app.rag.embedding import get_embedding_model
 from app.util.docs.error_code_reference import get_error_code_reference
 from app.core.scheduler import (
     init_scheduler,
@@ -12,6 +13,7 @@ from app.core.scheduler import (
     crawl_weather_job,
 )
 from app.core.logging import setup_logging
+from app.exception.exception_handler import api_exception_handler
 
 import logging
 
@@ -47,6 +49,9 @@ async def lifespan(app: FastAPI):
     # 서버 종료 시 스케줄러 종료
     shutdown_scheduler()
 
+    # Embedding 모델 초기화
+    _ = get_embedding_model()
+
 
 app = FastAPI(
     root_path="/fastapi",
@@ -61,6 +66,10 @@ app = FastAPI(
 # 라우터 등록
 for router in get_routers():
     app.include_router(router)
+
+
+# 예외 처리 핸들러 등록
+app.add_exception_handler(APIException, api_exception_handler)
 
 
 @app.exception_handler(APIException)

@@ -33,7 +33,6 @@ def upload_file_to_s3(file: UploadFile) -> str:
 
         return f"https://{CLOUDFRONT_DOMAIN}/{key}"
     except Exception as e:
-        # 필요 시 로깅 추가 가능
         raise RuntimeError(f"S3 업로드 실패: {str(e)}")
 
 

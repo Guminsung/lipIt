@@ -3,9 +3,13 @@ package com.arizona.lipit.global.jwt;
 import java.io.IOException;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.arizona.lipit.global.exception.CustomException;
+import com.arizona.lipit.global.exception.ErrorCode;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -28,15 +32,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 		throws ServletException, IOException {
-		String token = resolveToken(request);  // 헤더에서 토큰 추출
+		String path = request.getRequestURI();
 
-		if (token != null && jwtProvider.validateAccessToken(token)) {
-			Authentication authentication = jwtProvider.getAuthentication(token);
-			SecurityContextHolder.getContext()
-				.setAuthentication(authentication);  // 검증이 성공하면 SecurityContextHolder에 인증 객체 저장
+		// Swagger, API Docs, 정적 자원, 인증 관련 경로는 JWT 검사에서 제외
+		if (isExcludePath(path)) {
+			filterChain.doFilter(request, response);
+			return;
 		}
 
-		// 필터 체인을 통해 다음 필터 또는 컨트롤러로 요청 전달
+		String token = resolveToken(request); // 헤더에서 토큰 추출
+
+		System.out.println("📌 token: " + token);
+
+		if (token == null || token.trim().isEmpty()) {
+			request.setAttribute("exception", new CustomException(ErrorCode.ACCESS_TOKEN_MISSING));
+			throw new AuthenticationException("Missing token") {
+			}; // 강제 위임
+		}
+
+		if (jwtProvider.validateAccessToken(token)) {
+			Authentication authentication = jwtProvider.getAuthentication(token);
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+		}
+
 		filterChain.doFilter(request, response);
 	}
 
@@ -46,5 +64,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			return bearerToken.substring(7);  // "Bearer " 제거 후 반환
 		}
 		return null;
+	}
+
+	private boolean isExcludePath(String path) {
+		return path.startsWith("/spring/api/swagger-ui")
+			|| path.startsWith("/spring/api/v3/api-docs")
+			|| path.startsWith("/spring/api/swagger-resources")
+			|| path.startsWith("/spring/api/webjars")
+			|| path.startsWith("/spring/api/auth/login")
+			|| path.startsWith("/spring/api/auth/signup");
 	}
 }

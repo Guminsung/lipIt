@@ -1,3 +1,4 @@
+# app/core/config.py
 import os
 from dotenv import load_dotenv
 
@@ -26,3 +27,6 @@ S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
 CLOUDFRONT_DOMAIN = os.getenv("CLOUDFRONT_DOMAIN")
 
 GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+
+JWT_SECRET = os.getenv("JWT_SECRET")
+JWT_ALGORITHM = os.getenv("JWT_ALGORITHM")

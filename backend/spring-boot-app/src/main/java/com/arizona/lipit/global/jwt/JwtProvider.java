@@ -1,5 +1,6 @@
 package com.arizona.lipit.global.jwt;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -34,16 +35,16 @@ public class JwtProvider {
 	private long accessTokenExpiration;
 
 	/**
-	 * -- GETTER --
+	 * -- Getter --
 	 *  리프레시 토큰 만료 시간 반환
 	 */
 	@Getter
 	@Value("${jwt.refresh-token-expiration}")
 	private long refreshTokenExpiration;
 
-	// SecretKey를 애플리케이션 시작 시 한 번만 생성
-	public JwtProvider() {
-		this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+	// 고정된 시크릿 키를 환경변수로 주입받고, hmacShaKeyFor 로 변환
+	public JwtProvider(@Value("${jwt.secret}") String secret) {
+		this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
 	}
 
 	// JWT 토큰에서 인증 객체 추출
@@ -77,7 +78,7 @@ public class JwtProvider {
 			.setSubject(email)
 			.setIssuedAt(new Date()) // 토큰 발급 시간
 			.setExpiration(new Date(System.currentTimeMillis() + expiration)) // 만료 시간 설정
-			.signWith(secretKey)  // SecretKey를 사용하여 서명
+			.signWith(secretKey, SignatureAlgorithm.HS256)   // SecretKey를 사용하여 서명
 			.compact();
 	}
 

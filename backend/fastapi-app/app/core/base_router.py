@@ -1,10 +1,17 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from typing import Type, Dict, Any
 from pydantic import BaseModel
+from app.auth.dependencies import get_current_user
 from app.util.swagger_response import error_response, success_response
 
 
 class BaseRouter(APIRouter):
+    def __init__(self, *args, require_auth: bool = True, **kwargs):
+        # 공통 dependencies 자동 적용
+        if require_auth:
+            kwargs.setdefault("dependencies", []).append(Depends(get_current_user))
+        super().__init__(*args, **kwargs)
+
     def api_doc(
         self,
         path: str,

@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.arizona.lipit.global.jwt.CustomAuthenticationEntryPoint;
 import com.arizona.lipit.global.jwt.JwtAuthenticationFilter;
 import com.arizona.lipit.global.jwt.JwtProvider;
 
@@ -27,31 +28,33 @@ public class SecurityConfig {
 	}
 
 	private final JwtProvider jwtProvider;
+	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		boolean isDevMode = "dev".equals(System.getenv("SPRING_PROFILES_ACTIVE"));
+		// boolean isDevMode = "dev".equals(System.getenv("SPRING_PROFILES_ACTIVE"));
 
 		http
 			.csrf(AbstractHttpConfigurer::disable) // CSRF 비활성화
+			.exceptionHandling(ex -> ex.authenticationEntryPoint(customAuthenticationEntryPoint))
 			.authorizeHttpRequests(auth -> {
-				if (isDevMode) {
-					auth.anyRequest().permitAll(); // 개발 환경에서는 모든 요청 허용
-				} else {
-					// Swagger 경로 허용
-					auth.requestMatchers(
-							"/v3/api-docs/**",
-							"/swagger-ui/**",
-							"/swagger-ui.html",
-							"/swagger-resources/**",
-							"/webjars/**",
-							"/auth/login",
-							"/auth/signup"
-						)
-						.permitAll()
-						// 나머지 요청은 인증 필요
-						.anyRequest().authenticated();
-				}
+				// if (isDevMode) {
+				// 	auth.anyRequest().permitAll(); // 개발 환경에서는 모든 요청 허용
+				// } else {
+				// Swagger 경로 허용
+				auth.requestMatchers(
+						"**/v3/api-docs/**",
+						"**/swagger-ui/**",
+						"**/swagger-ui.html",
+						"**/swagger-resources/**",
+						"**/webjars/**",
+						"**/auth/login",
+						"**/auth/signup"
+					)
+					.permitAll()
+					// 나머지 요청은 인증 필요
+					.anyRequest().authenticated();
+				// }
 			})
 			.addFilterBefore(new JwtAuthenticationFilter(jwtProvider),
 				UsernamePasswordAuthenticationFilter.class); // JWT 필터 추가

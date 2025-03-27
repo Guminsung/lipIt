@@ -2,7 +2,7 @@
 from app.api.v1.endpoint.audio import upload_file
 from app.core.base_router import BaseRouter
 from app.schema.common import APIResponse
-from app.exception.error_code import ErrorCode
+from app.exception.error_code import Error
 from pydantic import BaseModel
 
 
@@ -23,8 +23,8 @@ router.api_doc(
     success_example={"url": "https://dlxayir1dj7sa.cloudfront.net/test/abc123.mp4"},
     errors={
         500: {
-            "message": "파일 업로드 중 서버 오류가 발생했습니다.",
-            "code": ErrorCode.CALL_INTERNAL_ERROR,
+            "message": Error.AUDIO_UPLOAD_ERROR.message,
+            "code": Error.AUDIO_UPLOAD_ERROR.code,
         }
     },
     summary="🔼 음성 파일 업로드",

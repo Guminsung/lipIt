@@ -13,7 +13,7 @@ from app.schema.call import (
     UserMessageRequest,
 )
 from app.schema.common import APIResponse
-from app.exception.error_code import ErrorCode
+from app.exception.error_code import Error
 
 router = BaseRouter(prefix="/api/calls", tags=["Call"])
 
@@ -40,8 +40,8 @@ router.api_doc(
     },
     errors={
         500: {
-            "message": "통화 시작 중 서버 오류가 발생했습니다.",
-            "code": ErrorCode.CALL_INTERNAL_ERROR,
+            "message": Error.CALL_INTERNAL_ERROR.message,
+            "code": Error.CALL_INTERNAL_ERROR.code,
         }
     },
     summary="📞 통화 시작",
@@ -66,12 +66,12 @@ router.api_doc(
     },
     errors={
         404: {
-            "message": "해당 통화 기록을 찾을 수 없습니다.",
-            "code": ErrorCode.CALL_NOT_FOUND,
+            "message": Error.CALL_NOT_FOUND.message,
+            "code": Error.CALL_NOT_FOUND.code,
         },
         500: {
-            "message": "메시지 처리 중 서버 오류가 발생했습니다.",
-            "code": ErrorCode.CALL_INTERNAL_ERROR,
+            "message": Error.CALL_INTERNAL_ERROR.message,
+            "code": Error.CALL_INTERNAL_ERROR.code,
         },
     },
     summary="📞 메시지 추가",
@@ -99,16 +99,16 @@ router.api_doc(
     },
     errors={
         400: {
-            "message": "이미 종료된 통화입니다.",
-            "code": ErrorCode.CALL_ALREADY_ENDED,
+            "message": Error.CALL_ALREADY_ENDED.message,
+            "code": Error.CALL_ALREADY_ENDED.code,
         },
         404: {
-            "message": "해당 통화 기록을 찾을 수 없습니다.",
-            "code": ErrorCode.CALL_NOT_FOUND,
+            "message": Error.CALL_NOT_FOUND.message,
+            "code": Error.CALL_NOT_FOUND.code,
         },
         500: {
-            "message": "통화 종료 중 서버 오류가 발생했습니다.",
-            "code": ErrorCode.CALL_INTERNAL_ERROR,
+            "message": Error.CALL_INTERNAL_ERROR.message,
+            "code": Error.CALL_INTERNAL_ERROR.code,
         },
     },
     summary="📞 통화 종료",

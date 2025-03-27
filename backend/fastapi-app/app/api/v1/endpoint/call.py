@@ -10,7 +10,7 @@ from app.schema.call import (
 )
 from app.crud.call import create_call, add_message_to_call, end_call
 from app.exception.custom_exceptions import APIException
-from app.exception.error_code import ErrorCode
+from app.exception.error_code import Error
 
 
 # 1. 통화 시작
@@ -23,9 +23,7 @@ async def create_call_endpoint(
             status=200, message="대화가 성공적으로 시작되었습니다.", data=call_response
         )
     except Exception:
-        raise APIException(
-            500, "통화 시작 중 서버 오류가 발생했습니다.", ErrorCode.CALL_INTERNAL_ERROR
-        )
+        raise APIException(500, Error.CALL_INTERNAL_ERROR)
 
 
 # 2. 메시지 추가
@@ -39,14 +37,8 @@ async def add_message_to_call_endpoint(
         )
     except Exception as e:
         if "해당 통화 기록을 찾을 수 없습니다." in str(e):
-            raise APIException(
-                404, "해당 통화 기록을 찾을 수 없습니다.", ErrorCode.CALL_NOT_FOUND
-            )
-        raise APIException(
-            500,
-            "메시지 처리 중 서버 오류가 발생했습니다.",
-            ErrorCode.CALL_INTERNAL_ERROR,
-        )
+            raise APIException(404, Error.CALL_NOT_FOUND)
+        raise APIException(500, Error.CALL_INTERNAL_ERROR)
 
 
 # 3. 통화 종료
@@ -60,13 +52,7 @@ async def end_call_endpoint(
         )
     except Exception as e:
         if "해당 통화 기록을 찾을 수 없습니다." in str(e):
-            raise APIException(
-                404, "해당 통화 기록을 찾을 수 없습니다.", ErrorCode.CALL_NOT_FOUND
-            )
+            raise APIException(404, Error.CALL_NOT_FOUND)
         if "이미 종료된 통화입니다." in str(e):
-            raise APIException(
-                400, "이미 종료된 통화입니다.", ErrorCode.CALL_ALREADY_ENDED
-            )
-        raise APIException(
-            500, "통화 종료 중 서버 오류가 발생했습니다.", ErrorCode.CALL_INTERNAL_ERROR
-        )
+            raise APIException(400, Error.CALL_ALREADY_ENDED)
+        raise APIException(500, Error.CALL_INTERNAL_ERROR)
