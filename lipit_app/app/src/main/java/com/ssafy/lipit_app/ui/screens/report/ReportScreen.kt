@@ -10,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.material3.Card
@@ -45,9 +47,41 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.data.model.response.report.ReportSummary
+import com.ssafy.lipit_app.util.CommonUtils.formatDate
+import com.ssafy.lipit_app.util.CommonUtils.formatSeconds
 
 @Composable
 fun ReportScreen() {
+
+    // 더미 데이터
+    val communicationSummaryText = "사용자는 오픽 시험을 준비하며, 다양한 주제에 대한 연습을 원하고, 롤플레이와 피드백을 요청하였다."
+    val feedbackSummaryText =
+        "AI는 사용자의 발음이나 문법 실수를 지적하며, 예를 들어 \"I go to park\"를 \"I go to the park\"로 수정하도록 제안합니다."
+    val createdAt = "2025-03-15"
+
+    val reports = listOf(
+        ReportSummary(
+            reportId = 101,
+            callDuration = 280,
+            celebVideoUrl = "https://dlxayir1dj7sa.cloudfront.net/celeb-video/trump.mp4",
+            wordCount = 100,
+            sentenceCount = 15,
+            communicationSummary = communicationSummaryText,
+            feedbackSummary = feedbackSummaryText,
+            createdAt = createdAt
+        ),
+        ReportSummary(
+            reportId = 101,
+            callDuration = 280,
+            celebVideoUrl = "http://example.com/video.mp4",
+            wordCount = 100,
+            sentenceCount = 15,
+            communicationSummary = communicationSummaryText,
+            feedbackSummary = feedbackSummaryText,
+            createdAt = createdAt
+        )
+    )
 
     Column(
         modifier = Modifier
@@ -76,20 +110,19 @@ fun ReportScreen() {
 
         // 리포트 내용
         LazyColumn(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-
-            items(10) { index ->
-                Report()
-                Spacer(modifier = Modifier.height(20.dp))
+            items(reports) { report ->
+                Report(report)
             }
         }
     }
-
 }
 
 @Composable
-fun Report() {
+fun Report(report: ReportSummary) {
 
     // 카드가 뒤집혔는지 상태 저장
     var isFlipped by remember { mutableStateOf(false) }
@@ -117,7 +150,7 @@ fun Report() {
                     alpha = if (rotation > 90f) 0f else 1f
                 }
         ) {
-            ReportFront()
+            ReportFront(report)
         }
 
         // 카드 뒷면 (앞면이 보일 때 숨김)
@@ -130,7 +163,7 @@ fun Report() {
                     alpha = if (rotation < 90f) 0f else 1f
                 }
         ) {
-            ReportBack()
+            ReportBack(report)
         }
     }
 }
@@ -138,7 +171,7 @@ fun Report() {
 
 // 카드 뒷면
 @Composable
-fun ReportBack() {
+fun ReportBack(report: ReportSummary) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -151,52 +184,32 @@ fun ReportBack() {
             .paint(
                 painter = painterResource(id = R.drawable.bg_report_back),
                 contentScale = ContentScale.FillBounds
-            )
-            .padding(horizontal = 30.dp, vertical = 23.dp),
+            ),
+//            .padding(horizontal = 30.dp, vertical = 23.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Image(
-            painterResource(id = R.drawable.avatar_3d),
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
+        // mp4 영상
+        VideoPlayer(
+            videoUrl = report.celebVideoUrl,
+            isLooping = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(4f)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = "Cheer Up!", color = Color.White,
-            fontSize = 30.sp,
-            modifier = Modifier
-                .weight(1f) // 20%
-                .fillMaxWidth(),
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.Bold
-        )
-
-        Text(
-            text = "Harry Potter",
-            color = Color.White,
-            fontSize = 14.sp,
-            modifier = Modifier
-                .fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
     }
 }
 
 // 카드 앞면
 @Composable
-fun ReportFront() {
+fun ReportFront(report: ReportSummary) {
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1f)
             .border(
                 BorderStroke(1.dp, color = Color.White),
                 shape = RoundedCornerShape(25.dp)
@@ -217,7 +230,7 @@ fun ReportFront() {
                 verticalAlignment = Alignment.Bottom  // 여기에 baseline 정렬 추가
             ) {
                 Text(
-                    text = "2025년 03월 20일",
+                    text = formatDate(report.createdAt),
                     color = Color.White,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
@@ -248,7 +261,7 @@ fun ReportFront() {
             }
 
             Text(
-                "착신 통화 4분 20초",
+                "착신 통화 ${formatSeconds(report.callDuration)}",
                 color = Color.White,
                 fontSize = 15.sp,
             )
@@ -267,7 +280,7 @@ fun ReportFront() {
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "100개", fontSize = 14.sp)
+                Text(text = "${report.wordCount}개", fontSize = 14.sp)
                 Text(
                     text = "말한 단어 수",
                     fontWeight = FontWeight.Bold,
@@ -287,7 +300,7 @@ fun ReportFront() {
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "15개", fontSize = 14.sp)
+                Text(text = "${report.sentenceCount}개", fontSize = 14.sp)
                 Text(
                     text = "말한 문장 수",
                     fontWeight = FontWeight.Bold,
@@ -307,9 +320,10 @@ fun ReportFront() {
                 fontWeight = FontWeight.Bold
             )
             Text(
-                "사용자는 오픽 시험을 준비하며, 다양한 주제에 대한 연습을 원하고, 롤플레이와 피드백을 요청하였다.",
+                text = report.communicationSummary,
                 color = Color.White,
                 fontSize = 14.sp,
+                lineHeight = 24.sp
             )
         }
 
@@ -323,14 +337,13 @@ fun ReportFront() {
                 fontWeight = FontWeight.Bold
             )
             Text(
-                "AI는 사용자의 발음이나 문법 실수를 지적하며, 예를 들어 \"I go to park\"를 \"I go to the park\"로 수정하도록 제안합니다.",
+                text = report.feedbackSummary,
                 color = Color.White,
                 fontSize = 14.sp,
+                lineHeight = 24.sp
             )
         }
-
     }
-
 }
 
 @Composable
