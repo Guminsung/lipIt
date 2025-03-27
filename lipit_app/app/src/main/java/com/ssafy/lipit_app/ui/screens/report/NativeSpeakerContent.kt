@@ -6,32 +6,67 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ssafy.lipit_app.data.model.response.report.NativeExpression
 
 val purpleDark = Color(0xFF603981)
 val purpleLight = Color(0xFFE7D1F4)
 
+
 @Composable
 fun NativeSpeakerContent() {
+
+    /**
+     *     "nativeExpressions": [
+     *       {
+     *         "nativeExpressionId": 1,
+     *         "mySentence": "How are you?",
+     *         "AISentence": "How have you been?",
+     *         "keyword": "greeting",
+     *         "keywordKorean": "인사"
+     *       }
+     *     ]
+     */
+
+    // 더미 데이터
+    val nativeExpressions = listOf(
+        NativeExpression(
+            nativeExpressionId = 1,
+            mySentence = "I want to include AI features like hearing. I want to include AI features like hearing.",
+            aISentence = "I want to incorporate AI features such as auditory capabilities.",
+            keyword = "incorporate AI features",
+            keywordKorean = "AI 기능을 포함하다"
+        ),
+        // Add more sample items if needed
+        NativeExpression(
+            nativeExpressionId = 2,
+            mySentence = "Nice to meet you.",
+            aISentence = "Pleasure to make your acquaintance.",
+            keyword = "greeting",
+            keywordKorean = "인사"
+        ),
+        NativeExpression(
+            nativeExpressionId = 3,
+            mySentence = "What's your name?",
+            aISentence = "May I know what you're called?",
+            keyword = "introduction",
+            keywordKorean = "소개"
+        )
+    )
 
     Box(
         modifier = Modifier
@@ -41,19 +76,16 @@ fun NativeSpeakerContent() {
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            val dummyItems = List(3) { index -> index }
-            items(dummyItems) { _ ->
-                NativeContent()
+            items(nativeExpressions) { expressions ->
+                NativeContent(expressions)
             }
         }
-
     }
-
 }
 
 
 @Composable
-fun NativeContent() {
+fun NativeContent(expression: NativeExpression) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -62,7 +94,6 @@ fun NativeContent() {
                 shape = RoundedCornerShape(25.dp)
             )
             .background(Color.Transparent, shape = RoundedCornerShape(25.dp))
-//            .padding(horizontal = 30.dp, vertical = 23.dp)
     ) {
         // 제목과 번역
         Column(
@@ -74,8 +105,8 @@ fun NativeContent() {
                 )
                 .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
-            Text(
-                text = "incorporate AI features",
+            Text(  // 키워드
+                text = expression.keyword,
                 color = purpleDark,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
@@ -83,7 +114,7 @@ fun NativeContent() {
             )
 
             Text(
-                "AI 기능을 포함하다.",
+                text = expression.keywordKorean,
                 color = purpleDark,
                 fontWeight = FontWeight.Light,
                 fontSize = 15.sp,
@@ -96,16 +127,16 @@ fun NativeContent() {
         // 대화 내용 요약
         Column(
             modifier = Modifier
-                .padding(start = 30.dp, end = 30.dp, bottom = 23.dp)
+                .padding(start = 20.dp, end = 20.dp, bottom = 23.dp)
         ) {
             Text(
-                "나의 문장",
+                text = "나의 문장",
                 color = Color.White,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                "I want to include AI features like hearing. I want to include AI features like hearing.",
+                text = expression.mySentence,
                 color = Color.White,
                 fontSize = 14.sp,
                 lineHeight = 24.sp
@@ -121,7 +152,7 @@ fun NativeContent() {
                 fontWeight = FontWeight.Bold
             )
             Text(
-                "I want to incorporate AI features such as auditory capabilities.",
+                text = expression.aISentence,
                 color = Color.White,
                 fontSize = 14.sp,
                 lineHeight = 24.sp
@@ -133,5 +164,35 @@ fun NativeContent() {
 @Composable
 @Preview(showBackground = true)
 fun NativeContentPreview() {
-    NativeContent()
+
+    // 더미 데이터
+    val nativeExpressions = listOf(
+        NativeExpression(
+            nativeExpressionId = 1,
+            mySentence = "How are you?",
+            aISentence = "How have you been?",
+            keyword = "greeting",
+            keywordKorean = "인사"
+        ),
+        // Add more sample items if needed
+        NativeExpression(
+            nativeExpressionId = 2,
+            mySentence = "Nice to meet you.",
+            aISentence = "Pleasure to make your acquaintance.",
+            keyword = "greeting",
+            keywordKorean = "인사"
+        ),
+        NativeExpression(
+            nativeExpressionId = 3,
+            mySentence = "What's your name?",
+            aISentence = "May I know what you're called?",
+            keyword = "introduction",
+            keywordKorean = "소개"
+        )
+    )
+
+    for (express in nativeExpressions) {
+        NativeContent(express)
+    }
+
 }

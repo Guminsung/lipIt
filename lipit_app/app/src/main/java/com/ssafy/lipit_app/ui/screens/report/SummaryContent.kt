@@ -1,20 +1,16 @@
 package com.ssafy.lipit_app.ui.screens.report
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
@@ -22,37 +18,51 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.data.model.response.report.ReportSummary
+import com.ssafy.lipit_app.util.CommonUtils.formatDate
+import com.ssafy.lipit_app.util.CommonUtils.formatSeconds
+
 
 @Composable
 fun SummaryContent() {
+
+    // 더미 데이터
+    val communicationSummaryText = "사용자는 오픽 시험을 준비하며, 다양한 주제에 대한 연습을 원하고, 롤플레이와 피드백을 요청하였다."
+    val feedbackSummaryText =
+        "AI는 사용자의 발음이나 문법 실수를 지적하며, 예를 들어 \"I go to park\"를 \"I go to the park\"로 수정하도록 제안합니다."
+    val createdAt = "2025-03-15"
+
+    val summary = ReportSummary(
+        callDuration = 280,
+        wordCount = 100,
+        sentenceCount = 15,
+        communicationSummary = communicationSummaryText,
+        feedbackSummary = feedbackSummaryText,
+        createdAt = createdAt
+    )
+
 
     // 카드 앞면 (뒤집혔을 때 숨김)
     Box(
         modifier = Modifier
             .fillMaxWidth()
     ) {
-        ReportContent()
+        ReportContent(summary)
     }
 
 }
 
 @Composable
-fun ReportContent() {
+fun ReportContent(summary: ReportSummary) {
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-//            .aspectRatio(1f)
             .border(
                 BorderStroke(1.dp, color = Color.White),
                 shape = RoundedCornerShape(25.dp)
@@ -66,22 +76,21 @@ fun ReportContent() {
                 modifier = Modifier
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom  // 여기에 baseline 정렬 추가
+                verticalAlignment = Alignment.Bottom
             ) {
                 Text(
-                    text = "2025년 03월 20일",
+                    text = formatDate(summary.createdAt),
                     color = Color.White,
-                    fontSize = 22.sp,
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Bold
                 )
-
 
             }
 
             Text(
-                "착신 통화 4분 20초",
+                "착신 통화 ${formatSeconds(summary.callDuration)}",
                 color = Color.White,
-                fontSize = 15.sp,
+                fontSize = 15.sp
             )
         }
 
@@ -98,7 +107,7 @@ fun ReportContent() {
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "100개", fontSize = 14.sp)
+                Text(text = "${summary.wordCount}개", fontSize = 14.sp)
                 Text(
                     text = "말한 단어 수",
                     fontWeight = FontWeight.Bold,
@@ -118,7 +127,7 @@ fun ReportContent() {
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "15개", fontSize = 14.sp)
+                Text(text = "${summary.sentenceCount}개", fontSize = 14.sp)
                 Text(
                     text = "말한 문장 수",
                     fontWeight = FontWeight.Bold,
@@ -138,9 +147,10 @@ fun ReportContent() {
                 fontWeight = FontWeight.Bold
             )
             Text(
-                "사용자는 오픽 시험을 준비하며, 다양한 주제에 대한 연습을 원하고, 롤플레이와 피드백을 요청하였다.",
+                summary.communicationSummary,
                 color = Color.White,
                 fontSize = 14.sp,
+                lineHeight = 24.sp
             )
         }
 
@@ -154,9 +164,10 @@ fun ReportContent() {
                 fontWeight = FontWeight.Bold
             )
             Text(
-                "AI는 사용자의 발음이나 문법 실수를 지적하며, 예를 들어 \"I go to park\"를 \"I go to the park\"로 수정하도록 제안합니다.",
+                summary.feedbackSummary,
                 color = Color.White,
                 fontSize = 14.sp,
+                lineHeight = 24.sp
             )
         }
 
@@ -168,5 +179,6 @@ fun ReportContent() {
 @Composable
 @Preview(showBackground = true)
 fun SummaryPreview() {
+
     SummaryContent()
 }
