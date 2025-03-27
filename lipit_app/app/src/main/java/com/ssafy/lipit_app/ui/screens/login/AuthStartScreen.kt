@@ -5,19 +5,23 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
@@ -66,7 +70,7 @@ fun AuthStartScreen(){
     ) {
         // 배경 이미지
         Image(
-            painter = painterResource(id = R.drawable.bg_myvoice),
+            painter = painterResource(id = R.drawable.bg_login),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
@@ -74,22 +78,38 @@ fun AuthStartScreen(){
 
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(32.dp),
+                .fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween, // 위–아래 간격 자동 분배
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(60.dp)) // 상단 여백
-            // 타이틀 이미지
+
+            // 상단 여백
+            Spacer(modifier = Modifier.height(44.dp))
+            
+            // 1. Title
             Image(
-                painter = painterResource(id = R.drawable.ic_launcher_background),
+                painter = painterResource(id = R.drawable.img_title),
                 contentDescription = "타이틀 로고",
-                modifier = Modifier.size(200.dp)
+                modifier = Modifier
+                    .width(325.dp)
+                    .wrapContentHeight(),
+                contentScale = ContentScale.FillWidth
             )
 
-            // 하단
+            // 2. 3D 로고 영여
+            Image(
+                painter = painterResource(id = R.drawable.img_3d_crop),
+                contentDescription = "타이틀 로고",
+                modifier = Modifier
+                    .fillMaxWidth() // ✅ 어떤 화면에서도 가로 꽉 채우기
+                    .wrapContentHeight(),
+                contentScale = ContentScale.FillWidth
+            )
+
+            // 3. 로그인 & 회원가입 영역
             Column(
                 modifier = Modifier.fillMaxWidth()
+                .padding(horizontal = 20.dp)
             ) {
                 // 왼쪽 정렬 텍스트
                 Text(
@@ -100,29 +120,32 @@ fun AuthStartScreen(){
                     modifier = Modifier.align(Alignment.Start)
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(50.dp))
 
-                // 가운데 정렬 버튼 + 텍스트
+                // 가운데 정렬 버튼 + 회원가입 텍스트
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     CustomOutlinedButton(text = "Get Started") {
-                        // 시작 액션
+                        Toast.makeText(context, "회원가입 화면 이동", Toast.LENGTH_SHORT).show()
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
                         text = "I already have an account",
                         color = Color.White.copy(alpha = 0.8f),
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.clickable {
-                            Toast.makeText(context, "로그인 성공!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "로그인 화면 이동", Toast.LENGTH_SHORT).show()
                         }
                     )
                 }
-            }
+
+                // 하단 여백
+                Spacer(modifier = Modifier.height(90.dp))
+            } // ...Column()
         }
     }
 }

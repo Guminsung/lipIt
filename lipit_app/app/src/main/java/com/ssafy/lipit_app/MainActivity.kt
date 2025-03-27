@@ -9,6 +9,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.ssafy.lipit_app.navigation.NavGraph
 import com.ssafy.lipit_app.theme.LipItTheme
+import com.ssafy.lipit_app.ui.screens.login.AuthStartScreen
+import com.ssafy.lipit_app.ui.screens.login.LoginScreen
+import com.ssafy.lipit_app.ui.screens.login.SignupScreen
 
 
 class MainActivity : AppCompatActivity() {
@@ -22,7 +25,8 @@ class MainActivity : AppCompatActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ){
-                    NavGraph() //compose 화면 전환 진입점
+//                    NavGraph() //compose 화면 전환 진입점
+                    SignupScreen()
                 }
             }
         }
