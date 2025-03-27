@@ -22,7 +22,7 @@ fun CustomFilledButton(text: String, modifier: Modifier = Modifier, onClick: () 
             .height(50.dp)
             .fillMaxWidth(),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFFB283D8), // 원하는 배경색
+            containerColor = Color(0xFFA37BBD), // 원하는 배경색
             contentColor = Color.White // 텍스트 색상
         ),
         shape = RoundedCornerShape(12.dp)
@@ -38,7 +38,7 @@ fun CustomOutlinedButton(text: String, modifier: Modifier = Modifier, onClick: (
         modifier = modifier
             .height(50.dp)
             .fillMaxWidth(),
-        border = BorderStroke(1.dp, Color(0xFFE2C7FF)),
+        border = BorderStroke(1.dp, Color(0xFFD09FE6)),
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = Color.White
