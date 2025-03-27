@@ -1,0 +1,121 @@
+package com.ssafy.lipit_app.ui.screens.edit_call.reschedule.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.CallSchedule
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.format.TextStyle
+import java.util.Locale
+
+@Composable
+fun ThisWeekSchedules(dayList: List<String>, callSchedules: List<CallSchedule>) {
+    val today = LocalDate.now()
+    val dayOfWeek: DayOfWeek = today.dayOfWeek
+    val koreanDayName: String = dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .padding(start = 12.dp, bottom = 70.dp, top = 10.dp),
+        verticalArrangement = Arrangement.SpaceBetween // 아이템 간격 일정하게 조정
+    ) {
+
+        dayList.zip(callSchedules).forEach { (day, schedule) ->
+            val isToday = day == koreanDayName
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(57.dp)
+                    .border(
+                        width = if (isToday) 1.5.dp else 1.dp,
+                        color = if (isToday) Color(0xB28055A6) else Color(0xFFF3E7F9),
+                        shape = RoundedCornerShape(size = 15.dp)
+                    ),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // 시간 텍스트
+                val time = schedule.scheduledTime.substringBeforeLast(":")
+                val divideTime = if (time.substringBeforeLast(":") < 12.toString()) "AM" else "PM"
+
+                Text(
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp, vertical = 19.dp),
+                    text = time + " " + divideTime,
+                    style = androidx.compose.ui.text.TextStyle(
+                        fontSize = 18.sp,
+                        lineHeight = 15.sp,
+                        fontWeight = FontWeight(400),
+                        color = Color(0xFF5F5F61)
+                    )
+
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                // 토픽 텍스트 with 배경
+                Box(
+                    modifier = Modifier
+                        .height(25.dp)
+                        .background(
+                            color = Color(0xFFF3E7F9),
+                            shape = RoundedCornerShape(size = 15.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ){
+                    Text(
+                        text=schedule.topicCategory,
+                        style = androidx.compose.ui.text.TextStyle(
+                            fontSize = 12.sp,
+                            lineHeight = 15.sp,
+                            fontWeight = FontWeight(400),
+                            color = Color(0xFF5F5F61),
+                            textAlign = TextAlign.Center,
+                        ),
+                        modifier = Modifier
+                            .padding(horizontal = 15.dp)
+
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(5.dp))
+
+                // todo: 자유롭게 이동하는 버튼
+                Icon(painterResource(id = R.drawable.menu_icon),
+                    contentDescription = "이동버튼",
+                    modifier = Modifier
+                        .width(20.dp)
+                        .height(20.dp),
+                    tint = Color(0xFF8055A6))
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+            }
+        }
+    }
+}
