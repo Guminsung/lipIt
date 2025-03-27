@@ -53,7 +53,6 @@ fun ReportDetailScreen() {
                 painter = painterResource(id = R.drawable.bg_without_logo),
                 contentScale = ContentScale.FillBounds
             )
-            .padding(start = 24.dp, end = 24.dp, top = 24.dp)
     ) {
 
         Text(
@@ -61,7 +60,7 @@ fun ReportDetailScreen() {
             color = Color.White,
             fontWeight = FontWeight.Bold,
             fontSize = 30.sp,
-            modifier = Modifier.padding(top = 46.dp)
+            modifier = Modifier.padding(start = 24.dp, top = 46.dp)
         )
 
         Spacer(modifier = Modifier.height(18.dp))
@@ -77,7 +76,9 @@ fun ReportDetailScreen() {
                     color = Color.White
                 )
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp)
         ) {
             tabTitles.forEachIndexed { index, title ->
                 Tab(
@@ -101,17 +102,30 @@ fun ReportDetailScreen() {
             }
         }
 
-        // 탭 화면
-        Box(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 20.dp)
-                .clip(RoundedCornerShape(16.dp))
+                .fillMaxSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color.Transparent)
+                    ),
+                    shape = RectangleShape
+                )
+                .padding(start = 20.dp, end = 20.dp, top = 24.dp)
         ) {
-            when (selectedTabIndex) {
-                0 -> SummaryContent()
-                1 -> NativeSpeakerContent()
-                2 -> FullScriptContent()
+
+            // 탭 화면
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 20.dp)
+                    .clip(RoundedCornerShape(16.dp))
+            ) {
+                when (selectedTabIndex) {
+                    0 -> SummaryContent()
+                    1 -> NativeSpeakerContent()
+                    2 -> FullScriptContent()
+                }
             }
         }
     }

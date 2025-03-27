@@ -19,14 +19,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ssafy.lipit_app.data.model.response.report.Script
 
-
-// 메시지 데이터 클래스
-data class Message(
-    val englishText: String,
-    val koreanText: String = "",
-    val isAI: Boolean // true면 진한 보라색, false면 연한 보라색
-)
 
 @Composable
 fun FullScriptContent() {
@@ -38,45 +32,49 @@ fun FullScriptContent() {
     ) {
         // 메시지 데이터를 정의하거나 가져옵니다
         val messages = listOf(
-            Message(
-                "Hey! Long time no see! How have you been? Tell me something fun.",
-                "오! 오랜만이야! 잘 지냈어? 재밌는 이야기 하나 해줘!",
-                true
+            Script(
+                content = "Hey! Long time no see! How have you been? Tell me something fun.",
+                contentKorean = "오! 오랜만이야! 잘 지냈어? 재밌는 이야기 하나 해줘!",
+                isAI = true,
+                timestamp = "2025년 12월 20일"
             ),
-            Message(
-                "Hey! Yeah, it's been a while! I've been doing great. Oh, guess what? I finally went on that trip I told you about!",
-                "",
-                false
+            Script(
+                content = "Hey! Yeah, it's been a while! I've been doing great. Oh, guess what? I finally went on that trip I told you about!",
+                contentKorean = "",
+                isAI = false,
+                timestamp = "2025년 12월 20일"
             ),
-            Message(
-                "Wicked! Was it as exciting as a Quidditch match? Or did you run into any mischievous magical creatures?",
-                "멋지다! 퀴디치 경기만큼 신났어? 아니면 장난꾸러기 마법 생물이라도 만났어?",
-                true
+            Script(
+                content = "Wicked! Was it as exciting as a Quidditch match? Or did you run into any mischievous magical creatures?",
+                contentKorean = "멋지다! 퀴디치 경기만큼 신났어? 아니면 장난꾸러기 마법 생물이라도 만났어?",
+                isAI = true,
+                timestamp = "2025년 12월 20일"
             ),
-            Message(
-                "Hey! Yeah, it's been a while!",
-                "",
-                false
+            Script(
+                content = "Hey! Yeah, it's been a while!",
+                contentKorean = "",
+                isAI = false,
+                timestamp = "2025년 12월 20일"
             )
         )
 
         items(messages) { message ->
-            ChatBubble(message = message)
+            ChatBubble(script = message)
         }
     }
 }
 
 @Composable
-fun ChatBubble(message: Message) {
+fun ChatBubble(script: Script) {
     Column(
         modifier = Modifier
             .fillMaxWidth(),
-        horizontalAlignment = if (message.isAI) Alignment.Start else Alignment.End
+        horizontalAlignment = if (script.isAI) Alignment.Start else Alignment.End
     ) {
         Box(
             modifier = Modifier
                 .background(
-                    color = if (message.isAI)
+                    color = if (script.isAI)
                         Color(0xFF483D56) // 진한 보라색
                     else
                         Color(0xFFB19CD9), // 연한 보라색
@@ -88,16 +86,16 @@ fun ChatBubble(message: Message) {
                 modifier = Modifier.fillMaxWidth(fraction = 0.8f)
             ) {
                 Text(
-                    text = message.englishText,
+                    text = script.content,
                     color = Color.White,
                     fontSize = 16.sp,
                     lineHeight = 24.sp
                 )
 
-                if (message.koreanText.isNotEmpty()) {
+                if (script.contentKorean.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = message.koreanText,
+                        text = script.contentKorean,
                         color = Color.White.copy(alpha = 0.8f),
                         fontSize = 14.sp,
                         lineHeight = 20.sp
