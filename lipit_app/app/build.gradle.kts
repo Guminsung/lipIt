@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.ui.test.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -136,4 +137,16 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer:1.6.0")
     implementation("androidx.media3:media3-exoplayer-dash:1.6.0")
     implementation("androidx.media3:media3-ui:1.6.0")
+
+    implementation(kotlin("script-runtime"))
+
+    implementation("androidx.activity:activity-compose:1.8.2")
+    implementation("androidx.compose.material3:material3:1.1.2")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.5.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+    implementation("androidx.compose.ui:ui-tooling:1.5.1") // Preview용
+
+    // url을 통해 이미지를 불러오기 위한 이미지 라이브러리 - Coil
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
 }
