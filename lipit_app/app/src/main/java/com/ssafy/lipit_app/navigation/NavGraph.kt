@@ -22,7 +22,7 @@ fun NavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = "onTextCall" // 첫 진입 화면
+        startDestination = "main" // 첫 진입 화면
     ){
         composable("main"){
             val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<MainViewModel>()
@@ -33,6 +33,16 @@ fun NavGraph(
                 onIntent = {viewModel.onIntent(it)}
             )
         }
+
+//        composable("editWeeklyCalls") {
+//            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<EditWeeklyCallsViewModel>()
+//            val state by viewModel.state.collectAsState()
+//
+//            VoiceCallScreen(
+//                state = state,
+//                onIntent = {viewModel.onIntent(it)}
+//            )
+//        }
 
         composable("onVoiceCall") {
             val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<VoiceCallViewModel>()

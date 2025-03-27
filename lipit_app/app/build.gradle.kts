@@ -143,4 +143,8 @@ dependencies {
     // url을 통해 이미지를 불러오기 위한 이미지 라이브러리 - Coil
     implementation("io.coil-kt:coil-compose:2.4.0")
 
+    //바텀시트 구현 관련
+    implementation(platform("androidx.compose:compose-bom:2023.06.01"))
+
+
 }

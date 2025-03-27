@@ -21,11 +21,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,7 +45,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ssafy.lipit_app.R
-
+import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditWeeklyCallsScreen
+import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(
@@ -172,12 +177,30 @@ fun TodaysSentence(sentenceOriginal: String, sentenceTranslated: String) {
 }
 
 // 주간 전화 일정 한 눈에 보기
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeeklyCallsSection(
     selectedDay: String,
     callItems: List<CallItem>,
     onIntent: (MainIntent) -> Unit
 ) {
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+    val scope = rememberCoroutineScope()
+
+    var showSheet by remember{ mutableStateOf(false) }
+
+    if(showSheet){
+        ModalBottomSheet(
+            onDismissRequest = { showSheet = false },
+            sheetState = sheetState
+        ) {
+            EditWeeklyCallsScreen()
+        }
+    }
+
+    // sheet를 여는 이벤트 동작을 수행할 ui
     Column(
         modifier = Modifier
             .padding(top = 25.dp)
@@ -202,10 +225,17 @@ fun WeeklyCallsSection(
                 horizontalArrangement = Arrangement.End
             ) {
                 Button(
-                    onClick = { /*todo: 전화 일정 편집 화면으로 넘어감*/ },
+                    onClick = {
+                        //전화 일정 편집 화면으로 넘어감
+                        showSheet = true
+                        scope.launch {
+                            sheetState.show()
+                        }
+                    },
                     Modifier
                         .width(50.dp)
-                        .height(25.dp),
+                        .height(25.dp)
+                    ,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFA37BBD)
                     ),
@@ -226,20 +256,20 @@ fun WeeklyCallsSection(
             }
 
         }
-
-        // 전화 일정 출력 영역
-        // 요일 선택 커스텀 탭
-        DaySelector(
-            onDaySelected = { day ->
-                onIntent(MainIntent.OnDaySelected(day))
-                Log.d("selectedDay", "selectedDay: $day")
-             },
-            selectedDay
-        )
-
-        // 스케줄 카드뷰
-        dailyCallSchedule(callItems)
     }
+
+    // 전화 일정 출력 영역
+    // 요일 선택 커스텀 탭
+    //        DaySelector(
+    //            onDaySelected = { day ->
+    //                onIntent(MainIntent.OnDaySelected(day))
+    //                Log.d("selectedDay", "selectedDay: $day")
+    //             },
+    //            selectedDay
+    //        )
+
+    // 스케줄 카드뷰
+    //dailyCallSchedule(callItems)
 }
 
 // 요일별 call 카드뷰
