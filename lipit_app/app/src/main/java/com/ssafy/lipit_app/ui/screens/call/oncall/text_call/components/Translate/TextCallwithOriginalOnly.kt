@@ -51,7 +51,7 @@ fun TextCallwithOriginalOnly(state: TextCallState) {
                             ),
                             shape = RoundedCornerShape(size = 15.dp)
                         )
-                        .padding(17.dp)
+                        .padding(14.dp)
                         .widthIn(max = 260.dp) // 최대 가로 길이 제한
                 ) {
                     Column {
