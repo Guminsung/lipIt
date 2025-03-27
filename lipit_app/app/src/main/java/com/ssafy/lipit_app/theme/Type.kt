@@ -8,11 +8,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
 
-val sf_pro = FontFamily(
-    Font(R.font.sf_pro, FontWeight.Bold),
-    Font(R.font.sf_pro, FontWeight.Normal),
-    Font(R.font.sf_pro, FontWeight.SemiBold),
-)
+val sf_pro = FontFamily(Font(R.font.sf_pro))
+
 
 // Set of Material typography styles to start with
 val Typography = Typography(
