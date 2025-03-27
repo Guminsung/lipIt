@@ -27,10 +27,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+val purpleDark = Color(0xFF8B54A2)
+val purpleLight = Color(0xFFE7D1F4)
+
 @Composable
 fun NativeSpeakerContent() {
 
-    // 카드 앞면 (뒤집혔을 때 숨김)
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -60,39 +62,42 @@ fun NativeContent() {
                 shape = RoundedCornerShape(25.dp)
             )
             .background(Color.Transparent, shape = RoundedCornerShape(25.dp))
-            .padding(horizontal = 30.dp, vertical = 23.dp)
+//            .padding(horizontal = 30.dp, vertical = 23.dp)
     ) {
         // 제목과 번역
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    purpleLight,
+                    shape = RoundedCornerShape(topStart = 25.dp, topEnd = 25.dp)
+                )
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+        ) {
+            Text(
+                text = "incorporate AI features",
+                color = purpleDark,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                lineHeight = 24.sp
+            )
 
-        Text(
-            text = "incorporate AI features",
-            color = Color.White,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            lineHeight = 24.sp
-        )
-
-        Text(
-            "AI 기능을 포함하다.",
-            color = Color.White,
-            fontWeight = FontWeight.Light,
-            fontSize = 15.sp,
-            lineHeight = 24.sp
-        )
+            Text(
+                "AI 기능을 포함하다.",
+                color = purpleDark,
+                fontWeight = FontWeight.Light,
+                fontSize = 15.sp,
+                lineHeight = 24.sp
+            )
+        }
 
         Spacer(modifier = Modifier.height(14.dp))
-
-        HorizontalDivider(
-            thickness = 2.dp, color = Color.White.copy(0.5f),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(14.dp))
-
 
         // 대화 내용 요약
-
-        Column {
+        Column(
+            modifier = Modifier
+                .padding(start = 30.dp, end = 30.dp, bottom = 23.dp)
+        ) {
             Text(
                 "나의 문장",
                 color = Color.White,
@@ -105,14 +110,10 @@ fun NativeContent() {
                 fontSize = 14.sp,
                 lineHeight = 24.sp
             )
-        }
 
-        Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-
-        // AI 피드백 요약
-
-        Column {
+            // AI 피드백 요약
             Text(
                 "AI 추천 문장",
                 color = Color.White,
@@ -126,7 +127,6 @@ fun NativeContent() {
                 lineHeight = 24.sp
             )
         }
-
     }
 }
 
