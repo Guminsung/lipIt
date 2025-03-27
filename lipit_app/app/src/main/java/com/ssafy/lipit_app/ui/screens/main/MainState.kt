@@ -17,6 +17,7 @@ data class MainState(
     val sentenceTranslated: String = "너의 재능과 노력이라면, 한계란 없지!",
 )
 
+// 임시
 data class CallItem(
     val id: Int,
     val name: String,

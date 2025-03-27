@@ -26,6 +26,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditWeeklyCallsScreen
+import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditWeeklyCallsViewModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -185,18 +188,29 @@ fun WeeklyCallsSection(
     onIntent: (MainIntent) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
+        skipPartiallyExpanded = false
     )
+
+    // 처음엔 중간 상태로 출력되도록 설정함
+    LaunchedEffect(Unit) {
+        sheetState.partialExpand()
+    }
+
     val scope = rememberCoroutineScope()
 
     var showSheet by remember{ mutableStateOf(false) }
+
 
     if(showSheet){
         ModalBottomSheet(
             onDismissRequest = { showSheet = false },
             sheetState = sheetState
         ) {
-            EditWeeklyCallsScreen()
+            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<EditWeeklyCallsViewModel>()
+            val state by viewModel.state.collectAsState()
+
+            EditWeeklyCallsScreen( state = state,
+                onIntent = {viewModel.onIntent(it)})
         }
     }
 
