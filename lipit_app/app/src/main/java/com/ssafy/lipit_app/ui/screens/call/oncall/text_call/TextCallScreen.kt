@@ -15,6 +15,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.ChatMessage
@@ -28,6 +29,8 @@ fun TextCallScreen(
     state:TextCallState,
     onIntent: (TextCallIntent) -> Unit
 ) {
+    val viewModel: TextCallViewModel = viewModel()
+
     Box(
         modifier = Modifier
             .fillMaxWidth(),
@@ -64,7 +67,7 @@ fun TextCallScreen(
             Spacer(modifier = Modifier.height(18.dp))
 
             // 하단 영역 (텍스트 입력 공간, 번역 여부 및 텍스트 보내기 버튼)
-            TextCallFooter(state.inputText, state.showTranslation)
+            TextCallFooter(state.inputText, state.showTranslation, onIntent = onIntent)
         }
     }
 }

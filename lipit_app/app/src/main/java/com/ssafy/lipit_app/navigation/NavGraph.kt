@@ -46,11 +46,10 @@ fun NavGraph(
 
         composable("onTextCall") {
             val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<TextCallViewModel>()
-            val state by viewModel.state.collectAsState()
 
             TextCallScreen(
-                state = state,
-                onIntent = {viewModel.onIntent(it)}
+                state = viewModel.state.collectAsState().value,
+                onIntent = viewModel::onIntent
             )
         }
 
