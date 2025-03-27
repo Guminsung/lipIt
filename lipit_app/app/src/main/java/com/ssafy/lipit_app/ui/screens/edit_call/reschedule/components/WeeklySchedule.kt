@@ -12,9 +12,13 @@ fun WeeklySchedule(callSchedules: List<CallSchedule>) {
     Row(
         modifier = Modifier.fillMaxSize()
     ){
+        val dayList = listOf("월", "화", "수", "목", "금", "토", "일")
+
+
         // 좌측 요일 출력 - 오늘 날짜 하이라이트
-        DayOfWeek()
+        DayOfWeek(dayList)
 
         // 우측 요일별 스케줄 출력
+        ThisWeekSchedules(dayList, callSchedules)
     }
 }

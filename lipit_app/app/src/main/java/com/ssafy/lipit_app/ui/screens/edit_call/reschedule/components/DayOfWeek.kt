@@ -22,12 +22,11 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 @Composable
-fun DayOfWeek() {
+fun DayOfWeek(dayList: List<String>) {
     val today = LocalDate.now()
     val dayOfWeek: DayOfWeek = today.dayOfWeek
     val koreanDayName: String = dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN)
-
-    val dayList = listOf("월", "화", "수", "목", "금", "토", "일")
+    val dayOfMonth: String = today.dayOfMonth.toString()
 
     Column(
         modifier = Modifier
@@ -40,6 +39,7 @@ fun DayOfWeek() {
         verticalArrangement = Arrangement.SpaceBetween, // 간격 동일하게 설정
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // 요일 리스트 (오늘 자동 선택 하이라이트)
         for(i in dayList){
             val isToday = i == koreanDayName
 
@@ -53,8 +53,8 @@ fun DayOfWeek() {
                     textAlign = TextAlign.Center,
                 )
             )
-
         }
+
 
     }
 }
