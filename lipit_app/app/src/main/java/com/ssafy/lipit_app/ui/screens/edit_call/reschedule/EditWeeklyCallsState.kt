@@ -3,7 +3,7 @@ package com.ssafy.lipit_app.ui.screens.edit_call.reschedule
 data class EditWeeklyCallsState (
     // 현재 선택되어 있는 보이스 정보
     val VoiceName: String = "Harry Potter",
-    val VoiceImageUrl: String = "",
+    val VoiceImageUrl: String = "https://picsum.photos/600/400",
 
     //Weekly 스케줄 정보
     val callSchedules:List<CallSchedule> = listOf(

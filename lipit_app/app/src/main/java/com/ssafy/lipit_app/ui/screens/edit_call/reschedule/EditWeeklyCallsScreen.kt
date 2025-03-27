@@ -1,15 +1,20 @@
 package com.ssafy.lipit_app.ui.screens.edit_call.reschedule
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.components.SelectedVoiceCard
 
 @Composable
 fun EditWeeklyCallsScreen(
@@ -18,19 +23,36 @@ fun EditWeeklyCallsScreen(
 ) {
     Column(
         modifier = Modifier
-            .padding(top = 60.dp, start = 20.dp, end = 20.dp)
-            .background(Color(0xFFFDF8FF))
+            .padding(top = 30.dp, start = 20.dp, end = 20.dp)
+            //.background(Color(0xFFFDF8FF))
+            .fillMaxWidth()
             .height(
                 750.dp
             )
             .fillMaxHeight(0.7f)
     ) {
         // 제목
+        Text(
+            text = "Weekly Calls",
+            style = TextStyle(
+                fontSize = 25.sp,
+                lineHeight = 30.sp,
+                fontWeight = FontWeight(700),
+                color = Color(0xFF222124),
+
+                )
+        )
+
 
         // 상단 - 선택 보이스 출력
+        SelectedVoiceCard(state.VoiceName, state.VoiceImageUrl)
+
         // 하단 - Call 스케줄표
     }
 }
+
+
+
 
 @Preview(showBackground = true)
 @Composable
