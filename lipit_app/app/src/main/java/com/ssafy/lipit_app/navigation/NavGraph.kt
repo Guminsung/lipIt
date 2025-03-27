@@ -11,6 +11,8 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallViewModel
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
+import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditWeeklyCallsScreen
+import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditWeeklyCallsViewModel
 import com.ssafy.lipit_app.ui.screens.main.CallItem
 import com.ssafy.lipit_app.ui.screens.main.MainScreen
 import com.ssafy.lipit_app.ui.screens.main.MainState
@@ -34,15 +36,15 @@ fun NavGraph(
             )
         }
 
-//        composable("editWeeklyCalls") {
-//            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<EditWeeklyCallsViewModel>()
-//            val state by viewModel.state.collectAsState()
-//
-//            VoiceCallScreen(
-//                state = state,
-//                onIntent = {viewModel.onIntent(it)}
-//            )
-//        }
+        composable("editWeeklyCalls") {
+            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<EditWeeklyCallsViewModel>()
+            val state by viewModel.state.collectAsState()
+
+            EditWeeklyCallsScreen(
+                state = state,
+                onIntent = {viewModel.onIntent(it)}
+            )
+        }
 
         composable("onVoiceCall") {
             val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<VoiceCallViewModel>()
