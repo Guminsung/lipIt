@@ -15,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.components.SelectedVoiceCard
+import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.components.WeeklySchedule
 
 @Composable
 fun EditWeeklyCallsScreen(
@@ -27,7 +28,7 @@ fun EditWeeklyCallsScreen(
             //.background(Color(0xFFFDF8FF))
             .fillMaxWidth()
             .height(
-                750.dp
+                650.dp
             )
             .fillMaxHeight(0.7f)
     ) {
@@ -48,6 +49,7 @@ fun EditWeeklyCallsScreen(
         SelectedVoiceCard(state.VoiceName, state.VoiceImageUrl)
 
         // 하단 - Call 스케줄표
+        WeeklySchedule(state.callSchedules)
     }
 }
 
