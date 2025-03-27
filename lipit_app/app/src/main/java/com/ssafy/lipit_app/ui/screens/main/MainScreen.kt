@@ -209,8 +209,14 @@ fun WeeklyCallsSection(
             val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<EditWeeklyCallsViewModel>()
             val state by viewModel.state.collectAsState()
 
-            EditWeeklyCallsScreen( state = state,
-                onIntent = {viewModel.onIntent(it)})
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFFDF8FF))
+            ){
+                EditWeeklyCallsScreen( state = state,
+                    onIntent = {viewModel.onIntent(it)})
+            }
         }
     }
 
