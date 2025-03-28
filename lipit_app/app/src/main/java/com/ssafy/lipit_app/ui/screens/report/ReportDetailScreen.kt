@@ -35,7 +35,10 @@ import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
 
 @Composable
-fun ReportDetailScreen() {
+fun ReportDetailScreen(
+    reportId: Long,
+    onBackClick: () -> Unit
+) {
 
     val tabTitles = listOf("요약", "원어민 표현", "전체 스크립트")
     var selectedTabIndex by remember { mutableIntStateOf(0) }
@@ -131,9 +134,11 @@ fun ReportDetailScreen() {
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
 fun ReportDetailPreview() {
-    ReportDetailScreen()
+    ReportDetailScreen(
+        reportId = 101,
+        onBackClick = {}
+    )
 }

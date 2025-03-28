@@ -46,7 +46,9 @@ import androidx.compose.material.icons.filled.Email
 
 // 회워가입 메인 화면 구성
 @Composable
-fun SignupScreen() {
+fun SignupScreen(
+    onSuccess: () -> Unit
+) {
     val context = LocalContext.current
 
     // InputData
@@ -93,7 +95,9 @@ fun SignupScreen() {
 
             // 입력 폼
             Column(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
             ) {
                 Spacer(modifier = Modifier.height(10.dp))
 
@@ -210,7 +214,8 @@ fun SignupScreen() {
                 // 5. 성별: 드뢉 다운
                 SpacerHeight(18)
                 Box(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .clickable { expanded = true },
                 ) {
                     OutlinedTextField(
@@ -272,13 +277,21 @@ fun SignupScreen() {
                 ) {
                     // TODO: 회원가입 이벤트 정의
                     CustomFilledButton(text = "JOIN") {
-                        val errorMessage = validateSignupInput(id, password, passwordConfirm, name, selectedGender)
+                        val errorMessage =
+                            validateSignupInput(id, password, passwordConfirm, name, selectedGender)
 
                         if (errorMessage != null) {
                             Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
                         } else {
-                            Toast.makeText(context, "${id} ${password} ${passwordConfirm} ${name} ${selectedGender}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "${id} ${password} ${passwordConfirm} ${name} ${selectedGender}",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             // TODO: 회원가입 진행 API 실행
+
+                            // TODO: 회원 가입 성공 시, 로그인 화면으로 이동
+                            onSuccess()
                         }
                     }
                     SpacerHeight(12)
@@ -310,9 +323,8 @@ fun validateSignupInput(
 }
 
 
-
 @Preview(showBackground = true)
 @Composable
-fun SignupScreenPreview(){
-    SignupScreen()
+fun SignupScreenPreview() {
+    SignupScreen(onSuccess = {})
 }

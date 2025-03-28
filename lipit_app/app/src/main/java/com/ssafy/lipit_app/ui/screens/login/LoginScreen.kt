@@ -37,7 +37,9 @@ import androidx.compose.runtime.*
 
 
 @Composable
-fun LoginScreen(){
+fun LoginScreen(
+    onSuccess: () -> Unit
+) {
     val context = LocalContext.current
 
     // ID
@@ -89,7 +91,8 @@ fun LoginScreen(){
 
             // Input: ID, PWD
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .padding(horizontal = 20.dp)
             ) {
                 // Input: ID
@@ -151,7 +154,14 @@ fun LoginScreen(){
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     CustomFilledButton(text = "LOGIN") {
-                        Toast.makeText(context, "입력된 아이디: ${id}\n비밀번호: ${password}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "입력된 아이디: ${id}\n비밀번호: ${password}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        // TODO: 로그인 성공 이벤트
+                        onSuccess()
                     }
                 }
 
@@ -165,6 +175,6 @@ fun LoginScreen(){
 
 @Preview(showBackground = true)
 @Composable
-fun LoginScreenPreview(){
-    LoginScreen()
+fun LoginScreenPreview() {
+    LoginScreen( onSuccess = {})
 }
