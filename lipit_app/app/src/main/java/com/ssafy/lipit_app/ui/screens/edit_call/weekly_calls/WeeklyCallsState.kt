@@ -1,6 +1,6 @@
-package com.ssafy.lipit_app.ui.screens.edit_call.reschedule
+package com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls
 
-data class EditWeeklyCallsState (
+data class WeeklyCallsState (
     // 현재 선택되어 있는 보이스 정보
     val VoiceName: String = "Harry Potter",
     val VoiceImageUrl: String = "https://picsum.photos/600/400",

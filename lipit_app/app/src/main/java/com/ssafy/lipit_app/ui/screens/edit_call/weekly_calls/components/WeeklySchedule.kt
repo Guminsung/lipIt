@@ -1,10 +1,10 @@
-package com.ssafy.lipit_app.ui.screens.edit_call.reschedule.components
+package com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.components
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.CallSchedule
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.CallSchedule
 
 // 스케줄 출력 영역
 @Composable
