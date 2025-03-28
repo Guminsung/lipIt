@@ -68,9 +68,16 @@ public enum ErrorCode {
 	// 추가 에러 코드를 HttpStatus 타입으로 수정
 	BAD_REQUEST(HttpStatus.BAD_REQUEST, "VOICE-001", "필수 정보가 누락되었습니다."),
 	INVALID_FORMAT(HttpStatus.BAD_REQUEST, "VOICE-002", "음성 정보 형식이 올바르지 않습니다."),
+	VOICE_NOT_EXIST(HttpStatus.NOT_FOUND, "VOICE-003", "요청한 음성을 찾을 수 없습니다."),
 	CONFLICT(HttpStatus.CONFLICT, "VOICE-004", "이미 존재하는 음성 이름입니다."),
 	INVALID_URL(HttpStatus.BAD_REQUEST, "VOICE-005", "유효하지 않은 URL 형식입니다."),
 	URL_RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "VOICE-006", "제공된 URL에서 리소스를 찾을 수 없습니다."),
+	CELEB_VOICE_NOT_FOUND(HttpStatus.NOT_FOUND, "VOICE-007", "해당 사용자의 셀럽 음성을 찾을 수 없습니다."),
+	INVALID_MEMBER_ID(HttpStatus.BAD_REQUEST, "VOICE-008", "유효하지 않은 memberId입니다."),
+	VOICE_NOT_FOUND(HttpStatus.NOT_FOUND, "VOICE-009", "해당 음성을 찾을 수 없습니다."),
+	VOICE_ALREADY_EXISTS(HttpStatus.CONFLICT, "VOICE-010", "이미 존재하는 음성 이름입니다."),
+	VOICE_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "VOICE-011", "음성 처리 중 서버 오류가 발생했습니다."),
+
 
 	FORBIDDEN(HttpStatus.FORBIDDEN, "AUTH-015", "접근이 금지되었습니다.");
 	
