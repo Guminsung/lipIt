@@ -10,7 +10,8 @@ class EditCallViewModel : ViewModel(){
 
     fun onIntent(intent: EditCallIntent){
         when(intent){
-                // 추후 구현
+            is EditCallIntent.SelectCategory -> TODO()
+            is EditCallIntent.SelectFreeMode -> TODO()
         }
     }
 

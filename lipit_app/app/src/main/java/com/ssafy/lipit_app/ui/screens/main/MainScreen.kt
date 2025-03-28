@@ -47,8 +47,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallIntent
+import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallScreen
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsIntent
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -197,9 +201,8 @@ fun WeeklyCallsSection(
     }
 
     val scope = rememberCoroutineScope()
-
     var showSheet by remember{ mutableStateOf(false) }
-
+    var isEditMode by remember { mutableStateOf(false) }
 
     if(showSheet){
         ModalBottomSheet(
@@ -214,8 +217,41 @@ fun WeeklyCallsSection(
                     .fillMaxWidth()
                     .background(Color(0xFFFDF8FF))
             ){
-                WeeklyCallsScreen( state = state,
-                    onIntent = {viewModel.onIntent(it)})
+                if (isEditMode) {
+                    // Edit 모드 화면
+                    EditCallScreen(
+                        state = state.editState, // 필요 시 ViewModel 분리
+                        onIntent = { intent ->
+                            when (intent) {
+                                is EditCallIntent.SelectFreeMode -> {
+                                    viewModel.onIntent(WeeklyCallsIntent.SelectFreeMode(intent.isSelected))
+                                }
+                                is EditCallIntent.SelectCategory -> {
+                                    viewModel.onIntent(WeeklyCallsIntent.SelectCategory(intent.category))
+                                }
+                            }
+                        }
+
+                    )
+                } else {
+                    // WeeklyCalls 화면
+                    WeeklyCallsScreen(
+                        state = state.weeklyState,
+                        onIntent = { intent ->
+                            viewModel.onIntent(intent)
+
+                            if (intent is WeeklyCallsIntent.OnEditSchedule) {
+                                scope.launch {
+                                    sheetState.hide()
+                                    showSheet = false
+                                    delay(10)
+                                    isEditMode = true
+                                    showSheet = true
+                                }
+                            }
+                        }
+                    )
+                }
             }
         }
     }
@@ -247,6 +283,7 @@ fun WeeklyCallsSection(
                 Button(
                     onClick = {
                         //전화 일정 편집 화면으로 넘어감
+                        isEditMode = false // 처음은 WeeklyCalls
                         showSheet = true
                         scope.launch {
                             sheetState.show()

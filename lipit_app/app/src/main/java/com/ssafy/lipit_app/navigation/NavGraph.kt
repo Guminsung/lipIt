@@ -41,7 +41,7 @@ fun NavGraph(
             val state by viewModel.state.collectAsState()
 
             WeeklyCallsScreen(
-                state = state,
+                state = state.weeklyState,
                 onIntent = {viewModel.onIntent(it)}
             )
         }

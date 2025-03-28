@@ -16,15 +16,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,10 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
-import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallScreen
-import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallViewModel
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.CallSchedule
-import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -47,37 +40,10 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ThisWeekSchedules(dayList: List<String>, callSchedules: List<CallSchedule>) {
+fun ThisWeekSchedules(dayList: List<String>, callSchedules: List<CallSchedule>, onTapSchedule: () -> Unit) {
     val today = LocalDate.now()
     val dayOfWeek: DayOfWeek = today.dayOfWeek
     val koreanDayName: String = dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN)
-
-    // 각 스케줄 수정 바텀 시트 관련
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true // 스케줄 관련 바텀 시트는 크기만큼 올라오도록 함
-    )
-
-    val scope = rememberCoroutineScope()
-    var showSheet by remember{ mutableStateOf(false) }
-
-    if(showSheet){
-        ModalBottomSheet(
-            onDismissRequest = { showSheet = false },
-            sheetState = sheetState
-        ) {
-            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<EditCallViewModel>()
-            val state by viewModel.state.collectAsState()
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFFFDF8FF))
-            ){
-                EditCallScreen( state = state,
-                    onIntent = {viewModel.onIntent(it)})
-            }
-        }
-    }
 
 
     Column(
@@ -102,22 +68,8 @@ fun ThisWeekSchedules(dayList: List<String>, callSchedules: List<CallSchedule>) 
                                 showDeletePopup = true // 롱프레스 시 팝업 띄우기
                             },
                             onTap = {
-                                // 일반 클릭 시 상세로 넘어감
                                 //전화 개별 상세 편집 화면으로 넘어감
-                                scope.launch {
-                                    // todo: 기존 스케줄 목록 바텀 시트 닫음
-                                    if(sheetState.isVisible){
-                                        sheetState.hide()
-                                    }
-                                    showSheet = false
-
-                                    kotlinx.coroutines.delay(200)
-
-                                    showSheet = true
-                                    scope.launch {
-                                        sheetState.show()
-                                    }
-                                }
+                                onTapSchedule()
                             }
                         )
                     }

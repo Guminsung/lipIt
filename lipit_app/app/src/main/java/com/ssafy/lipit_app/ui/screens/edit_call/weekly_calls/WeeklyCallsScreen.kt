@@ -48,7 +48,14 @@ fun WeeklyCallsScreen(
         SelectedVoiceCard(state.VoiceName, state.VoiceImageUrl)
 
         // 하단 - Call 스케줄표
-        WeeklySchedule(state.callSchedules)
+        WeeklySchedule(
+            callSchedules = state.callSchedules,
+            onTapSchedule = {
+                // 바텀시트를 EditCallScreen 모드로 전환하는 콜백
+                onIntent(WeeklyCallsIntent.OnEditSchedule)
+            }
+        )
+
     }
 }
 
