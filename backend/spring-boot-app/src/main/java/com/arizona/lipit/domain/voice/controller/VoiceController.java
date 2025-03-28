@@ -35,13 +35,13 @@ public class VoiceController {
         return ResponseEntity.ok(CommonResponse.ok("커스텀 음성이 성공적으로 조회되었습니다.", voices));
     }
 
-    @GetMapping("users/{memberId}/voice")
+    @GetMapping("members/{memberId}/voice")
     public ResponseEntity<CommonResponse<List<UserVoiceResponseDto>>> getUserVoices(@PathVariable Long memberId) {
         List<UserVoiceResponseDto> voices = voiceService.getAllVoicesByMemberId(memberId);
         return ResponseEntity.ok(CommonResponse.ok("사용자 음성이 성공적으로 조회되었습니다.", voices));
     }
     
-    @PatchMapping("users/{memberId}/voice")
+    @PatchMapping("members/{memberId}/voice")
     public ResponseEntity<CommonResponse<SelectVoiceResponseDto>> selectVoice(
             @PathVariable Long memberId,
             @RequestBody SelectVoiceRequestDto requestDto) {
@@ -49,7 +49,7 @@ public class VoiceController {
         return ResponseEntity.ok(CommonResponse.ok("음성이 성공적으로 선택되었습니다.", responseDto));
     }
 
-    @PostMapping("/voices/recording")
+    @PostMapping("/recording")
     public ResponseEntity<CommonResponse<RecordingVoiceResponseDto>> saveRecordingVoice(
             @RequestBody RecordingVoiceRequestDto requestDto,
             @RequestParam Long memberId) {
