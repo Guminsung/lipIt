@@ -1,8 +1,10 @@
 # app/crud/call.py (LangGraph 기반 재작성)
 import asyncio
+import json
 from typing import Union
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import sessionmaker
 
 from app.model.call import Call
 from app.schema.call import (
@@ -28,7 +30,11 @@ from app.graph.nodes.memory import (
     convert_to_lc_message,
     safe_convert_message_to_dict,
 )
+from app.crud import native_expression
+from app.crud import report as report_crud
+from app.graph.nodes.llm import llm
 import logging
+from langchain.schema import SystemMessage, HumanMessage
 
 logger = logging.getLogger(__name__)
 
@@ -199,11 +205,8 @@ async def end_call(
 
     # 통화 종료 시 리포트 생성
     try:
-        from app.crud.report import create_report
+        # 리포트 생성 요청 객체 생성
         from app.schema.report import CreateReportRequest
-        from app.graph.nodes.llm import llm
-        from langchain.schema import SystemMessage, HumanMessage
-        import json
         
         # 간단한 대화 분석
         messages = [Message(**m) for m in call_record.messages]
@@ -247,7 +250,7 @@ async def end_call(
             feedback_summary = feedback_response.content.strip()
             
             # 텍스트 길이 제한 및 특수 문자 처리
-            max_length = 500  # 데이터베이스 필드 크기에 맞게 더 제한
+            max_length = 500  # 데이터베이스 필드 크기에 맞게 제한
             
             # 텍스트 클리닝 함수
             def clean_text(text):
@@ -263,7 +266,6 @@ async def end_call(
             logger.error(f"AI 요약/피드백 생성 실패: {str(e)}")
             # 생성 실패 시 기본 메시지 사용
         
-        # 리포트 생성 요청
         report_request = CreateReportRequest(
             memberId=call_record.member_id,
             callId=call_record.call_id,
@@ -276,10 +278,17 @@ async def end_call(
         )
         
         # 리포트 생성
-        await create_report(db, report_request)
+        new_report = await report_crud.create_report(db=db, request=report_request)
+        
+        # 원어민 표현 생성 및 저장 (직접 호출로 변경)
+        await generate_and_save_native_expressions(
+            db=db, 
+            call_id=call_record.call_id, 
+            report_id=new_report.reportId
+        )
     except Exception as e:
-        # 리포트 생성에 실패해도 통화 종료는 계속 진행
-        logger.error(f"리포트 생성 실패: {str(e)}")
+        logger.error(f"Failed to create report or native expressions: {str(e)}")
+        # 리포트 생성 실패는 통화 종료에 영향을 주지 않도록 예외를 전파하지 않음
 
     return EndCallResponse(
         endTime=end_time,
@@ -288,3 +297,78 @@ async def end_call(
         aiMessageKor=result.get("ai_response_kor"),
         aiAudioUrl=result.get("ai_audio_url"),
     )
+
+
+async def generate_and_save_native_expressions(db: AsyncSession, call_id: int, report_id: int):
+    """통화 내용을 분석하여 원어민 표현을 생성하고 저장합니다."""
+    try:
+        # 통화 메시지 가져오기
+        result = await db.execute(select(Call).where(Call.call_id == call_id))
+        call_record = result.scalars().first()
+        
+        if not call_record or not call_record.messages:
+            return
+        
+        # 사용자 메시지만 필터링
+        user_messages = [msg for msg in call_record.messages if msg.get("type") != "ai"]
+        
+        # 최대 5개까지 처리
+        for idx, msg in enumerate(user_messages[:5]):
+            user_sentence = msg.get("content", "")
+            if not user_sentence.strip():
+                continue
+                
+            # LLM을 사용하여 원어민 표현 생성
+            system_prompt = """
+            You are a helpful assistant that helps non-native English speakers improve their English expressions.
+            
+            Given a sentence from a user, suggest a more natural way a native speaker might express the same idea.
+            
+            Identify the SPECIFIC KEY PHRASE or expression in your suggested native expression that is most important or most commonly used by native speakers.
+            
+            For example, if the user says "I want to include AI features like hearing", you might suggest "I want to incorporate AI features such as auditory capabilities" and the key phrase would be "incorporate ... such as".
+            
+            Return your response in the following JSON format:
+            {
+              "native_expression": "The complete natural expression a native speaker would use",
+              "keyword": "The specific key phrase or idiom that is important",
+              "keyword_korean": "The Korean translation of just the key phrase"
+            }
+            
+            Do not include any additional text outside the JSON.
+            """
+            
+            user_prompt = f"Please improve this English expression: '{user_sentence}'"
+            
+            chat_prompt = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ]
+            
+            try:
+                # 각 반복에서 LLM 호출 및 데이터베이스 저장 작업을 완료
+                response = await llm.ainvoke(chat_prompt)
+                response_content = response.content.strip()
+                
+                # JSON 파싱
+                response_json = json.loads(response_content)
+                
+                # 원어민 표현 저장 - 새로운 데이터베이스 세션을 사용하여 충돌 방지
+                async with AsyncSession(db.bind, expire_on_commit=False) as new_session:
+                    await native_expression.create_native_expression(
+                        db=new_session,
+                        report_id=report_id,
+                        my_sentence=user_sentence,
+                        ai_sentence=response_json.get("native_expression", ""),
+                        keyword=response_json.get("keyword", ""),
+                        keyword_korean=response_json.get("keyword_korean", "")
+                    )
+            except Exception as e:
+                # JSON 파싱 오류 처리
+                logger.error(f"Error parsing LLM response: {str(e)}")
+                continue
+                
+    except Exception as e:
+        # 오류 처리
+        logger.error(f"Error generating native expressions: {str(e)}")
+        return
