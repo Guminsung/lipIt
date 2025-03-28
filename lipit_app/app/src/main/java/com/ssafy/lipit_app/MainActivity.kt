@@ -24,8 +24,7 @@ class MainActivity : AppCompatActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ){
-//                    NavGraph() //compose 화면 전환 진입점
-                    SignupScreen()
+                    NavGraph() //compose 화면 전환 진입점
                 }
             }
         }

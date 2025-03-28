@@ -60,7 +60,10 @@ import mx.platacard.pagerindicator.PagerIndicator
 import okhttp3.internal.wait
 
 @Composable
-fun AuthStartScreen(){
+fun AuthStartScreen(
+    onLoginClick: () -> Unit,
+    onSignupClick: () -> Unit = {}
+) {
     val context = LocalContext.current
 
     Box(
@@ -85,7 +88,7 @@ fun AuthStartScreen(){
 
             // 상단 여백
             Spacer(modifier = Modifier.height(44.dp))
-            
+
             // 1. Title
             Image(
                 painter = painterResource(id = R.drawable.img_title),
@@ -108,8 +111,9 @@ fun AuthStartScreen(){
 
             // 3. 로그인 & 회원가입 영역
             Column(
-                modifier = Modifier.fillMaxWidth()
-                .padding(horizontal = 20.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
             ) {
                 // 왼쪽 정렬 텍스트
                 Text(
@@ -129,6 +133,7 @@ fun AuthStartScreen(){
                 ) {
                     CustomOutlinedButton(text = "Get Started") {
                         Toast.makeText(context, "회원가입 화면 이동", Toast.LENGTH_SHORT).show()
+                        onSignupClick()
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -139,6 +144,7 @@ fun AuthStartScreen(){
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.clickable {
                             Toast.makeText(context, "로그인 화면 이동", Toast.LENGTH_SHORT).show()
+                            onLoginClick()
                         }
                     )
                 }
@@ -152,6 +158,9 @@ fun AuthStartScreen(){
 
 @Preview(showBackground = true)
 @Composable
-fun AuthStartPreview(){
-    AuthStartScreen()
+fun AuthStartPreview() {
+    AuthStartScreen(
+        onLoginClick = {},
+        onSignupClick = {}
+    )
 }

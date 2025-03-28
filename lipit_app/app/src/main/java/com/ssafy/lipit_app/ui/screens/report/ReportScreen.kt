@@ -52,7 +52,10 @@ import com.ssafy.lipit_app.util.CommonUtils.formatDate
 import com.ssafy.lipit_app.util.CommonUtils.formatSeconds
 
 @Composable
-fun ReportScreen() {
+fun ReportScreen(
+    onReportItemClick: (Long) -> Unit,
+    onBackClick: () -> Unit
+) {
 
     // 더미 데이터
     val communicationSummaryText = "사용자는 오픽 시험을 준비하며, 다양한 주제에 대한 연습을 원하고, 롤플레이와 피드백을 요청하였다."
@@ -115,14 +118,14 @@ fun ReportScreen() {
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             items(reports) { report ->
-                Report(report)
+                Report(report, { onReportItemClick(report.reportId) })
             }
         }
     }
 }
 
 @Composable
-fun Report(report: ReportSummary) {
+fun Report(report: ReportSummary, onReportItemClick: (Long) -> Unit) {
 
     // 카드가 뒤집혔는지 상태 저장
     var isFlipped by remember { mutableStateOf(false) }
@@ -150,7 +153,7 @@ fun Report(report: ReportSummary) {
                     alpha = if (rotation > 90f) 0f else 1f
                 }
         ) {
-            ReportFront(report)
+            ReportFront(report, onReportItemClick)
         }
 
         // 카드 뒷면 (앞면이 보일 때 숨김)
@@ -205,7 +208,10 @@ fun ReportBack(report: ReportSummary) {
 
 // 카드 앞면
 @Composable
-fun ReportFront(report: ReportSummary) {
+fun ReportFront(
+    report: ReportSummary,
+    onReportItemClick: (Long) -> Unit
+) {
 
     Column(
         modifier = Modifier
@@ -240,7 +246,7 @@ fun ReportFront(report: ReportSummary) {
                     verticalAlignment = Alignment.Bottom,
                     modifier = Modifier.clickable {
                         // TODO: ReportDetail로 이동
-
+                        onReportItemClick(report.reportId)
                     }
                 ) {
                     Text(
@@ -349,5 +355,5 @@ fun ReportFront(report: ReportSummary) {
 @Composable
 @Preview(showBackground = true)
 fun ReportScreenPreview() {
-    ReportScreen()
+    ReportScreen(onReportItemClick = {}, onBackClick = {})
 }
