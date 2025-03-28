@@ -50,7 +50,7 @@ def convert_to_message(
 
 def memory_node(state: dict) -> dict:
     """
-    input 필드를 messages에 추가 (user 또는 ai)
+    input 필드를 messages에 추가 (human 또는 ai)
     LangChain 메시지를 Message로 변환
     """
     input_text = state.get("input")

@@ -18,13 +18,13 @@ class StartCallRequest(BaseModel):
     memberId: int
     voiceId: int
     voiceAudioUrl: str
-    topic: str
+    topic: Optional[str] = None
 
 
 # 대화 시작 응답 DTO
 class StartCallResponse(BaseModel):
     callId: int
-    startTime: datetime
+    startTime: str
     aiMessage: str
     aiMessageKor: Optional[str] = None
     aiAudioUrl: str
@@ -47,10 +47,9 @@ class AIMessageResponse(BaseModel):
 class EndCallRequest(BaseModel):
     userMessage: str
     userMessageKor: Optional[str] = None
-    endReason: str  # 예: "USER_REQUEST", "TIMEOUT", "AI_DECISION"
 
 
 # 대화 종료 응답 DTO
 class EndCallResponse(AIMessageResponse):  # 상속
-    endTime: datetime
+    endTime: str
     duration: int

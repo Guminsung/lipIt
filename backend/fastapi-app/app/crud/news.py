@@ -1,8 +1,9 @@
+import random
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timezone, timedelta
 from typing import List, Dict
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
 import time
@@ -509,3 +510,33 @@ async def update_weather_db(db: AsyncSession) -> int:
         logger.error(f"날씨 업데이트 오류: {str(e)}")
         await db.rollback()
         return 0
+
+
+async def get_random_news(session: AsyncSession, category: str = None) -> News:
+    """
+    뉴스 테이블에서 랜덤 뉴스 하나를 가져온다.
+    - category가 주어지면 해당 카테고리 내에서 선택
+    - category가 없으면 전체에서 선택
+    """
+    query = select(func.min(News.news_id), func.max(News.news_id))
+    if category:
+        query = query.where(News.category == category)
+
+    result = await session.execute(query)
+    min_id, max_id = result.fetchone()
+
+    if min_id is None or max_id is None:
+        return None  # 해당 조건에 맞는 뉴스 없음
+
+    for _ in range(5):  # 최대 5번 시도
+        random_id = random.randint(min_id, max_id)
+        news_query = select(News).where(News.news_id == random_id)
+        if category:
+            news_query = news_query.where(News.category == category)
+
+        news_result = await session.execute(news_query)
+        news = news_result.scalars().first()
+        if news:
+            return news
+
+    return None  # 조건에 맞는 뉴스가 없거나 시도 실패

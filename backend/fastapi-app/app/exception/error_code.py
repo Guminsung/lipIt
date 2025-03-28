@@ -15,7 +15,7 @@ class Error:
     # Call
     CALL_NOT_FOUND = ErrorCode("CALL-001", "해당 통화 기록을 찾을 수 없습니다.")
     CALL_ALREADY_ENDED = ErrorCode("CALL-002", "이미 종료된 통화입니다.")
-    CALL_INTERNAL_ERROR = ErrorCode("CALL-003", "RAG 검색 중 서버 오류가 발생했습니다.")
+    CALL_INTERNAL_ERROR = ErrorCode("CALL-003", "서버 오류가 발생했습니다.")
     CALL_AI_FAILED = ErrorCode("CALL-004", "AI 처리 중 오류가 발생했습니다.")
     CALL_TTS_FAILED = ErrorCode("CALL-005", "TTS 처리 중 오류가 발생했습니다.")
 
@@ -42,4 +42,6 @@ class Error:
 
     # Report
     REPORT_NOT_FOUND = ErrorCode("REPORT-001", "보고서를 찾을 수 없습니다.")
-    REPORT_INTERNAL_ERROR = ErrorCode("REPORT-002", "보고서 처리 중 오류가 발생했습니다.")
+    REPORT_INTERNAL_ERROR = ErrorCode(
+        "REPORT-002", "보고서 처리 중 오류가 발생했습니다."
+    )

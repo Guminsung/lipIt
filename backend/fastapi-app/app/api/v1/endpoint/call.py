@@ -8,17 +8,17 @@ from app.schema.call import (
     UserMessageRequest,
     EndCallRequest,
 )
-from app.crud.call import create_call, add_message_to_call, end_call
+from app.service.call import start_call, add_message_to_call, end_call
 from app.exception.custom_exceptions import APIException
 from app.exception.error_code import Error
 
 
 # 1. 통화 시작
-async def create_call_endpoint(
+async def start_call_endpoint(
     request: StartCallRequest, db: AsyncSession = Depends(get_db)
 ):
     try:
-        call_response = await create_call(db, request)
+        call_response = await start_call(db, request)
         return APIResponse(
             status=200, message="대화가 성공적으로 시작되었습니다.", data=call_response
         )
