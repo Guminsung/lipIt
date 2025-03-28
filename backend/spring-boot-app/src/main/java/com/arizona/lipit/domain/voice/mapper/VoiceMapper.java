@@ -1,5 +1,7 @@
 package com.arizona.lipit.domain.voice.mapper;
 
+import com.arizona.lipit.domain.auth.entity.Member;
+import com.arizona.lipit.domain.voice.dto.CelebVoiceResponseDto;
 import com.arizona.lipit.domain.voice.dto.UserVoiceResponseDto;
 import com.arizona.lipit.domain.voice.dto.VoiceResponseDto;
 import com.arizona.lipit.domain.voice.entity.MemberVoice;
@@ -19,7 +21,17 @@ public class VoiceMapper {
         return VoiceResponseDto.builder()
                 .voiceName(voice.getVoiceName())
                 .customImageUrl(voice.getImageUrl())
-                .activate(false)
+                .build();
+    }
+
+    /**
+     * Voice 엔티티를 CelebVoiceResponseDto로 변환 (리포트 카운트 반영)
+     */
+    public CelebVoiceResponseDto toCelebVoiceResponseDto(Voice voice, boolean activated) {
+        return CelebVoiceResponseDto.builder()
+                .voiceName(voice.getVoiceName())
+                .customImageUrl(voice.getImageUrl())
+                .activated(activated)
                 .build();
     }
 
@@ -30,7 +42,6 @@ public class VoiceMapper {
         return VoiceResponseDto.builder()
                 .voiceName(memberVoice.getVoice().getVoiceName())
                 .customImageUrl(memberVoice.getVoice().getImageUrl())
-                .activate(memberVoice.getActivate())
                 .build();
     }
 
@@ -50,6 +61,16 @@ public class VoiceMapper {
         return UserVoiceResponseDto.builder()
                 .voiceName(memberVoice.getVoice().getVoiceName())
                 .customImageUrl(memberVoice.getVoice().getImageUrl())
+                .build();
+    }
+
+    /**
+     * Voice 엔티티를 UserVoiceResponseDto로 변환
+     */
+    public UserVoiceResponseDto toUserVoiceResponseDto(Voice voice) {
+        return UserVoiceResponseDto.builder()
+                .voiceName(voice.getVoiceName())
+                .customImageUrl(voice.getImageUrl())
                 .build();
     }
 

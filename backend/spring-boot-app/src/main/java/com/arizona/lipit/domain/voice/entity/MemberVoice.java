@@ -31,9 +31,6 @@ public class MemberVoice {
     @JoinColumn(name = "voice_id")
     private Voice voice;
 
-    @Column
-    private Boolean activate = true;
-
     @CreationTimestamp
     private Timestamp createdAt;
 
