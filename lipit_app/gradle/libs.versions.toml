@@ -35,6 +35,8 @@ composeMaterial3 = "1.0.0-alpha32"
 material = "1.12.0"
 activity = "1.10.0"
 constraintlayout = "2.2.0"
+media3Exoplayer = "1.6.0"
+uiTestAndroid = "1.7.8"
 
 [libraries]
 androidx-compose-navigation = { module = "androidx.wear.compose:compose-navigation", version.ref = "composeNavigation" }
@@ -82,6 +84,8 @@ retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+androidx-ui-test-android = { group = "androidx.compose.ui", name = "ui-test-android", version.ref = "uiTestAndroid" }
+androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3Exoplayer" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
