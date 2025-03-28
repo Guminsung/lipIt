@@ -10,18 +10,26 @@ def prompt_node(state: dict) -> dict:
     history = state.get("messages", [])[-10:]  # 최근 대화 기록
     context = state.get("retrieved_context", [])
     user_input = state.get("input")
+    is_timeout = state.get("is_timeout", False)
+
+    if is_timeout:
+        user_input += (
+            "\n\nWe've been talking for a while. Please end the call politely."
+        )
 
     # 시스템 프롬프트 구성
     system_prompt = (
         "You are an AI speaking on a phone call with a user. "
-        "Respond naturally and casually in English.\n"
-        "Return the response in the following JSON format:\n\n"
+        "Respond in a friendly and natural tone in English. "
+        "Your response must be returned in **strict JSON format**, with no explanation or extra text.\n\n"
+        "Respond appropriately based on the situation. If the user seems to want to end the call or the call has gone too long, end it naturally.\n\n"
+        "Return your answer in the following format:\n"
         "{\n"
-        '  "en": "Your English response here",\n'
-        '  "ko": "Translate it into polite, natural Korean as if you’re actually talking on the phone. Use 존댓말 (formal and respectful tone)."\n'
+        '  "en": "<Your English reply>",\n'
+        '  "ko": "<Polite and natural Korean translation of the English reply>",\n'
+        '  "should_end_call": true or false\n'
         "}\n\n"
-        "Do not include any additional text outside the JSON.\n"
-        "Respond as if you're continuing a phone call."
+        "**Only return the JSON. Do not include any markdown, explanations, or speaker labels like 'AI:'.**"
     )
 
     if context:

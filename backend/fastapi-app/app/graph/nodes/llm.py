@@ -15,10 +15,15 @@ async def llm_node(state: dict) -> dict:
     try:
         response_json = json.loads(response.content.strip())
         state["ai_response"] = response_json.get("en")
-        state["ai_response_kor"] = response_json.get("ko")
+        state["ai_response_kor"] = response_json.get("ko", "")
+        state["should_end_call"] = response_json.get("should_end_call", False)
     except json.JSONDecodeError:
         # 예외 처리: JSON 파싱 실패 시 전체 content 저장
+        # state["ai_response"] = response.content.strip()
+        print("🚫 JSON Decode Error")
+        print("💬 GPT Raw Response:", response.content)
         state["ai_response"] = response.content.strip()
-        state["ai_response_kor"] = None
+        state["ai_response_kor"] = ""
+        state["should_end_call"] = False  # fallback
 
     return state

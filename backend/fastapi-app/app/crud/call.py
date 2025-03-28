@@ -1,5 +1,6 @@
 # app/crud/call.py (LangGraph 기반 재작성)
 import asyncio
+from typing import Union
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -74,7 +75,7 @@ async def create_call(db: AsyncSession, request: StartCallRequest) -> StartCallR
 
 async def add_message_to_call(
     db: AsyncSession, callId: int, request: UserMessageRequest
-) -> AIMessageResponse:
+) -> Union[AIMessageResponse, EndCallResponse]:
     result = await db.execute(select(Call).where(Call.call_id == callId))
     call_record = result.scalars().first()
 
@@ -84,11 +85,17 @@ async def add_message_to_call(
     if not call_record:
         raise APIException(404, Error.CALL_NOT_FOUND)
 
+    # 시간 초과 여부 확인
+    current_time = now_kst()
+    call_duration = (current_time - call_record.start_time).total_seconds()
+    is_timeout = call_duration >= 300  # 5분 = 300초
+
     state = {
         "call_id": call_record.call_id,
         "member_id": call_record.member_id,
         "input": request.userMessage,
         "messages": [convert_to_lc_message(Message(**m)) for m in call_record.messages],
+        "is_timeout": is_timeout,
     }
 
     try:
@@ -100,6 +107,38 @@ async def add_message_to_call(
         call_record, [safe_convert_message_to_dict(m) for m in result["messages"][-2:]]
     )
 
+    should_end_call = result.get("should_end_call") is True or is_timeout
+
+    # 통화 종료 조건이면 end_time 처리
+    if should_end_call:
+        end_time = now_kst()
+        duration = int((end_time - call_record.start_time).total_seconds())
+
+        call_record.end_time = end_time
+        call_record.updated_at = end_time
+
+        # RAG 저장 비동기로
+        asyncio.create_task(
+            store_call_history_embedding(
+                call_id=call_record.call_id,
+                member_id=call_record.member_id,
+                messages=[Message(**m) for m in call_record.messages],
+            )
+        )
+
+        db.add(call_record)
+        await db.commit()
+        await db.refresh(call_record)
+
+        return EndCallResponse(
+            endTime=end_time,
+            duration=duration,
+            aiMessage=result.get("ai_response"),
+            aiMessageKor=result.get("ai_response_kor"),
+            aiAudioUrl=result.get("ai_audio_url"),
+        )
+
+    # 일반 응답
     db.add(call_record)
     await db.commit()
     await db.refresh(call_record)

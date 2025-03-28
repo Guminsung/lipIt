@@ -1,3 +1,4 @@
+from typing import Union
 from app.api.v1.endpoint.call import (
     create_call_endpoint,
     add_message_to_call_endpoint,
@@ -53,16 +54,33 @@ router.api_doc(
     endpoint=add_message_to_call_endpoint,
     methods=["PATCH"],
     request_model=UserMessageRequest,
-    response_model=APIResponse[AIMessageResponse],
-    success_model=AIMessageResponse,
+    response_model=APIResponse[Union[AIMessageResponse, EndCallResponse]],
+    success_model=Union[AIMessageResponse, EndCallResponse],
     request_example={
         "userMessage": "I don't like sports that much.",
         "userMessageKor": "저는 스포츠를 그다지 좋아하지 않습니다.",
     },
     success_example={
-        "aiMessage": "That's totally fine! Sports aren't for everyone. So, besides listening to music, what else do you enjoy doing in your free time?",
-        "aiMessageKor": "괜찮습니다! 스포츠가 모든 사람을 위한 것은 아닙니다. 그렇다면 음악을 듣는 것 외에도 여가 시간에 즐기는 것은 무엇인가요?",
-        "aiAudioUrl": "https://dlxayir1dj7sa.cloudfront.net/audio/bc789f57-732a-4d66-9256-55a5aa3cbfb4.mp3",
+        200: {
+            "summary": "일반 대화 응답",
+            "description": "통화가 계속되는 경우의 AI 응답 예시",
+            "value": {
+                "aiMessage": "That's totally fine! Sports aren't for everyone. So, besides listening to music, what else do you enjoy doing in your free time?",
+                "aiMessageKor": "괜찮습니다! 스포츠가 모든 사람을 위한 것은 아닙니다. 그렇다면 음악을 듣는 것 외에도 여가 시간에 즐기는 것은 무엇인가요?",
+                "aiAudioUrl": "https://dlxayir1dj7sa.cloudfront.net/audio/bc789f57-732a-4d66-9256-55a5aa3cbfb4.mp3",
+            },
+        },
+        200: {
+            "summary": "통화 종료 응답",
+            "description": "사용자의 발화로 통화가 종료될 때의 응답 예시",
+            "value": {
+                "endTime": "2025-03-14T14:25:45.678Z",
+                "duration": 315,
+                "aiMessage": "Alright, sounds good! If you have any more questions in the future, feel free to reach out. Have a great day!",
+                "aiMessageKor": "좋아요, 좋아요! 앞으로 더 궁금한 점이 있으면 언제든지 질문해 주세요. 좋은 하루 되세요!",
+                "aiAudioUrl": "https://dlxayir1dj7sa.cloudfront.net/audio/65991ce5-5332-435a-8c23-4be6c92749a9.mp3",
+            },
+        },
     },
     errors={
         404: {

@@ -1,5 +1,5 @@
 # 1. 의존성 빌드용 (패키지 설치만 수행)
-FROM python:3.12-slim AS builder
+FROM python:3.10-slim AS builder
 
 # 작업 디렉토리
 WORKDIR /install
