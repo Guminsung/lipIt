@@ -70,7 +70,9 @@ public enum ErrorCode {
 	INVALID_FORMAT(HttpStatus.BAD_REQUEST, "VOICE-002", "음성 정보 형식이 올바르지 않습니다."),
 	CONFLICT(HttpStatus.CONFLICT, "VOICE-004", "이미 존재하는 음성 이름입니다."),
 	INVALID_URL(HttpStatus.BAD_REQUEST, "VOICE-005", "유효하지 않은 URL 형식입니다."),
-	URL_RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "VOICE-006", "제공된 URL에서 리소스를 찾을 수 없습니다.");
+	URL_RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "VOICE-006", "제공된 URL에서 리소스를 찾을 수 없습니다."),
+
+	FORBIDDEN(HttpStatus.FORBIDDEN, "AUTH-015", "접근이 금지되었습니다.");
 	
 	private final HttpStatus status;
 	private final String errorCode;

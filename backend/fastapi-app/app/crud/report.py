@@ -8,6 +8,7 @@ from app.model.call import Call
 from app.schema.report import ReportResponse, CreateReportRequest, ReportSummaryResponse, ReportScriptResponse, ScriptItem, ReportExpressionsResponse, NativeExpressionItem
 from app.exception.custom_exceptions import APIException
 from app.exception.error_code import Error
+from app.crud import native_expression
 from datetime import datetime
 from app.graph.nodes.llm import llm
 
@@ -117,7 +118,7 @@ async def get_report_script(db: AsyncSession, report_id: int) -> ReportScriptRes
     return ReportScriptResponse(script=script_items)
 
 
-# 리포트 원어민 표현 생성 및 조회
+# 리포트 원어민 표현 조회
 async def get_report_expressions(db: AsyncSession, report_id: int) -> ReportExpressionsResponse:
     # 리포트 조회
     report = await db.get(Report, report_id)
@@ -125,73 +126,15 @@ async def get_report_expressions(db: AsyncSession, report_id: int) -> ReportExpr
     if not report:
         raise APIException(404, Error.REPORT_NOT_FOUND)
     
-    # 해당 리포트와 연결된 통화 조회
-    call_id = report.call_id
-    result = await db.execute(select(Call).where(Call.call_id == call_id))
-    call = result.scalars().first()
+    # DB에서 원어민 표현 조회
+    expressions_db = await native_expression.get_native_expressions_by_report_id(db=db, report_id=report_id)
     
-    if not call or not call.messages:
-        return ReportExpressionsResponse(nativeExpressions=[])
-    
-    # 사용자 메시지만 추출 (human 타입)
-    user_messages = [msg for msg in call.messages if msg.get("type") != "ai"]
-    
-    # 원어민 표현 생성
+    # DTO로 변환
     expressions = []
-    expression_id = 1
+    for i, expr in enumerate(expressions_db, 1):
+        expressions.append(
+            native_expression.convert_to_native_expression_item(expr, i)
+        )
     
-    # 최대 5개의 표현만 생성
-    for idx, msg in enumerate(user_messages[:5]):
-        user_sentence = msg.get("content", "")
-        if not user_sentence.strip():
-            continue
-            
-        # LLM을 사용하여 원어민 표현 생성
-        system_prompt = """
-        You are a helpful assistant that helps non-native English speakers improve their English expressions.
-        
-        Given a sentence from a user, suggest a more natural way a native speaker might express the same idea.
-        
-        Identify the SPECIFIC KEY PHRASE or expression in your suggested native expression that is most important or most commonly used by native speakers.
-        
-        For example, if the user says "I want to include AI features like hearing", you might suggest "I want to incorporate AI features such as auditory capabilities" and the key phrase would be "incorporate ... such as".
-        
-        Return your response in the following JSON format:
-        {
-          "native_expression": "The complete natural expression a native speaker would use",
-          "keyword": "The specific key phrase or idiom that is important",
-          "keyword_korean": "The Korean translation of just the key phrase"
-        }
-        
-        Do not include any additional text outside the JSON.
-        """
-        
-        user_prompt = f"Please improve this English expression: '{user_sentence}'"
-        
-        chat_prompt = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-        
-        try:
-            response = await llm.ainvoke(chat_prompt)
-            response_content = response.content.strip()
-            
-            # JSON 파싱
-            response_json = json.loads(response_content)
-            
-            expressions.append(
-                NativeExpressionItem(
-                    nativeExpressionId=expression_id,
-                    mySentence=user_sentence,
-                    AISentence=response_json.get("native_expression", ""),
-                    keyword=response_json.get("keyword", ""),
-                    keywordKorean=response_json.get("keyword_korean", "")
-                )
-            )
-            expression_id += 1
-        except Exception as e:
-            # 개별 표현 생성 실패 시 건너뛰기
-            continue
-    
+    # 저장된 표현이 없으면 빈 리스트 반환
     return ReportExpressionsResponse(nativeExpressions=expressions) 

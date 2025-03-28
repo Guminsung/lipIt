@@ -6,6 +6,7 @@ import com.arizona.lipit.domain.voice.dto.UserVoiceResponseDto;
 import com.arizona.lipit.domain.voice.dto.VoiceResponseDto;
 import com.arizona.lipit.domain.voice.dto.RecordingVoiceRequestDto;
 import com.arizona.lipit.domain.voice.dto.RecordingVoiceResponseDto;
+import com.arizona.lipit.domain.voice.dto.CelebVoiceResponseDto;
 import com.arizona.lipit.domain.voice.service.VoiceService;
 import com.arizona.lipit.global.response.CommonResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,8 @@ public class VoiceController {
     private final VoiceService voiceService;
 
     @GetMapping("/celeb")
-    public ResponseEntity<CommonResponse<List<VoiceResponseDto>>> getCelebVoices(@RequestParam Long memberId) {
-        List<VoiceResponseDto> voices = voiceService.getCelebVoicesByMemberId(memberId);
+    public ResponseEntity<CommonResponse<List<CelebVoiceResponseDto>>> getCelebVoices(@RequestParam Long memberId) {
+        List<CelebVoiceResponseDto> voices = voiceService.getCelebVoicesByMemberId(memberId);
         return ResponseEntity.ok(CommonResponse.ok("연예인 음성이 성공적으로 조회되었습니다.", voices));
     }
     
@@ -34,13 +35,13 @@ public class VoiceController {
         return ResponseEntity.ok(CommonResponse.ok("커스텀 음성이 성공적으로 조회되었습니다.", voices));
     }
 
-    @GetMapping("users/{memberId}/voice")
+    @GetMapping("members/{memberId}/voice")
     public ResponseEntity<CommonResponse<List<UserVoiceResponseDto>>> getUserVoices(@PathVariable Long memberId) {
         List<UserVoiceResponseDto> voices = voiceService.getAllVoicesByMemberId(memberId);
         return ResponseEntity.ok(CommonResponse.ok("사용자 음성이 성공적으로 조회되었습니다.", voices));
     }
     
-    @PatchMapping("users/{memberId}/voice")
+    @PatchMapping("members/{memberId}/voice")
     public ResponseEntity<CommonResponse<SelectVoiceResponseDto>> selectVoice(
             @PathVariable Long memberId,
             @RequestBody SelectVoiceRequestDto requestDto) {
@@ -48,7 +49,7 @@ public class VoiceController {
         return ResponseEntity.ok(CommonResponse.ok("음성이 성공적으로 선택되었습니다.", responseDto));
     }
 
-    @PostMapping("/voices/recording")
+    @PostMapping("/recording")
     public ResponseEntity<CommonResponse<RecordingVoiceResponseDto>> saveRecordingVoice(
             @RequestBody RecordingVoiceRequestDto requestDto,
             @RequestParam Long memberId) {
