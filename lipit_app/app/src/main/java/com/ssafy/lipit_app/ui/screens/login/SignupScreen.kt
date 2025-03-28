@@ -79,7 +79,7 @@ fun SignupScreen() {
             verticalArrangement = Arrangement.SpaceBetween, // 위–아래 간격 자동 분배
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(44.dp))
+            SpacerHeight(44)
 
             // Title
             Image(
@@ -281,7 +281,7 @@ fun SignupScreen() {
                             // TODO: 회원가입 진행 API 실행
                         }
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
+                    SpacerHeight(12)
                 }
 
                 SpacerHeight(94)
