@@ -1,5 +1,5 @@
 from app.exception.error_code import Error
-from app.util.swagger_response import error_response
+from app.util.docs.swagger_response import error_response
 
 
 COMMON_ERRORS = {

@@ -1,0 +1,4 @@
+# app/graph/llm_client.py
+from langchain_openai import ChatOpenAI
+
+llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.8)

@@ -1,6 +1,6 @@
 from typing import Union
 from app.api.v1.endpoint.call import (
-    create_call_endpoint,
+    start_call_endpoint,
     add_message_to_call_endpoint,
     end_call_endpoint,
 )
@@ -20,7 +20,7 @@ router = BaseRouter(prefix="/api/calls", tags=["Call"])
 
 router.api_doc(
     path="",
-    endpoint=create_call_endpoint,
+    endpoint=start_call_endpoint,
     methods=["POST"],
     request_model=StartCallRequest,
     response_model=APIResponse[StartCallResponse],
@@ -106,7 +106,6 @@ router.api_doc(
     request_example={
         "userMessage": "I think that’s all for today.",
         "userMessageKor": "오늘은 여기까지인 것 같습니다.",
-        "endReason": "USER_REQUEST",
     },
     success_example={
         "endTime": "2025-03-14T14:25:45.678Z",
