@@ -45,7 +45,8 @@ fun EditCallScreen(
         modifier = Modifier
             .fillMaxWidth()
             .background(Color(0xFFFDF8FF))
-            .padding(top = 44.dp, start = 20.dp, end = 20.dp),
+            .padding(top = 44.dp, start = 20.dp, end = 20.dp)
+        ,
     ) {
         // 제목
         Text(
@@ -93,12 +94,15 @@ fun EditCallScreen(
                     // 상태 변경
                     state.isFreeModeSelected = false
                     state.isCategoryModeSelected = true
-
+                    
+                    //todo: 선택 되면 카테고리 선택 활성화
 
                 } else { // 자유주제 선택
                     // 상태 변경
                     state.isFreeModeSelected = true
                     state.isCategoryModeSelected = false
+                    
+                    //todo: 카테고리 선택 비활성화
                 }
             }
         )
@@ -216,6 +220,8 @@ fun EditCallButtons() {
 
         )
     }
+
+    Spacer(modifier = Modifier.height(20.dp))
 }
 
 @Composable

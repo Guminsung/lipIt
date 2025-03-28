@@ -8,7 +8,7 @@ import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.CallSchedule
 
 // 스케줄 출력 영역
 @Composable
-fun WeeklySchedule(callSchedules: List<CallSchedule>) {
+fun WeeklySchedule(callSchedules: List<CallSchedule>, onTapSchedule: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxSize()
     ){
@@ -19,6 +19,11 @@ fun WeeklySchedule(callSchedules: List<CallSchedule>) {
         DayOfWeek(dayList)
 
         // 우측 요일별 스케줄 출력
-        ThisWeekSchedules(dayList, callSchedules)
+        ThisWeekSchedules(
+            dayList = dayList,
+            callSchedules = callSchedules,
+            onTapSchedule = onTapSchedule 
+        )
+
     }
 }
