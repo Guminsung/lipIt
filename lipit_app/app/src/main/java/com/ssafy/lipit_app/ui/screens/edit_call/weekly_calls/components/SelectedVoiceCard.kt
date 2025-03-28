@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.edit_call.reschedule.components
+package com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

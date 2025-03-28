@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.edit_call.reschedule
+package com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -14,13 +14,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.components.SelectedVoiceCard
-import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.components.WeeklySchedule
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.components.SelectedVoiceCard
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.components.WeeklySchedule
 
 @Composable
-fun EditWeeklyCallsScreen(
-    state: EditWeeklyCallsState,
-    onIntent: (EditWeeklyCallsIntent) -> Unit
+fun WeeklyCallsScreen(
+    state: WeeklyCallsState,
+    onIntent: (WeeklyCallsIntent) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -43,7 +43,6 @@ fun EditWeeklyCallsScreen(
 
                 )
         )
-
 
         // 상단 - 선택 보이스 출력
         SelectedVoiceCard(state.VoiceName, state.VoiceImageUrl)
@@ -71,8 +70,8 @@ fun EditWeeklyCallsPreview() {
     )
 
 
-    EditWeeklyCallsScreen(
-        state = EditWeeklyCallsState(
+    WeeklyCallsScreen(
+        state = WeeklyCallsState(
             VoiceName = "Harry Potter",
             VoiceImageUrl = "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png",
 

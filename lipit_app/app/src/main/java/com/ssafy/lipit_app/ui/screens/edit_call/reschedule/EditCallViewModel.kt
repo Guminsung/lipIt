@@ -4,13 +4,14 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class EditWeeklyCallsViewModel : ViewModel() {
-    private val _state = MutableStateFlow(EditWeeklyCallsState())
-    val state: StateFlow<EditWeeklyCallsState> = _state
+class EditCallViewModel : ViewModel(){
+    private val _state = MutableStateFlow(EditCallState())
+    val state: StateFlow<EditCallState> = _state
 
-    fun onIntent(intent:EditWeeklyCallsIntent){
+    fun onIntent(intent: EditCallIntent){
         when(intent){
-            //
+                // 추후 구현
         }
     }
+
 }

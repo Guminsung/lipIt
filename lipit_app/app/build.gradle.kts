@@ -73,7 +73,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-
     implementation("androidx.compose.material:material:1.7.5")     // material2 지원
     implementation("com.kizitonwose.calendar:compose:2.6.2")
     implementation("androidx.compose.material:material:1.7.5")

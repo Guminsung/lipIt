@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.edit_call.reschedule.components
+package com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -58,7 +58,7 @@ fun DeleteCallDialog(
                         lineHeight = 15.sp,
                         fontWeight = FontWeight(400),
                         color = Color(0xFF6F6F6F),
-                        )
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -85,7 +85,7 @@ fun DeleteCallDialog(
                                 lineHeight = 15.sp,
                                 fontWeight = FontWeight(510),
                                 color = Color(0xFF6F6F6F),
-                                )
+                            )
                         )
                     }
 
@@ -106,7 +106,7 @@ fun DeleteCallDialog(
                                 lineHeight = 15.sp,
                                 fontWeight = FontWeight(510),
                                 color = Color(0xFFFDF8FF),
-                                )
+                            )
                         )
                     }
                 }

@@ -47,8 +47,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ssafy.lipit_app.R
-import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditWeeklyCallsScreen
-import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditWeeklyCallsViewModel
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsScreen
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsViewModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -206,7 +206,7 @@ fun WeeklyCallsSection(
             onDismissRequest = { showSheet = false },
             sheetState = sheetState
         ) {
-            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<EditWeeklyCallsViewModel>()
+            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<WeeklyCallsViewModel>()
             val state by viewModel.state.collectAsState()
 
             Box(
@@ -214,7 +214,7 @@ fun WeeklyCallsSection(
                     .fillMaxWidth()
                     .background(Color(0xFFFDF8FF))
             ){
-                EditWeeklyCallsScreen( state = state,
+                WeeklyCallsScreen( state = state,
                     onIntent = {viewModel.onIntent(it)})
             }
         }
