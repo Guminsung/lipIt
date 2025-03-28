@@ -51,9 +51,6 @@ class EndCallRequest(BaseModel):
 
 
 # 대화 종료 응답 DTO
-class EndCallResponse(BaseModel):
+class EndCallResponse(AIMessageResponse):  # 상속
     endTime: datetime
     duration: int
-    aiMessage: str
-    aiMessageKor: str
-    aiAudioUrl: str
