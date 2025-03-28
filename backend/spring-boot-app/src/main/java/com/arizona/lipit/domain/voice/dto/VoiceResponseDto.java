@@ -12,5 +12,4 @@ import lombok.NoArgsConstructor;
 public class VoiceResponseDto {
     private String voiceName;
     private String customImageUrl;
-    private Boolean activate;
 }

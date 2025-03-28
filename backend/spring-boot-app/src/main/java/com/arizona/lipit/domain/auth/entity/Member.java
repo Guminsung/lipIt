@@ -51,6 +51,10 @@ public class Member {
 	@Column
 	private String fcmToken;
 
+	@Column(nullable = false)
+	@Builder.Default
+	private Integer reportCount = 0;
+
 	@CreationTimestamp
 	private Timestamp createdAt;
 

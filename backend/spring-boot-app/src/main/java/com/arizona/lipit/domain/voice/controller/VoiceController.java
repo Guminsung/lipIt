@@ -6,6 +6,7 @@ import com.arizona.lipit.domain.voice.dto.UserVoiceResponseDto;
 import com.arizona.lipit.domain.voice.dto.VoiceResponseDto;
 import com.arizona.lipit.domain.voice.dto.RecordingVoiceRequestDto;
 import com.arizona.lipit.domain.voice.dto.RecordingVoiceResponseDto;
+import com.arizona.lipit.domain.voice.dto.CelebVoiceResponseDto;
 import com.arizona.lipit.domain.voice.service.VoiceService;
 import com.arizona.lipit.global.response.CommonResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,8 @@ public class VoiceController {
     private final VoiceService voiceService;
 
     @GetMapping("/celeb")
-    public ResponseEntity<CommonResponse<List<VoiceResponseDto>>> getCelebVoices(@RequestParam Long memberId) {
-        List<VoiceResponseDto> voices = voiceService.getCelebVoicesByMemberId(memberId);
+    public ResponseEntity<CommonResponse<List<CelebVoiceResponseDto>>> getCelebVoices(@RequestParam Long memberId) {
+        List<CelebVoiceResponseDto> voices = voiceService.getCelebVoicesByMemberId(memberId);
         return ResponseEntity.ok(CommonResponse.ok("연예인 음성이 성공적으로 조회되었습니다.", voices));
     }
     
