@@ -36,7 +36,6 @@ material = "1.12.0"
 activity = "1.10.0"
 constraintlayout = "2.2.0"
 uiTestAndroid = "1.7.8"
-compose-datepicker = "2.2.0"
 composeTesting = "1.0.0-alpha03"
 
 [libraries]
