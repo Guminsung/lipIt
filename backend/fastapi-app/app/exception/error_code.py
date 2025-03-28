@@ -1,23 +1,6 @@
 from enum import Enum
 
 
-# class ErrorCode(str, Enum):
-#     CALL_NOT_FOUND = "CALL-001"
-#     CALL_ALREADY_ENDED = "CALL-002"
-#     CALL_INTERNAL_ERROR = "CALL-003"
-#     CALL_AI_FAILED = "CALL-004"
-#     CALL_TTS_FAILED = "CALL-005"
-
-#     NEWS_QUERY_ERROR = "NEWS-001"
-#     NEWS_UPDATE_ERROR = "NEWS-002"
-#     NEWS_CRAWL_ERROR = "NEWS-003"
-
-#     AUTH_UNAUTHORIZED = "AUTH-001"
-#     AUTH_INVALID_TOKEN = "AUTH-002"
-#     AUTH_EXPIRED_TOKEN = "AUTH-003"
-#     AUTH_TOKEN_MISSING = "AUTH-004"
-
-
 class ErrorCode:
     def __init__(self, code: str, message: str):
         self.code = code
@@ -33,6 +16,8 @@ class Error:
     CALL_NOT_FOUND = ErrorCode("CALL-001", "해당 통화 기록을 찾을 수 없습니다.")
     CALL_ALREADY_ENDED = ErrorCode("CALL-002", "이미 종료된 통화입니다.")
     CALL_INTERNAL_ERROR = ErrorCode("CALL-003", "RAG 검색 중 서버 오류가 발생했습니다.")
+    CALL_AI_FAILED = ErrorCode("CALL-004", "AI 처리 중 오류가 발생했습니다.")
+    CALL_TTS_FAILED = ErrorCode("CALL-005", "TTS 처리 중 오류가 발생했습니다.")
 
     # Auth
     AUTH_UNAUTHORIZED = ErrorCode(
@@ -54,3 +39,7 @@ class Error:
 
     # RAG
     RAG_SEARCH_ERROR = ErrorCode("RAG-001", "RAG 검색 중 서버 오류가 발생했습니다.")
+
+    # Report
+    REPORT_NOT_FOUND = ErrorCode("REPORT-001", "보고서를 찾을 수 없습니다.")
+    REPORT_INTERNAL_ERROR = ErrorCode("REPORT-002", "보고서 처리 중 오류가 발생했습니다.")
