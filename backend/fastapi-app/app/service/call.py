@@ -28,7 +28,6 @@ from app.schema.call import (
     EndCallRequest,
     EndCallResponse,
 )
-from app.service.topic_extractor import extract_topic_from_news
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +42,6 @@ async def start_call(db: AsyncSession, request: StartCallRequest) -> StartCallRe
     if not topic:
         news = await get_random_news(db, category="경제")  # 사회, 생활, 날씨, 경제, IT
         topic = news.title if news else ""
-        # topic = extract_topic_from_news(news.content)
 
     state = {
         "call_id": -1,
@@ -66,11 +64,10 @@ async def start_call(db: AsyncSession, request: StartCallRequest) -> StartCallRe
         end_time=None,
     )
 
-    # await save_call(db, new_call)
+    await save_call(db, new_call)
 
     return StartCallResponse(
-        # callId=new_call.call_id,
-        callId=0,
+        callId=new_call.call_id,
         startTime=to_kst_isoformat(new_call.start_time),
         aiMessage=result.get("ai_response"),
         aiMessageKor=result.get("ai_response_kor"),
