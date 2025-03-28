@@ -163,6 +163,90 @@ async def end_call(
         messages=[Message(**m) for m in call_record.messages],
     )
 
+    # 통화 종료 시 리포트 생성
+    try:
+        from app.crud.report import create_report
+        from app.schema.report import CreateReportRequest
+        from app.graph.nodes.llm import llm
+        from langchain.schema import SystemMessage, HumanMessage
+        import json
+        
+        # 간단한 대화 분석
+        messages = [Message(**m) for m in call_record.messages]
+        word_count = sum(len(m.content.split()) for m in messages if hasattr(m, 'content') and m.content)
+        sentence_count = sum(len(m.content.split('.')) for m in messages if hasattr(m, 'content') and m.content)
+        
+        # 대화 내용을 문자열로 변환
+        conversation_text = "\n".join([
+            f"{'AI' if m.type == 'ai' else '사용자'}: {m.content}" 
+            for m in messages if hasattr(m, 'content') and m.content
+        ])
+        
+        # 기본 요약 및 피드백
+        communication_summary = "통화 내용 요약"
+        feedback_summary = "피드백 요약"
+        
+        # 기존 llm을 사용하여 요약 및 피드백 생성
+        try:
+            # 요약 생성 프롬프트
+            summary_prompt = [
+                SystemMessage(content="""대화 내용을 한국어로 간결하게 요약해주세요. 
+                중요한 주제와 결론을 포함해야 합니다. 
+                100단어 이내로 짧게 작성해주세요."""),
+                HumanMessage(content=conversation_text)
+            ]
+            
+            # 피드백 생성 프롬프트
+            feedback_prompt = [
+                SystemMessage(content="""대화에서 사용자의 의사소통 패턴과 개선할 점에 대한 피드백을 한국어로 제공해주세요.
+                구체적인 예시와 조언을 포함해야 합니다.
+                100단어 이내로 짧게 작성해주세요."""),
+                HumanMessage(content=conversation_text)
+            ]
+            
+            # 요약 생성
+            summary_response = await llm.ainvoke(summary_prompt)
+            communication_summary = summary_response.content.strip()
+            
+            # 피드백 생성
+            feedback_response = await llm.ainvoke(feedback_prompt)
+            feedback_summary = feedback_response.content.strip()
+            
+            # 텍스트 길이 제한 및 특수 문자 처리
+            max_length = 500  # 데이터베이스 필드 크기에 맞게 더 제한
+            
+            # 텍스트 클리닝 함수
+            def clean_text(text):
+                # 줄바꿈, 따옴표, 기타 문제가 될 수 있는 문자 제거
+                text = text.replace('\n', ' ').replace('\r', ' ')
+                text = text.replace('"', "'")  # 큰따옴표를 작은따옴표로 변경
+                text = text.replace('\\', '')  # 백슬래시 제거
+                return text[:max_length]  # 길이 제한
+                
+            communication_summary = clean_text(communication_summary)
+            feedback_summary = clean_text(feedback_summary)
+        except Exception as e:
+            logger.error(f"AI 요약/피드백 생성 실패: {str(e)}")
+            # 생성 실패 시 기본 메시지 사용
+        
+        # 리포트 생성 요청
+        report_request = CreateReportRequest(
+            memberId=call_record.member_id,
+            callId=call_record.call_id,
+            callDuration=duration,
+            celebVideoUrl=None,
+            wordCount=word_count,
+            sentenceCount=sentence_count,
+            communicationSummary=communication_summary,
+            feedbackSummary=feedback_summary
+        )
+        
+        # 리포트 생성
+        await create_report(db, report_request)
+    except Exception as e:
+        # 리포트 생성에 실패해도 통화 종료는 계속 진행
+        logger.error(f"리포트 생성 실패: {str(e)}")
+
     return EndCallResponse(
         endTime=end_time,
         duration=duration,
