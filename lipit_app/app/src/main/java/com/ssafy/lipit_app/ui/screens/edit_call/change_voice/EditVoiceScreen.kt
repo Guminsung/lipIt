@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.edit_call.change_voice
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -35,7 +36,8 @@ import com.ssafy.lipit_app.R
 @Composable
 fun EditVoiceScreen(
     state: EditVoiceState,
-    onIntent: (EditVoiceIntent) -> Unit
+    onIntent: (EditVoiceIntent) -> Unit,
+    onBack: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -43,6 +45,11 @@ fun EditVoiceScreen(
             .background(Color(0xFFFDF8FF))
             .padding(top = 44.dp, start = 20.dp, end = 20.dp),
     ) {
+
+        BackHandler {
+            onBack()
+        }
+
         // 전체 제목
         Text(
             text = "My Voices",
@@ -70,6 +77,9 @@ fun EditVoiceScreen(
         Spacer(modifier = Modifier.height(21.dp))
         //리스트
         VoiceItemList(true)
+
+        Spacer(modifier = Modifier.height(50.dp))
+
     }
 }
 
@@ -179,6 +189,8 @@ fun VoiceItemList(isCustom: Boolean) {
                                 textAlign = TextAlign.Center
                             )
                         )
+
+
                     }
                 }
             }
@@ -248,8 +260,6 @@ fun VoiceItem(url: String, name: String, isOwned: Boolean, isSelected: Boolean) 
     }
 }
 
-// todo: 추가 버튼 ui
-
 
 @Preview(showBackground = true)
 @Composable
@@ -262,7 +272,8 @@ fun EditVoiceScreenPreview() {
 //            celebrityVoices = sampleVoiceList,
 //            myCustomVoices = sampleVoiceList,
         ),
-        onIntent = {}
+        onIntent = {},
+        onBack = {}
     )
 
 }
