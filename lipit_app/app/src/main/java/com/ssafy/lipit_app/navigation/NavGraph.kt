@@ -11,6 +11,8 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallViewModel
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
+import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceScreen
+import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceViewModel
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsViewModel
 import com.ssafy.lipit_app.ui.screens.main.CallItem
@@ -25,14 +27,16 @@ fun NavGraph(
     NavHost(
         navController = navController,
         startDestination = "main" // 첫 진입 화면
-    ){
-        composable("main"){
+    ) {
+        composable("main") {
             val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<MainViewModel>()
             val state by viewModel.state.collectAsState()
 
             MainScreen(
                 state = state,
-                onIntent = {viewModel.onIntent(it)}
+                onIntent = { viewModel.onIntent(it) },
+                onNavigateToAddVoice = { navController.navigate("add_voice") }
+
             )
         }
 
@@ -42,7 +46,7 @@ fun NavGraph(
 
             WeeklyCallsScreen(
                 state = state.weeklyState,
-                onIntent = {viewModel.onIntent(it)}
+                onIntent = { viewModel.onIntent(it) }
             )
         }
 
@@ -52,7 +56,7 @@ fun NavGraph(
 
             VoiceCallScreen(
                 state = state,
-                onIntent = {viewModel.onIntent(it)}
+                onIntent = { viewModel.onIntent(it) }
             )
         }
 
@@ -60,6 +64,15 @@ fun NavGraph(
             val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<TextCallViewModel>()
 
             TextCallScreen(
+                state = viewModel.state.collectAsState().value,
+                onIntent = viewModel::onIntent
+            )
+        }
+
+        composable("add_voice") {
+            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<AddVoiceViewModel>()
+
+            AddVoiceScreen(
                 state = viewModel.state.collectAsState().value,
                 onIntent = viewModel::onIntent
             )
@@ -75,7 +88,14 @@ val dummyState = MainState(
     isLoading = false,
     selectedDay = "월",
     callItems = listOf(
-        CallItem(1, "Harry Potter", "자유주제", "08:00", "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png", "월")
+        CallItem(
+            1,
+            "Harry Potter",
+            "자유주제",
+            "08:00",
+            "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png",
+            "월"
+        )
     ),
     sentenceProgress = 90,
     wordProgress = 50,
