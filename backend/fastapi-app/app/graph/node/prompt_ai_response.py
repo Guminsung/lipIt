@@ -1,85 +1,54 @@
-# app/graph/nodes/prompt.py
-
-
-# def prompt_node(state: dict) -> dict:
-#     """
-#     최근 메시지와 RAG 검색 결과를 기반으로 GPT에 줄 역할 분리 프롬프트 구성
-#     JSON 형태의 영어 응답 + 한국어 번역을 포함하도록 구성
-#     """
-#     history = state.get("messages", [])[-10:]  # 최근 대화 기록
-#     context = state.get("retrieved_context", [])
-#     user_input = state.get("input")
-#     is_timeout = state.get("is_timeout", False)
-
-#     if is_timeout:
-#         user_input += (
-#             "\n\nWe've been talking for a while. Please end the call politely."
-#         )
-
-#     # 시스템 프롬프트 구성
-#     system_prompt = (
-#         "You are an AI speaking on a phone call with a user. "
-#         "Respond in a friendly and natural tone in English. "
-#         "Your response must be returned in **strict JSON format**, with no explanation or extra text.\n\n"
-#         "Respond appropriately based on the situation. If the user seems to want to end the call or the call has gone too long, end it naturally.\n\n"
-#         "Return your answer in the following format:\n"
-#         "{\n"
-#         '  "en": "<Your English reply>",\n'
-#         '  "ko": "<Polite and natural Korean translation of the English reply>",\n'
-#         '  "should_end_call": true or false\n'
-#         "}\n\n"
-#         "**Only return the JSON. Do not include any markdown, explanations, or speaker labels like 'AI:'.**"
-#     )
-
-#     if context:
-#         system_prompt += (
-#             "\nHere is relevant information from previous conversations:\n"
-#             + "\n".join(context)
-#         )
-
-#     # GPT 메시지 포맷 구성
-#     chat_prompt = [{"role": "system", "content": system_prompt}]
-#     for msg in history:
-#         if msg.type == "human":
-#             chat_prompt.append({"role": "user", "content": msg.content})
-#         elif msg.type == "ai":
-#             chat_prompt.append({"role": "assistant", "content": msg.content})
-
-#     # 마지막 user 입력 추가
-#     chat_prompt.append({"role": "user", "content": user_input})
-
-#     # state에 저장
-#     state["chat_prompt"] = chat_prompt
-#     state["user_input"] = user_input
-
-#     return state
-
-# app/graph/nodes/prompt.py
 from app.graph.prompt_format.json_prompt_builder import build_json_response_prompt
+from app.graph.util.context_formatter import convert_context_to_memory_lines
 
 
 def prompt_ai_response_node(state: dict) -> dict:
-    history = state.get("messages", [])[-10:]
-    context = "\n".join(state.get("retrieved_context", []))
-    user_input = state.get("input")
+    max_history = 6
+    timeout_suffix = " We've been talking for a while. Please end the call politely."
+
+    history = state.get("messages", [])[-max_history:]
+    raw_contexts = state.get("retrieved_context", [])
+    memory_lines = convert_context_to_memory_lines(raw_contexts)
+    user_input = state.get("input", "")
     is_timeout = state.get("is_timeout", False)
 
     if is_timeout:
-        user_input += (
-            "\n\nWe've been talking for a while. Please end the call politely."
+        user_input += timeout_suffix
+
+    suffix = """
+IMPORTANT: Do not end the call unless the user clearly says goodbye, wants to stop, or mentions ending the conversation.
+
+⚠️ Do NOT end the call for vague or neutral replies like "okay", "drawing", "I like it", etc.
+Keep the conversation going unless the user clearly shows intent to end.
+
+Example:
+human: I like pizza.
+ai: {
+  "en": "That's great! Pizza is delicious. Do you have a favorite topping?",
+  "ko": "좋아요! 피자는 정말 맛있죠. 좋아하는 토핑이 있나요?",
+  "should_end_call": false
+}
+""".strip()
+
+    # 💬 context를 자연어 기억 문장으로 구성
+    context = ""
+    if memory_lines:
+        context = "Here is relevant memory from past conversations:\n" + "\n".join(
+            f"- {line}" for line in memory_lines
         )
 
-    suffix = "Respond appropriately. If the user seems to want to end the call or the call has gone too long, end it naturally."
-    system_prompt = build_json_response_prompt(
-        context=context, suffix=suffix, include_should_end=True
-    )
+    # system prompt 생성
+    system_prompt = build_json_response_prompt(context=context, suffix=suffix)
 
     chat_prompt = [{"role": "system", "content": system_prompt}]
     for msg in history:
-        role = "user" if msg.type == "human" else "assistant"
-        chat_prompt.append({"role": role, "content": msg.content})
-    chat_prompt.append({"role": "user", "content": user_input})
+        speaker = "human" if msg.type == "human" else "ai"
+        chat_prompt.append(
+            {"role": "user", "content": f"{speaker}: {msg.content.strip()}"}
+        )
+    chat_prompt.append({"role": "user", "content": f"human: {user_input.strip()}"})
 
     state["chat_prompt"] = chat_prompt
     state["user_input"] = user_input
+
     return state

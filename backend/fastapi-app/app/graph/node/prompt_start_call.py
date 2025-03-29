@@ -36,7 +36,7 @@ from app.graph.prompt_format.json_prompt_builder import build_json_response_prom
 def prompt_start_call_node(state: dict) -> dict:
     topic = state.get("topic", "")
     suffix = "You are starting a phone call. Greet the user and naturally begin the conversation based on the topic."
-    system_prompt = build_json_response_prompt(suffix=suffix, include_should_end=False)
+    system_prompt = build_json_response_prompt(suffix=suffix)
     user_prompt = f"Start a phone conversation about this topic: {topic}"
     state["chat_prompt"] = [
         {"role": "system", "content": system_prompt},

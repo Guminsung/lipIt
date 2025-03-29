@@ -70,7 +70,7 @@ router.api_doc(
                 "aiAudioUrl": "https://dlxayir1dj7sa.cloudfront.net/audio/bc789f57-732a-4d66-9256-55a5aa3cbfb4.mp3",
             },
         },
-        200: {
+        201: {
             "summary": "통화 종료 응답",
             "description": "사용자의 발화로 통화가 종료될 때의 응답 예시",
             "value": {

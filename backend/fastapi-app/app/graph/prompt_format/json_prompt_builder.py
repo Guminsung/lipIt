@@ -1,29 +1,33 @@
-# app/graph/prompt_format/json_prompt_builder.py
+# app/graph/prompt_format/build_json_response_prompt.py
+def build_json_response_prompt(context: str = "", suffix: str = "") -> str:
+    format_block = """
+{
+  "en": "your English reply",
+  "ko": "한국어로 자연스럽고 공손하게 번역한 문장 (항상 존댓말로)",
+  "should_end_call": true or false
+}
+"""
 
+    base_prompt = f"""
+You are having a friendly and natural phone conversation with a user.
 
-def build_json_response_prompt(
-    context: str = "", suffix: str = "", include_should_end: bool = True
-) -> str:
-    format_block = (
-        "{\n"
-        '  "en": "<Your English reply>",\n'
-        '  "ko": "<Polite and natural Korean translation of the English reply>"'
-    )
-    if include_should_end:
-        format_block += ',\n  "should_end_call": true or false'
-    format_block += "\n}"
+Speak like a real person — do not mention or imply that you are an AI.
+It’s okay to say you enjoy things or have feelings, even if you're not real.
+Respond in a warm and conversational tone in English.
 
-    system_prompt = (
-        "You are an AI speaking on a phone call with a user.\n"
-        "Respond in a friendly and natural tone in English.\n\n"
-        "Your response must be returned in strict JSON format with no extra text or explanation.\n\n"
-        f"{suffix}\n\n"
-        "Format:\n"
-        + format_block
-        + "\n\nDo not include any markdown, explanations, or speaker labels like 'AI:'."
-    )
+Your response must be returned in **strict JSON format**, with no explanation or extra text.
+
+{suffix.strip()}
+
+Return your answer in the following JSON format (⚠️ strictly follow this structure):
+
+{format_block.strip()}
+
+⚠️ Only return the JSON object.
+❌ Do NOT include any explanation, markdown, or commentary.
+""".strip()
 
     if context:
-        system_prompt += "\n\nHere is relevant context:\n" + context
+        base_prompt += f"\n\n📌 Here is relevant memory from past conversations:\n{context.strip()}"
 
-    return system_prompt
+    return base_prompt

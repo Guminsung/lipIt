@@ -12,7 +12,7 @@ from app.graph.call_graph import (
 from app.graph.node.memory import convert_to_lc_message, safe_convert_message_to_dict
 from app.rag.store import store_call_history_embedding
 from app.service.report import generate_report
-from app.util.datetime_utils import now_kst, to_kst_isoformat
+from app.util.datetime_utils import now_kst, to_kst, to_kst_isoformat
 from app.util.message_utils import append_messages_to_call
 from app.exception.custom_exceptions import APIException
 from app.exception.error_code import Error
@@ -85,7 +85,9 @@ async def add_message_to_call(
         raise APIException(400, Error.CALL_ALREADY_ENDED)
 
     # 시간 초과 여부 확인
-    is_timeout = (now_kst() - call_record.start_time).total_seconds() >= 300  # 5분
+    is_timeout = (
+        now_kst() - to_kst(call_record.start_time)
+    ).total_seconds() >= 300  # 5분
 
     state = {
         "call_id": call_record.call_id,
@@ -106,6 +108,10 @@ async def add_message_to_call(
 
     # 통화 종료 조건이면 end_time 처리
     should_end = result.get("should_end_call") or is_timeout
+
+    print(f"📌 is_timeout = {is_timeout}")
+    print(f"📌 should_end_call = {should_end}")
+
     if should_end:
         end_time = now_kst()
         call_record.end_time = end_time
@@ -122,7 +128,7 @@ async def add_message_to_call(
             )
         )
 
-        duration = int((end_time - call_record.start_time).total_seconds())
+        duration = int((end_time - to_kst(call_record.start_time)).total_seconds())
 
         # 리포트 생성
         asyncio.create_task(
@@ -137,7 +143,7 @@ async def add_message_to_call(
 
         return EndCallResponse(
             endTime=to_kst_isoformat(end_time),
-            duration=int((end_time - call_record.start_time).total_seconds()),
+            duration=duration,
             aiMessage=result["ai_response"],
             aiMessageKor=result["ai_response_kor"],
             aiAudioUrl=result["ai_audio_url"],
@@ -174,7 +180,7 @@ async def end_call(
         raise APIException(500, Error.CALL_INTERNAL_ERROR)
 
     end_time = now_kst()
-    duration = int((end_time - call_record.start_time).total_seconds())
+    duration = int((end_time - to_kst(call_record.start_time)).total_seconds())
 
     call_record.end_time = end_time
     call_record.updated_at = end_time

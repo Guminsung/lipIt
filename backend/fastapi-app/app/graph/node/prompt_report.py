@@ -1,6 +1,5 @@
-# app/graph/node/report_prompt.py
+# app/graph/node/prompt_report.py
 from langchain_core.messages import HumanMessage, SystemMessage
-from app.schema.call import Message
 
 
 def prompt_report_node(state: dict) -> dict:
@@ -9,7 +8,7 @@ def prompt_report_node(state: dict) -> dict:
     # 전체 대화 텍스트
     conversation_text = "\n".join(
         [
-            f"{'AI' if m.type == 'ai' else '사용자'}: {m.content}"
+            f"{'English Tutor' if m.type == 'ai' else '당신'}: {m.content}"
             for m in messages
             if hasattr(m, "content") and m.content
         ]
@@ -26,48 +25,72 @@ def prompt_report_node(state: dict) -> dict:
     user_sentences_block = "\n".join(f"- {s}" for s in user_sentences_list)
 
     system_prompt = f"""
-You are a helpful assistant that generates a conversation summary, feedback, and native English expressions.
+You are an assistant generating a structured summary report of a phone conversation between a user and an English tutor. 
 
-1. 📌 Summarize the overall conversation in **Korean**, using a **natural and polite tone (존댓말)**. The summary should include the **main topics and conclusions**, written in **100 words or fewer**, as if explaining the conversation to a third person. (→ summary)
+📌 Your task is to analyze the conversation and return a polished, natural, and helpful Korean report based on the messages below.
 
-2. 📌 Provide feedback in **Korean** on the user's communication patterns, including **specific improvement advice and examples**, in **100 words or fewer**. Use a helpful and respectful tone. (→ feedback)
 
-3. 📌 From the following **user-only sentences**, extract up to 3 meaningful ones.
-Use these **exactly as they are** for "my_sentence".
+1. 📖 **Summary (summary)**
 
-📌 Only use sentences from the list below.
-❌ Do NOT include any sentences spoken by the AI.
+- Write a fluent and polite summary in **Korean (존댓말)**
+- Include the main topics, user interests, questions, and any important moments  
+- Use a smooth, human tone — not mechanical  
+- Limit to **100 words**, and write as if explaining to a teacher or coach
+- Avoid robotic phrasing. Be slightly narrative and easy to read.
+
+
+2. 💡 **Feedback (feedback)**
+
+- Provide encouraging but detailed feedback in **Korean (존댓말)**  
+- Speak directly to the user — use **“당신의 문장은…”**, **“당신은 잘 하셨어요”**  
+- Give suggestions like a supportive teacher
+- Comment on communication skills, expressions, grammar, fluency, and listening  
+- Suggest at least **one specific tip** (e.g. alternative phrases, pronunciation tip, intonation, sentence structure)
+- If you mention any English word in the Korean text (e.g., during feedback), write it in **English spelling**, not in Korean letters
+- For example, write “someday”, not “썸데이” or “온데이”
+- Stay supportive and warm  
+- Limit to **100 words**
+
+
+3. ✍️ **Native Expressions (native_expressions)**
+
+From the user’s original sentences below, extract **up to 3**. For each:
+
+- "my_sentence": original sentence by user  
+- "native_sentence": a more natural, native-style English version  
+- "keyword": one **key native idiom or phrase** from your version  
+- "keyword_kor": basic **dictionary-style** Korean translation of the keyword (e.g., “wrap up” → "마무리하다")
+
 
 --- USER SENTENCES START ---
 {user_sentences_block}
 --- USER SENTENCES END ---
 
-4. For each, suggest:
-  - A more natural native English expression (→ native_sentence)
-  - A key native phrase or idiom from your improved version (→ keyword)
-  - A Korean translation of that key phrase (→ keyword_kor)
 
-5. Identify the key phrase or idiom used in the improved sentence (→ keyword), and provide a Korean translation (→ keyword_kor), using the **base dictionary form (기본형)**. For example, if the phrase is “that’s all,” the translation should be “끝내다” or “모두이다” instead of “다 된 것 같아요.”
+📢 Notes:
+
+- Only use exact user inputs for "my_sentence"  
+- Do NOT paraphrase the English Tutor’s lines  
+- Do NOT copy your own previous text  
+- Use simple JSON formatting — no markdown, no commentary
+
 
 Return your answer in **strict JSON format**:
 
 {{
-  "summary": "한국어 통화 요약 (100단어 이내, 존댓말)",
-  "feedback": "한국어 피드백 (100단어 이내, 존댓말)",
+  "summary": "...",
+  "feedback": "...",
   "native_expressions": [
     {{
-      "my_sentence": "원문 문장",
-      "native_sentence": "자연스러운 표현",
-      "keyword": "핵심 표현",
-      "keyword_kor": "핵심 표현 한글 번역"
+      "my_sentence": "...",
+      "native_sentence": "...",
+      "keyword": "...",
+      "keyword_kor": "..."
     }},
     ...
   ]
 }}
-
-⚠️ Only return the JSON object.
-❌ Do NOT include any explanation, markdown, or commentary.
-"""
+""".strip()
 
     prompt = [
         SystemMessage(content=system_prompt.strip()),

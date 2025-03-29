@@ -23,3 +23,7 @@ def to_kst_isoformat(dt: datetime) -> str:
 
 def to_kst_date_str(dt: datetime) -> str:
     return dt.astimezone(KST).strftime("%Y-%m-%d")
+
+
+def to_kst(dt: datetime) -> datetime:
+    return dt.astimezone(KST)

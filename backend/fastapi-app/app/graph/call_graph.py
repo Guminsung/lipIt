@@ -1,5 +1,4 @@
 # app/graph/call_graph.py
-
 from langgraph.graph import StateGraph
 from app.graph.node import (
     memory_node,
