@@ -5,7 +5,6 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -47,13 +46,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallIntent
 import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsIntent
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(
@@ -62,6 +60,7 @@ fun MainScreen(
 ) {
     //val state by viewModel.state.collectAsState()
     var selectedDay by remember { mutableStateOf(state.selectedDay) }
+    val isVoiceSheetVisible = remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -75,7 +74,7 @@ fun MainScreen(
             selectedDay = selectedDay, //state의 selectedDay -> screen 안에서 정의한 selectedDay로 변경
             callItems = state.callItems,
             onIntent = {
-                if(it is MainIntent.OnDaySelected){
+                if (it is MainIntent.OnDaySelected) {
                     selectedDay = it.day
                 }
             }
@@ -191,22 +190,20 @@ fun WeeklyCallsSection(
     callItems: List<CallItem>,
     onIntent: (MainIntent) -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = false
-    )
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    val scope = rememberCoroutineScope()
+    var screenMode by remember { mutableStateOf<String?>(null) }
 
-    // 처음엔 중간 상태로 출력되도록 설정함
-    LaunchedEffect(Unit) {
-        sheetState.partialExpand()
+    // 화면 모드가 바뀌면 sheet 보여주기
+    LaunchedEffect(screenMode) {
+        if (screenMode != null) {
+            sheetState.show()
+        }
     }
 
-    val scope = rememberCoroutineScope()
-    var showSheet by remember{ mutableStateOf(false) }
-    var isEditMode by remember { mutableStateOf(false) }
-
-    if(showSheet){
+    if (screenMode != null) {
         ModalBottomSheet(
-            onDismissRequest = { showSheet = false },
+            onDismissRequest = { screenMode = null },
             sheetState = sheetState
         ) {
             val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<WeeklyCallsViewModel>()
@@ -216,38 +213,29 @@ fun WeeklyCallsSection(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color(0xFFFDF8FF))
-            ){
-                if (isEditMode) {
-                    // Edit 모드 화면
-                    EditCallScreen(
-                        state = state.editState, // 필요 시 ViewModel 분리
+            ) {
+                when (screenMode) {
+                    "edit" -> EditCallScreen(
+                        state = state.editState,
                         onIntent = { intent ->
                             when (intent) {
-                                is EditCallIntent.SelectFreeMode -> {
-                                    viewModel.onIntent(WeeklyCallsIntent.SelectFreeMode(intent.isSelected))
-                                }
-                                is EditCallIntent.SelectCategory -> {
-                                    viewModel.onIntent(WeeklyCallsIntent.SelectCategory(intent.category))
-                                }
+                                is EditCallIntent.SelectFreeMode -> viewModel.onIntent(WeeklyCallsIntent.SelectFreeMode(intent.isSelected))
+                                is EditCallIntent.SelectCategory -> viewModel.onIntent(WeeklyCallsIntent.SelectCategory(intent.category))
                             }
                         }
-
                     )
-                } else {
-                    // WeeklyCalls 화면
-                    WeeklyCallsScreen(
+                    "voice" -> EditVoiceScreen(
+                        state = state.voiceState,
+                        onIntent = { /* VoiceIntent 처리 */ }
+                    )
+                    else -> WeeklyCallsScreen(
                         state = state.weeklyState,
                         onIntent = { intent ->
                             viewModel.onIntent(intent)
-
-                            if (intent is WeeklyCallsIntent.OnEditSchedule) {
-                                scope.launch {
-                                    sheetState.hide()
-                                    showSheet = false
-                                    delay(10)
-                                    isEditMode = true
-                                    showSheet = true
-                                }
+                            when (intent) {
+                                is WeeklyCallsIntent.OnEditSchedule -> screenMode = "edit"
+                                is WeeklyCallsIntent.OnChangeVoice -> screenMode = "voice"
+                                else -> {}
                             }
                         }
                     )
@@ -256,78 +244,33 @@ fun WeeklyCallsSection(
         }
     }
 
-    // sheet를 여는 이벤트 동작을 수행할 ui
-    Column(
+    // 편집 버튼
+    Button(
+        onClick = {
+            screenMode = "weekly"
+        },
         modifier = Modifier
-            .padding(top = 25.dp)
+            .width(50.dp)
+            .height(25.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFA37BBD)),
+        contentPadding = PaddingValues(0.dp)
     ) {
-        // 제목 + 버튼 영역
-        Row(
-            Modifier.padding(bottom = 14.dp)
-        ) {
-            Text(
-                text = "Weekly Calls",
-                style = TextStyle(
-                    fontSize = 25.sp,
-                    lineHeight = 50.sp,
-                    fontWeight = FontWeight(700),
-                    color = Color(0xFF000000),
-                )
-            )
-
-            // 편집 버튼
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                Button(
-                    onClick = {
-                        //전화 일정 편집 화면으로 넘어감
-                        isEditMode = false // 처음은 WeeklyCalls
-                        showSheet = true
-                        scope.launch {
-                            sheetState.show()
-                        }
-                    },
-                    Modifier
-                        .width(50.dp)
-                        .height(25.dp)
-                    ,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFA37BBD)
-                    ),
-                    contentPadding = PaddingValues(0.dp) // 내부 여백 (기본 여백 제거해서 텍스트에 맞춰서 재설정)
-                ) {
-                    Text(
-                        text = "편집",
-                        style = TextStyle(
-                            fontSize = 12.sp,
-                            lineHeight = 15.sp,
-                            fontWeight = FontWeight(590),
-                            color = Color(0xFFFFFFFF),
-                            textAlign = TextAlign.Center
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
-
-        }
+        Text(
+            text = "편집",
+            style = TextStyle(
+                fontSize = 12.sp,
+                lineHeight = 15.sp,
+                fontWeight = FontWeight(590),
+                color = Color.White,
+                textAlign = TextAlign.Center
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
     }
-
-    // 전화 일정 출력 영역
-    // 요일 선택 커스텀 탭
-    //        DaySelector(
-    //            onDaySelected = { day ->
-    //                onIntent(MainIntent.OnDaySelected(day))
-    //                Log.d("selectedDay", "selectedDay: $day")
-    //             },
-    //            selectedDay
-    //        )
-
-    // 스케줄 카드뷰
-    //dailyCallSchedule(callItems)
 }
+
+
+
 
 // 요일별 call 카드뷰
 @Composable
@@ -380,7 +323,8 @@ fun dailyCallSchedule(callItems: List<CallItem>) {
                         fontSize = 16.sp,
                         lineHeight = 15.sp,
                         fontWeight = FontWeight(590),
-                        color = Color(0xFF000000))
+                        color = Color(0xFF000000)
+                    )
                 )
 
                 // 대화 주제 (토픽)
@@ -401,7 +345,7 @@ fun dailyCallSchedule(callItems: List<CallItem>) {
                 modifier = Modifier
                     .align(Alignment.Bottom)
                     .padding(bottom = 7.dp)
-            ){
+            ) {
                 Text(
                     text = "At " + callItems[0].time,
                     style = TextStyle(
@@ -433,7 +377,7 @@ fun DaySelector(
     val itemWidth = 41.dp // 박스 가로 길이
     val animatedOffsetX by animateDpAsState(
         targetValue = (selectedIndex * 48).dp,
-        label="offsetX"
+        label = "offsetX"
     )
 
     Row(
@@ -462,11 +406,11 @@ fun DaySelector(
                     }
                     .align(Alignment.CenterVertically),
                 Alignment.Center
-            ){
+            ) {
                 Text(
                     text = day,
-                    fontWeight = if(day == selectedDay) FontWeight(600) else FontWeight(400),
-                    color = if(day == selectedDay) Color.White else Color.Black,
+                    fontWeight = if (day == selectedDay) FontWeight(600) else FontWeight(400),
+                    color = if (day == selectedDay) Color.White else Color.Black,
                     textAlign = TextAlign.Center
                 )
             }
@@ -484,7 +428,14 @@ fun MainScreenPreview() {
             userName = "Sarah",
             selectedDay = "월",
             callItems = listOf(
-                CallItem(id = 1, name = "Harry Potter", topic = "자유주제", time = "08:00", imageUrl = "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png", "월")
+                CallItem(
+                    id = 1,
+                    name = "Harry Potter",
+                    topic = "자유주제",
+                    time = "08:00",
+                    imageUrl = "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png",
+                    "월"
+                )
             ),
             sentenceProgress = 90,
             wordProgress = 50,

@@ -2,6 +2,7 @@ package com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,9 +24,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsIntent
 
 @Composable
-fun SelectedVoiceCard(voiceName: String, voiceImageUrl: String) {
+fun SelectedVoiceCard(voiceName: String, voiceImageUrl: String, onIntent: (WeeklyCallsIntent) -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth(),
@@ -93,19 +95,22 @@ fun SelectedVoiceCard(voiceName: String, voiceImageUrl: String) {
                         shape = RoundedCornerShape(15.dp)
                     ),
                 contentAlignment = Alignment.Center
-            ){
+            ) {
                 Text(
-                    text="Voice 변경",
+                    text = "Voice 변경",
                     style = TextStyle(
                         fontSize = 12.sp,
                         lineHeight = 15.sp,
                         fontWeight = FontWeight(590),
                         color = Color(0xFFFFFFFF),
                         textAlign = TextAlign.Center,
-                    )
+                    ),
+                    modifier = Modifier
+                        .clickable {
+                            onIntent(WeeklyCallsIntent.OnChangeVoice)
+                        }
                 )
             }
-
         }
     }
 }

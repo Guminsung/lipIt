@@ -45,7 +45,7 @@ fun WeeklyCallsScreen(
         )
 
         // 상단 - 선택 보이스 출력
-        SelectedVoiceCard(state.VoiceName, state.VoiceImageUrl)
+        SelectedVoiceCard(state.VoiceName, state.VoiceImageUrl, onIntent = onIntent)
 
         // 하단 - Call 스케줄표
         WeeklySchedule(

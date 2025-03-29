@@ -9,4 +9,7 @@ sealed interface WeeklyCallsIntent {
     // EditCallScreen 관련
     data class SelectFreeMode(val isSelected: Boolean): WeeklyCallsIntent
     data class SelectCategory(val category: String): WeeklyCallsIntent
+
+    // Voice 변경 바텀시트 요청
+    data object OnChangeVoice: WeeklyCallsIntent
 }

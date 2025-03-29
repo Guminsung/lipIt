@@ -407,7 +407,7 @@ fun CustomSegmentedButtons(
 
 @Preview(showBackground = true)
 @Composable
-fun EditWCallsPreview() {
+fun EditCallsPreview() {
     EditCallScreen(
         state = EditCallState(
             isFreeModeSelected = false,
