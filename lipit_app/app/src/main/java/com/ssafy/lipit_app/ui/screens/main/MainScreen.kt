@@ -46,6 +46,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceScreen
+import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceViewModel
 import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallIntent
 import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallScreen
@@ -56,7 +58,8 @@ import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsViewMode
 @Composable
 fun MainScreen(
     state: MainState,
-    onIntent: (MainIntent) -> Unit
+    onIntent: (MainIntent) -> Unit,
+    onNavigateToAddVoice: () -> Unit
 ) {
     //val state by viewModel.state.collectAsState()
     var selectedDay by remember { mutableStateOf(state.selectedDay) }
@@ -77,7 +80,9 @@ fun MainScreen(
                 if (it is MainIntent.OnDaySelected) {
                     selectedDay = it.day
                 }
-            }
+            },
+            onNavigateToAddVoice = onNavigateToAddVoice
+
         )
         //todo: 레벨업, Call Log 버튼, 전화 걸기 버튼 부분 추가
 
@@ -188,7 +193,8 @@ fun TodaysSentence(sentenceOriginal: String, sentenceTranslated: String) {
 fun WeeklyCallsSection(
     selectedDay: String,
     callItems: List<CallItem>,
-    onIntent: (MainIntent) -> Unit
+    onIntent: (MainIntent) -> Unit,
+    onNavigateToAddVoice: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     val scope = rememberCoroutineScope()
@@ -215,6 +221,10 @@ fun WeeklyCallsSection(
             val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<WeeklyCallsViewModel>()
             val state by viewModel.state.collectAsState()
 
+            val addVoiceViewModel =
+                androidx.lifecycle.viewmodel.compose.viewModel<AddVoiceViewModel>()
+            val addVoiceState by addVoiceViewModel.state.collectAsState()
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -240,7 +250,13 @@ fun WeeklyCallsSection(
                     "voice" -> EditVoiceScreen(
                         state = state.voiceState,
                         onIntent = { /* VoiceIntent 처리 */ },
-                        onBack = { screenMode = "weekly" }
+                        onBack = { screenMode = "weekly" },
+                        onClickAddVoice = onNavigateToAddVoice
+                    )
+
+                    "add" -> AddVoiceScreen(
+                        state = addVoiceState,
+                        onIntent = { addVoiceViewModel.onIntent(it) }
                     )
 
                     else -> WeeklyCallsScreen(
@@ -457,7 +473,8 @@ fun MainScreenPreview() {
             sentenceOriginal = "With your talent and hard work, sky’s the limit!",
             sentenceTranslated = "너의 재능과 노력이라면, 한계란 없지!",
         ),
-        onIntent = { }
+        onIntent = { },
+        onNavigateToAddVoice = {}
     )
 }
 

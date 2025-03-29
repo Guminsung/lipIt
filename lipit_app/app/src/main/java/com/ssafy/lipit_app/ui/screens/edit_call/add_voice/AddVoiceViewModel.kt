@@ -28,11 +28,11 @@ class AddVoiceViewModel : ViewModel() {
                 }
             }
         }
+    }
 
-        fun stopRecording() {
-            timerJob?.cancel()
-            _state.update { it.copy(isRecording = false) }
-        }
+    fun stopRecording() {
+        timerJob?.cancel()
+        _state.update { it.copy(isRecording = false) }
     }
 
     fun nextSentence() {
@@ -41,6 +41,18 @@ class AddVoiceViewModel : ViewModel() {
             _state.update { it.copy(currentSentenceIndex = it.currentSentenceIndex + 1) }
         } else {
             // todo: 마지막 문장까지 끝났으면 목소리 생성으로 넘어가기
+            _state.update { it.copy(isRecording = false) }
+        }
+    }
+
+
+    fun onIntent(intent: AddVoiceIntent) {
+        fun onIntent(intent: AddVoiceIntent) {
+            when (intent) {
+                is AddVoiceIntent.StartRecording -> startRecording()
+                is AddVoiceIntent.StopRecording -> stopRecording()
+                is AddVoiceIntent.NextSentence -> nextSentence()
+            }
         }
     }
 }

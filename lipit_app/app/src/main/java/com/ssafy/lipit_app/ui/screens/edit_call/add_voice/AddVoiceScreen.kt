@@ -3,6 +3,7 @@ package com.ssafy.lipit_app.ui.screens.edit_call.add_voice
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -127,6 +128,14 @@ fun AddVoiceScreen(
             contentDescription = "재생/정지 버튼",
             modifier = Modifier
                 .size(70.dp)
+                .clickable {
+                    if (state.isRecording) {
+                        onIntent(AddVoiceIntent.StopRecording)
+                        onIntent(AddVoiceIntent.NextSentence)
+                    } else {
+                        onIntent(AddVoiceIntent.StartRecording)
+                    }
+                }
         )
 
         Spacer(modifier = Modifier.weight(0.5f))

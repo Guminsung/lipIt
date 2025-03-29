@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,7 +38,8 @@ import com.ssafy.lipit_app.R
 fun EditVoiceScreen(
     state: EditVoiceState,
     onIntent: (EditVoiceIntent) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onClickAddVoice: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -68,7 +70,7 @@ fun EditVoiceScreen(
         textTitle("Celebrity")
         Spacer(modifier = Modifier.height(21.dp))
         // 리스트
-        VoiceItemList(false)
+        VoiceItemList(false, onClickAddVoice = onClickAddVoice)
 
         Spacer(modifier = Modifier.height(50.dp))
 
@@ -76,7 +78,7 @@ fun EditVoiceScreen(
         textTitle("Custom")
         Spacer(modifier = Modifier.height(21.dp))
         //리스트
-        VoiceItemList(true)
+        VoiceItemList(true, onClickAddVoice = onClickAddVoice)
 
         Spacer(modifier = Modifier.height(50.dp))
 
@@ -97,7 +99,7 @@ fun textTitle(title: String) {
 }
 
 @Composable
-fun VoiceItemList(isCustom: Boolean) {
+fun VoiceItemList(isCustom: Boolean, onClickAddVoice: () -> Unit) {
     val myVoiceList = listOf(
         VoiceList(
             voiceName = "Aiden Blackwood",
@@ -174,6 +176,9 @@ fun VoiceItemList(isCustom: Boolean) {
                                     .width(120.dp)
                                     .height(120.dp)
                                     .clip(CircleShape)
+                                    .clickable{
+                                        onClickAddVoice()
+                                    }
                             )
                         }
 
@@ -273,7 +278,8 @@ fun EditVoiceScreenPreview() {
 //            myCustomVoices = sampleVoiceList,
         ),
         onIntent = {},
-        onBack = {}
+        onBack = {},
+        onClickAddVoice = {}
     )
 
 }
