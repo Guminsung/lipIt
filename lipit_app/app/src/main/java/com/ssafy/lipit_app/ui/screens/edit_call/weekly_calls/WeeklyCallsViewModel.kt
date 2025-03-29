@@ -25,6 +25,10 @@ class WeeklyCallsViewModel : ViewModel() {
                 // 바텀시트 내부에서 edit 모드로 전환 트리거 (MainScreen의 isEditMode 전환을 호출해야 함)
             }
 
+            is WeeklyCallsIntent.OnChangeVoice -> {
+
+            }
+
             is WeeklyCallsIntent.SelectFreeMode -> {
                 _state.update {
                     it.copy(
