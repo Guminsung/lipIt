@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.edit_call.reschedule
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -53,8 +54,13 @@ import kotlinx.coroutines.selects.select
 @Composable
 fun EditCallScreen(
     state: EditCallState,
-    onIntent: (EditCallIntent) -> Unit
+    onIntent: (EditCallIntent) -> Unit,
+    onBack: () -> Unit
+
 ) {
+    BackHandler {
+        onBack()
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -414,7 +420,8 @@ fun EditCallsPreview() {
             isCategoryModeSelected = true,
             selectedCategory = "스포츠"
         ),
-        onIntent = {}
+        onIntent = {},
+        onBack = {}
     )
 
 }

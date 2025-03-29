@@ -203,7 +203,13 @@ fun WeeklyCallsSection(
 
     if (screenMode != null) {
         ModalBottomSheet(
-            onDismissRequest = { screenMode = null },
+            onDismissRequest = {
+                if (screenMode == "edit" || screenMode == "voice") {
+                    screenMode = "weekly" // 뒤로가기 누르면 edit/voice → weekly로
+                } else {
+                    screenMode = null // weekly → 바텀시트 닫기
+                }
+            },
             sheetState = sheetState
         ) {
             val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<WeeklyCallsViewModel>()
@@ -219,15 +225,24 @@ fun WeeklyCallsSection(
                         state = state.editState,
                         onIntent = { intent ->
                             when (intent) {
-                                is EditCallIntent.SelectFreeMode -> viewModel.onIntent(WeeklyCallsIntent.SelectFreeMode(intent.isSelected))
-                                is EditCallIntent.SelectCategory -> viewModel.onIntent(WeeklyCallsIntent.SelectCategory(intent.category))
+                                is EditCallIntent.SelectFreeMode -> viewModel.onIntent(
+                                    WeeklyCallsIntent.SelectFreeMode(intent.isSelected)
+                                )
+
+                                is EditCallIntent.SelectCategory -> viewModel.onIntent(
+                                    WeeklyCallsIntent.SelectCategory(intent.category)
+                                )
                             }
-                        }
+                        },
+                        onBack = { screenMode = "weekly" }
                     )
+
                     "voice" -> EditVoiceScreen(
                         state = state.voiceState,
-                        onIntent = { /* VoiceIntent 처리 */ }
+                        onIntent = { /* VoiceIntent 처리 */ },
+                        onBack = { screenMode = "weekly" }
                     )
+
                     else -> WeeklyCallsScreen(
                         state = state.weeklyState,
                         onIntent = { intent ->
@@ -268,8 +283,6 @@ fun WeeklyCallsSection(
         )
     }
 }
-
-
 
 
 // 요일별 call 카드뷰
