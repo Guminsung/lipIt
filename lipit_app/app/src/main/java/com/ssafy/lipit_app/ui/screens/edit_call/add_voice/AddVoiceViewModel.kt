@@ -47,12 +47,10 @@ class AddVoiceViewModel : ViewModel() {
 
 
     fun onIntent(intent: AddVoiceIntent) {
-        fun onIntent(intent: AddVoiceIntent) {
-            when (intent) {
-                is AddVoiceIntent.StartRecording -> startRecording()
-                is AddVoiceIntent.StopRecording -> stopRecording()
-                is AddVoiceIntent.NextSentence -> nextSentence()
-            }
+        when (intent) {
+            is AddVoiceIntent.StartRecording -> startRecording()
+            is AddVoiceIntent.StopRecording -> stopRecording()
+            is AddVoiceIntent.NextSentence -> nextSentence()
         }
     }
 }
