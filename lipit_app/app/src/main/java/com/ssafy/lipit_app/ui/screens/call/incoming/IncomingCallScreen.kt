@@ -1,5 +1,13 @@
 package com.ssafy.lipit_app.ui.screens.call.incoming
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,14 +20,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -114,15 +129,16 @@ fun DeclineCallBtn(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+
         Box(
             modifier = Modifier
                 .width(90.dp)
                 .height(90.dp)
                 .clip(CircleShape)
-                .background(Color(0x33FDF8FF))
                 .clickable { onClick() },
             contentAlignment = Alignment.Center
         ) {
+            RippleEffect()
             Box(
                 modifier = Modifier
                     .width(69.dp)
@@ -158,6 +174,30 @@ fun DeclineCallBtn(
     }
 }
 
+// 버튼 ripple 효과(pulse)
+@Composable
+private fun RippleEffect(
+    modifier: Modifier = Modifier
+) {
+    val infiniteTransition = rememberInfiniteTransition()
+    val animation = infiniteTransition.animateFloat(
+        initialValue = 0.8f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ), label = ""
+    )
+
+    Box(
+        modifier = modifier
+            .scale(animation.value)
+            .size(120.dp) // 버튼보다 크게!
+            .clip(CircleShape)
+            .background(Color(0x33FDF8FF)) // 살짝 투명하게
+    )
+}
+
 // 전화 받기
 @Composable
 fun AcceptCallBtn(
@@ -171,10 +211,12 @@ fun AcceptCallBtn(
                 .width(90.dp)
                 .height(90.dp)
                 .clip(CircleShape)
-                .background(Color(0x33FDF8FF))
                 .clickable { onClick() },
             contentAlignment = Alignment.Center
         ) {
+
+            RippleEffect()
+
             Box(
                 modifier = Modifier
                     .width(69.dp)
