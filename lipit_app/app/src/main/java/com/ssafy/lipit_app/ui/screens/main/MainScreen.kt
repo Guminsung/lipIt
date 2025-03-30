@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -68,21 +67,18 @@ fun MainScreen(
         NextLevel(state.sentenceCnt, state.wordCnt, state.attendanceCnt, state.attendanceTotal)
 
         // 전화 걸기 버튼
-        CallButton()
+        //CallButton()
 
     }
 
 }
-
 
 
 // 전화 걸기 버튼
-@Composable
-fun CallButton() {
-    Button(onClick = { /*TODO*/ }) {
-
-    }
-}
+//@Composable
+//fun CallButton() {
+//
+//}
 
 
 // 사용자 정보 (이름 & 등급)
