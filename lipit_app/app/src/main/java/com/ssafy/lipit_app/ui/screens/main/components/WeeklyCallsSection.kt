@@ -21,7 +21,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.ui.screens.main.CallItem
-import com.ssafy.lipit_app.ui.screens.main.DaySelector
 import com.ssafy.lipit_app.ui.screens.main.MainIntent
 
 // 주간 전화 일정 한 눈에 보기

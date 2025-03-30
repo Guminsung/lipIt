@@ -1,43 +1,107 @@
 package com.ssafy.lipit_app.ui.screens.main.components
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ssafy.lipit_app.R
 
 // Call log 버튼 (reports & my voices 버튼들 영역)
 @Composable
 fun ReportAndVoiceBtn() {
-    // 타이틀
-    Text(
-        text = "Call Log+",
-        style = TextStyle(
-            fontSize = 23.sp,
-            lineHeight = 50.sp,
-            fontWeight = FontWeight(700),
-            color = Color(0xFF000000)
-        ),
+    Row(
         modifier = Modifier
-            .padding(top = 20.dp)
-    )
+            .height(80.dp)
+            .fillMaxWidth()
+    ) {
+        // reports 버튼
+        Column(
+            modifier = Modifier
+                .background(color = Color(0xB2F3E7F9), shape = RoundedCornerShape(size = 15.dp))
+                .fillMaxHeight()
+                .weight(1f)
+                .align(Alignment.CenterVertically)
+                .offset(y = (-3).dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // 아이콘
+            Image(
+                painterResource(id = R.drawable.main_reports_icon),
+                contentDescription = "리포트",
+                modifier = Modifier
+                    .width(50.dp)
+                    .height(50.dp)
+            )
 
-    //버튼1 - report
-    Button(onClick = {
-        /*TODO*/
-    }) {
+            // 텍스트
+            Text(
+                text = "Reports",
+                style = TextStyle(
+                    fontSize = 15.sp,
+                    lineHeight = 30.sp,
+                    fontWeight = FontWeight(500),
+                    color = Color(0xFF3D3D3D),
+                    textAlign = TextAlign.Center,
+                ),
+                modifier = Modifier
+                    .offset(y = (-5).dp),
+            )
+        }
 
-    }
+        Spacer(modifier = Modifier.width(12.dp))
 
-    //버튼2 - My Voices
-    Button(onClick = {
-        /*TODO*/
-    }) {
+        // My Voices 버튼
+        Column(
+            modifier = Modifier
+                .background(color = Color(0xB2F3E7F9), shape = RoundedCornerShape(size = 15.dp))
+                .fillMaxHeight()
+                .offset(y = (-3).dp)
+                .weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // 아이콘
+            Image(
+                painterResource(id = R.drawable.main_my_voices_icon),
+                contentDescription = "리포트",
+                modifier = Modifier
+                    .width(50.dp)
+                    .height(50.dp)
+            )
 
+            // 텍스트
+            Text(
+                text = "My Voices",
+                style = TextStyle(
+                    fontSize = 15.sp,
+                    lineHeight = 30.sp,
+                    fontWeight = FontWeight(500),
+                    color = Color(0xFF3D3D3D),
+                    textAlign = TextAlign.Center,
+                ),
+                modifier = Modifier
+                    .offset(y = (-5).dp),
+                )
+        }
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -57,12 +58,14 @@ fun MainScreen(
                 }
             }
         )
-
-        // 레벨업 파트
-        NextLevel(state.sentenceCnt, state.wordCnt, state.attendanceCnt, state.attendanceTotal)
+        
+        Spacer(modifier = Modifier.height(12.dp))
 
         // 리포트 & 마이 보이스로 넘어가는 버튼들
         ReportAndVoiceBtn()
+
+        // 레벨업 파트
+        NextLevel(state.sentenceCnt, state.wordCnt, state.attendanceCnt, state.attendanceTotal)
 
         // 전화 걸기 버튼
         CallButton()
