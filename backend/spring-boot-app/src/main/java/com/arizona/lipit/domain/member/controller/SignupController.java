@@ -1,4 +1,4 @@
-package com.arizona.lipit.domain.auth.controller;
+package com.arizona.lipit.domain.member.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.arizona.lipit.domain.auth.dto.MemberDto;
-import com.arizona.lipit.domain.auth.dto.SignupRequestDto;
-import com.arizona.lipit.domain.auth.service.SignupService;
-import com.arizona.lipit.global.docs.auth.SignupApiSpec;
+import com.arizona.lipit.domain.member.dto.MemberDto;
+import com.arizona.lipit.domain.member.dto.SignupRequestDto;
+import com.arizona.lipit.domain.member.service.SignupService;
+import com.arizona.lipit.global.docs.member.SignupApiSpec;
 import com.arizona.lipit.global.response.CommonResponse;
 
 import jakarta.validation.Valid;

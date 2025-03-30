@@ -37,6 +37,11 @@ spring:
     path match:
       matching-strategy: ant_path_matcher
 
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
 server:
   servlet:
     context-path: /spring/api
@@ -47,7 +52,8 @@ server:
 
 jwt:
   secret: ${JWT_SECRET}
-  access-token-expiration: 900000  # 액세스 토큰 만료 시간 (15분, 단위: 밀리초)
+  #  access-token-expiration: 900000  # 액세스 토큰 만료 시간 (15분, 단위: 밀리초)
+  access-token-expiration: 86400000  # 1일
   refresh-token-expiration: 604800000  # 리프레시 토큰 만료 시간 (7일, 단위: 밀리초)
 
 springdoc: # Swagger

@@ -1,12 +1,12 @@
-package com.arizona.lipit.domain.auth.mapper;
+package com.arizona.lipit.domain.member.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
-import com.arizona.lipit.domain.auth.dto.MemberDto;
-import com.arizona.lipit.domain.auth.dto.SignupRequestDto;
-import com.arizona.lipit.domain.auth.entity.Member;
+import com.arizona.lipit.domain.member.dto.MemberDto;
+import com.arizona.lipit.domain.member.dto.SignupRequestDto;
+import com.arizona.lipit.domain.member.entity.Member;
 import com.arizona.lipit.global.config.MapStructConfig;
 
 @Mapper(config = MapStructConfig.class)

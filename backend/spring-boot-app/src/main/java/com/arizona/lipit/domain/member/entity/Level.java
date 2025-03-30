@@ -1,12 +1,9 @@
-package com.arizona.lipit.domain.auth.entity;
+package com.arizona.lipit.domain.member.entity;
 
 import java.sql.Timestamp;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import com.arizona.lipit.domain.auth.dto.Gender;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,44 +22,27 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Member {
+public class Level {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long memberId;
-
-	@Column(nullable = false, unique = true)
-	private String email;
+	private Long levelId;
 
 	@Column(nullable = false)
-	private String password;
+	private int level;
 
 	@Column(nullable = false)
-	private String name;
+	private int minCallDuration;
 
 	@Column(nullable = false)
-	private Gender gender;
-
-	@Column
-	private String interest;
-
-	@Column
-	private Long selectedVoiceId;
-
-	@Column
-	private String fcmToken;
+	private int minReportCount;
 
 	@Column(nullable = false)
-	@Builder.Default
-	private Integer reportCount = 0;
+	private String badgeIcon;
 
 	@CreationTimestamp
 	private Timestamp createdAt;
 
 	@UpdateTimestamp
 	private Timestamp updatedAt;
-
-	// 비밀번호 암호화 적용 메서드
-	public void encodePassword(PasswordEncoder passwordEncoder) {
-		this.password = passwordEncoder.encode(this.password);
-	}
 }

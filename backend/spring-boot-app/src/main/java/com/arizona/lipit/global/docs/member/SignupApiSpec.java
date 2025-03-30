@@ -1,10 +1,10 @@
-package com.arizona.lipit.global.docs.auth;
+package com.arizona.lipit.global.docs.member;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import com.arizona.lipit.domain.auth.dto.MemberDto;
-import com.arizona.lipit.domain.auth.dto.SignupRequestDto;
+import com.arizona.lipit.domain.member.dto.MemberDto;
+import com.arizona.lipit.domain.member.dto.SignupRequestDto;
 import com.arizona.lipit.global.response.CommonResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
