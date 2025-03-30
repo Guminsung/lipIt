@@ -8,5 +8,4 @@ sealed interface VoiceCallIntent {
     //번역 이벤트
     data class TranslationOn(val showTranslation: Boolean): VoiceCallIntent
     data class TranslationOff(val showTranslation: Boolean): VoiceCallIntent
-
 }
