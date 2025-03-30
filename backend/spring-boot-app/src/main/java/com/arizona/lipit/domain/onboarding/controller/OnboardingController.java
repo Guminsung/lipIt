@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.arizona.lipit.domain.auth.dto.MemberDto;
-import com.arizona.lipit.domain.auth.entity.Member;
-import com.arizona.lipit.domain.auth.repository.MemberRepository;
+import com.arizona.lipit.domain.member.dto.MemberDto;
+import com.arizona.lipit.domain.member.entity.Member;
+import com.arizona.lipit.domain.member.repository.MemberRepository;
 import com.arizona.lipit.domain.onboarding.dto.UserInterestRequestDto;
 import com.arizona.lipit.domain.onboarding.service.UserInterestService;
 import com.arizona.lipit.global.docs.onboarding.OnboardingApiSpec;
@@ -18,7 +18,6 @@ import com.arizona.lipit.global.exception.CustomException;
 import com.arizona.lipit.global.exception.ErrorCode;
 import com.arizona.lipit.global.response.CommonResponse;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -35,13 +34,13 @@ public class OnboardingController implements OnboardingApiSpec {
 
 	@PostMapping("/interesting")
 	public ResponseEntity<CommonResponse<MemberDto>> createUserInterest(
-			@AuthenticationPrincipal UserDetails userDetails,
-			@RequestBody UserInterestRequestDto requestDto) {
+		@AuthenticationPrincipal UserDetails userDetails,
+		@RequestBody UserInterestRequestDto requestDto) {
 
 		String email = userDetails.getUsername(); // 이메일 추출
 		Long memberId = memberRepository.findByEmail(email)
-				.map(Member::getMemberId)
-				.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+			.map(Member::getMemberId)
+			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
 		MemberDto memberDto = userInterestService.saveUserInterest(memberId, requestDto);
 

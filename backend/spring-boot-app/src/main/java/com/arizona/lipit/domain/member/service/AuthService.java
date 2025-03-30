@@ -1,13 +1,13 @@
-package com.arizona.lipit.domain.auth.service;
+package com.arizona.lipit.domain.member.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.arizona.lipit.domain.auth.dto.LoginRequestDto;
-import com.arizona.lipit.domain.auth.dto.LoginResponseDto;
-import com.arizona.lipit.domain.auth.entity.Member;
-import com.arizona.lipit.domain.auth.repository.MemberRepository;
+import com.arizona.lipit.domain.member.dto.LoginRequestDto;
+import com.arizona.lipit.domain.member.dto.LoginResponseDto;
+import com.arizona.lipit.domain.member.entity.Member;
+import com.arizona.lipit.domain.member.repository.MemberRepository;
 import com.arizona.lipit.global.exception.CustomException;
 import com.arizona.lipit.global.exception.ErrorCode;
 import com.arizona.lipit.global.jwt.JwtProvider;

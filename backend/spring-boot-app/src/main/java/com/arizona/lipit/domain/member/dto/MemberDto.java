@@ -1,4 +1,4 @@
-package com.arizona.lipit.domain.auth.dto;
+package com.arizona.lipit.domain.member.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -24,6 +24,9 @@ public class MemberDto {
 
 	@Schema(description = "사용자가 선택한 음성 ID", example = "1")
 	private Long selectedVoiceId;
+
+	@Schema(description = "사용자 등급", example = "1")
+	private Long levelId;
 
 	@Schema(description = "FCM 디바이스 토큰", example = "")
 	private String fcmToken;
