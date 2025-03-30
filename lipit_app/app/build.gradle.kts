@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.ui.test.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -128,6 +129,15 @@ dependencies {
 
     // location
     implementation("com.google.android.gms:play-services-location:21.0.1")
+
+    // indicator
+    implementation("mx.platacard:compose-pager-indicator:0.0.8")
+
+    // ExoPlayer
+    implementation("androidx.media3:media3-exoplayer:1.6.0")
+    implementation("androidx.media3:media3-exoplayer-dash:1.6.0")
+    implementation("androidx.media3:media3-ui:1.6.0")
+
     implementation(kotlin("script-runtime"))
 
     implementation("androidx.activity:activity-compose:1.8.2")

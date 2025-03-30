@@ -19,6 +19,13 @@ class MainViewModel : ViewModel() {
 
             //todo: call 기능 구현 시 수정할 것
             is MainIntent.OnCallClick -> TODO()
+
+            // NavGraph에서 처리
+            is MainIntent.NavigateToReports,
+            is MainIntent.NavigateToMyVoices,
+            is MainIntent.NavigateToCallScreen -> {
+                // 네비게이션 관련 상태 업데이트
+            }
         }
     }
 }
