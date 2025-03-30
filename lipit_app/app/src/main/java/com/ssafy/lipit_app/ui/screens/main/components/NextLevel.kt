@@ -90,7 +90,6 @@ fun NextLevel(sentenceCnt: Int, wordCnt: Int, attendanceCnt: Int, attendanceTota
                     clip = true
                 )
                 .fillMaxWidth()
-                .height(196.dp)
                 .border(
                     width = 1.dp,
                     color = Color(0xFFF3E7F9),
@@ -100,21 +99,12 @@ fun NextLevel(sentenceCnt: Int, wordCnt: Int, attendanceCnt: Int, attendanceTota
         ) {
             Column(
                 modifier = Modifier
-                    .padding(15.dp)
+                    .padding(top = 15.dp, start = 15.dp, end = 15.dp, bottom = 20.dp)
             ) {
-                // 출석 횟수
+                // 리포트 개수
                 ProgressBarWithLabel(
-                    label = "Attendance",
+                    label = "Number of Reports",
                     percent = 75,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-
-                // 통화 횟수
-                ProgressBarWithLabel(
-                    label = "Number of Calls",
-                    percent = 100,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp)
