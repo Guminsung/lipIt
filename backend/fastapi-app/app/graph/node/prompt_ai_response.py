@@ -1,14 +1,31 @@
-from app.graph.prompt_format.json_prompt_builder import build_json_response_prompt
+# app/graph/node/prompt_ai_response.py
+from app.graph.util.json_prompt_builder import build_json_response_prompt
+from app.graph.util.context_chunker import chunk_contexts
 from app.graph.util.context_formatter import convert_context_to_memory_lines
+from app.graph.util.embed_summary import summarize_contexts_by_embedding
 
 
-def prompt_ai_response_node(state: dict) -> dict:
+async def prompt_ai_response_node(state: dict) -> dict:
     max_history = 6
     timeout_suffix = " We've been talking for a while. Please end the call politely."
 
     history = state.get("messages", [])[-max_history:]
-    raw_contexts = state.get("retrieved_context", [])
-    memory_lines = convert_context_to_memory_lines(raw_contexts)
+    retrieved_context = state.get("retrieved_context", [])
+    memory_lines = convert_context_to_memory_lines(retrieved_context)
+
+    print("⭐ memory_lines =")
+    for line in memory_lines:
+        print(f"- {line}")
+
+    # context 구성
+    context = ""
+    if memory_lines:
+        context = "Here is relevant memory from past conversations:\n" + "\n".join(
+            f"- {line}" for line in memory_lines
+        )
+
+    print(f"⭐ context =\n{context}")  # 깔끔하게 보기 좋게 출력
+
     user_input = state.get("input", "")
     is_timeout = state.get("is_timeout", False)
 
@@ -29,13 +46,6 @@ ai: {
   "should_end_call": false
 }
 """.strip()
-
-    # 💬 context를 자연어 기억 문장으로 구성
-    context = ""
-    if memory_lines:
-        context = "Here is relevant memory from past conversations:\n" + "\n".join(
-            f"- {line}" for line in memory_lines
-        )
 
     # system prompt 생성
     system_prompt = build_json_response_prompt(context=context, suffix=suffix)

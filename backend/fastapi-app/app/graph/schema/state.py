@@ -17,7 +17,7 @@ class CallState(TypedDict, total=False):
     ai_response_kor: str
     ai_audio_url: str
     chat_prompt: List[dict]  # 역할 분리 프롬프트
-    retrieved_context: List[str]  # RAG 결과
+    retrieved_context: List[dict]  # RAG 결과
     should_end_call: bool  # 대화 종료 여부
     is_timeout: bool
     raw_llm_response: str
@@ -25,3 +25,4 @@ class CallState(TypedDict, total=False):
     summary: str
     feedback: str
     native_expressions: List[dict]
+    meaningful_messages: List[dict]

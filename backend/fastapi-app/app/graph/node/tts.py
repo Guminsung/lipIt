@@ -1,4 +1,4 @@
-# app/graph/nodes/tts.py
+# app/graph/node/tts.py
 from app.core.config import GOOGLE_APPLICATION_CREDENTIALS
 from app.util.datetime_utils import now_kst
 from google.oauth2 import service_account

@@ -1,5 +1,4 @@
-# app/graph/nodes/memory.py
-
+# app/graph/node/memory.py
 from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
 from datetime import datetime
 from app.schema.call import Message

@@ -10,7 +10,6 @@ from app.graph.call_graph import (
     build_end_call_graph,
 )
 from app.graph.node.memory import convert_to_lc_message, safe_convert_message_to_dict
-from app.rag.store import store_call_history_embedding
 from app.service.report import generate_report
 from app.util.datetime_utils import now_kst, to_kst, to_kst_isoformat
 from app.util.message_utils import append_messages_to_call
@@ -85,9 +84,8 @@ async def add_message_to_call(
         raise APIException(400, Error.CALL_ALREADY_ENDED)
 
     # 시간 초과 여부 확인
-    is_timeout = (
-        now_kst() - to_kst(call_record.start_time)
-    ).total_seconds() >= 300  # 5분
+    duration = int((now_kst() - to_kst(call_record.start_time)).total_seconds())
+    is_timeout = duration >= 300  # 5분
 
     state = {
         "call_id": call_record.call_id,
@@ -114,19 +112,20 @@ async def add_message_to_call(
 
     if should_end:
         end_time = now_kst()
+        call_record.duration = duration
         call_record.end_time = end_time
         call_record.updated_at = end_time
 
         await save_call(db, call_record)
 
         # RAG Embedding 저장
-        asyncio.create_task(
-            store_call_history_embedding(
-                call_id=call_record.call_id,
-                member_id=call_record.member_id,
-                messages=[Message(**m) for m in call_record.messages],
-            )
-        )
+        # asyncio.create_task(
+        #     store_call_history_embedding(
+        #         call_id=call_record.call_id,
+        #         member_id=call_record.member_id,
+        #         messages=[Message(**m) for m in call_record.messages],
+        #     )
+        # )
 
         duration = int((end_time - to_kst(call_record.start_time)).total_seconds())
 
@@ -182,6 +181,7 @@ async def end_call(
     end_time = now_kst()
     duration = int((end_time - to_kst(call_record.start_time)).total_seconds())
 
+    call_record.duration = duration
     call_record.end_time = end_time
     call_record.updated_at = end_time
 
@@ -190,13 +190,13 @@ async def end_call(
     )
     await save_call(db, call_record)
 
-    asyncio.create_task(
-        store_call_history_embedding(
-            call_id=call_record.call_id,
-            member_id=call_record.member_id,
-            messages=[Message(**m) for m in call_record.messages],
-        )
-    )
+    # asyncio.create_task(
+    #     store_call_history_embedding(
+    #         call_id=call_record.call_id,
+    #         member_id=call_record.member_id,
+    #         messages=[Message(**m) for m in call_record.messages],
+    #     )
+    # )
 
     # 리포트 생성
     asyncio.create_task(

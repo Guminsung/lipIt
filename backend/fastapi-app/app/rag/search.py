@@ -1,4 +1,4 @@
-# app/graph/search.py
+# app/rag/search.py
 from typing import List
 from app.rag.embedding import get_embedding
 from app.rag.pinecone_client import get_index
@@ -19,9 +19,10 @@ async def search_relevant_call_memory(
 
     return [
         {
-            "callId": match.id.split("-")[-1],
+            "chunk_id": match.id,
             "content": match.metadata.get("content", ""),
             "score": match.score,
         }
         for match in result.matches
-    ]
+        if match.score >= 0.5
+    ][:top_k]

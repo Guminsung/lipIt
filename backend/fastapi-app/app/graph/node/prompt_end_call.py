@@ -1,5 +1,5 @@
-# app/graph/nodes/end_prompt.py
-from app.graph.prompt_format.json_prompt_builder import build_json_response_prompt
+# app/graph/node/end_prompt.py
+from app.graph.util.json_prompt_builder import build_json_response_prompt
 
 
 def prompt_end_call_node(state: dict) -> dict:

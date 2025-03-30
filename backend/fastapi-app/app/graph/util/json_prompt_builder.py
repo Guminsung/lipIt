@@ -3,7 +3,7 @@ def build_json_response_prompt(context: str = "", suffix: str = "") -> str:
     format_block = """
 {
   "en": "your English reply",
-  "ko": "한국어로 자연스럽고 공손하게 번역한 문장 (항상 존댓말로)",
+  "ko": "한국어로 자연스럽고 공손하게 번역한 문장 (존댓말)",
   "should_end_call": true or false
 }
 """
