@@ -16,6 +16,10 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
 import com.ssafy.lipit_app.ui.screens.login.AuthStartScreen
 import com.ssafy.lipit_app.ui.screens.login.LoginScreen
 import com.ssafy.lipit_app.ui.screens.login.SignupScreen
+import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceScreen
+import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceViewModel
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsScreen
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsViewModel
 import com.ssafy.lipit_app.ui.screens.main.CallItem
 import com.ssafy.lipit_app.ui.screens.main.MainIntent
 import com.ssafy.lipit_app.ui.screens.main.MainScreen
@@ -71,6 +75,19 @@ fun NavGraph(
                         }
                     }
                 }
+                //onIntent = { viewModel.onIntent(it) },
+                //onNavigateToAddVoice = { navController.navigate("add_voice") }
+
+            )
+        }
+
+        composable("editWeeklyCalls") {
+            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<WeeklyCallsViewModel>()
+            val state by viewModel.state.collectAsState()
+
+            WeeklyCallsScreen(
+                state = state.weeklyState,
+                onIntent = { viewModel.onIntent(it) }
             )
         }
 
@@ -93,7 +110,15 @@ fun NavGraph(
             )
         }
 
-        //todo: 추후 다른 화면들 여기 추가!
+        composable("add_voice") {
+            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<AddVoiceViewModel>()
+
+            AddVoiceScreen(
+                state = viewModel.state.collectAsState().value,
+                onIntent = viewModel::onIntent
+            )
+        }
+
 
         // 레포트 관련 화면들
         composable("reports") {
@@ -117,25 +142,25 @@ fun NavGraph(
         }
 
     }
-}
 
 // 임시 더미 상태
-val dummyState = MainState(
-    userName = "Sarah",
-    isLoading = false,
-    selectedDay = "월",
-    callItems = listOf(
-        CallItem(
-            1,
-            "Harry Potter",
-            "자유주제",
-            "08:00",
-            "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png",
-            "월"
-        )
-    ),
-    sentenceCnt = 90,
-    wordCnt = 50,
-    attendanceCnt = 20,
-    attendanceTotal = 20
-)
+    val dummyState = MainState(
+        userName = "Sarah",
+        isLoading = false,
+        selectedDay = "월",
+        callItems = listOf(
+            CallItem(
+                1,
+                "Harry Potter",
+                "자유주제",
+                "08:00",
+                "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png",
+                "월"
+            )
+        ),
+        sentenceCnt = 90,
+        wordCnt = 50,
+        attendanceCnt = 20,
+        attendanceTotal = 20
+    )
+}

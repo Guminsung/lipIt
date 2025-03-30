@@ -66,6 +66,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.ui.test.android)
+    implementation(libs.androidx.compose.testing)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -73,7 +74,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
 
     implementation("androidx.compose.material:material:1.7.5")     // material2 지원
     implementation("com.kizitonwose.calendar:compose:2.6.2")
@@ -148,5 +148,9 @@ dependencies {
 
     // url을 통해 이미지를 불러오기 위한 이미지 라이브러리 - Coil
     implementation("io.coil-kt:coil-compose:2.4.0")
+
+    //바텀시트 구현 관련
+    implementation(platform("androidx.compose:compose-bom:2023.06.01"))
+
 
 }
