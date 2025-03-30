@@ -2,10 +2,12 @@ package com.ssafy.lipit_app.ui.screens.main
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -43,8 +45,9 @@ fun MainScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFFDF8FF))
-            .padding(start = 20.dp, end = 20.dp, top = 40.dp)
-    ) {
+            .padding(start = 20.dp, end = 20.dp, top = 40.dp),
+
+        ) {
         UserInfoSection(state.userName) // 상단의 유저 이름, 등급 부분
         TodaysSentence(state.sentenceOriginal, state.sentenceTranslated) // 오늘의 문장
 
@@ -57,7 +60,7 @@ fun MainScreen(
                 }
             }
         )
-        
+
         Spacer(modifier = Modifier.height(12.dp))
 
         // 리포트 & 마이 보이스로 넘어가는 버튼들
@@ -66,19 +69,29 @@ fun MainScreen(
         // 레벨업 파트
         NextLevel(state.sentenceCnt, state.wordCnt, state.attendanceCnt, state.attendanceTotal)
 
+        Spacer(modifier = Modifier.height(20.dp))
+
         // 전화 걸기 버튼
-        //CallButton()
-
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            CallButton()
+        }
     }
-
 }
 
 
 // 전화 걸기 버튼
-//@Composable
-//fun CallButton() {
-//
-//}
+@Composable
+fun CallButton() {
+    Image(
+        painterResource(id = R.drawable.main_call_icon),
+        contentDescription = "전화 걸기",
+        modifier = Modifier
+            .size(70.dp)
+    )
+}
 
 
 // 사용자 정보 (이름 & 등급)
