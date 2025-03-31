@@ -84,4 +84,23 @@ public class ScheduleService {
                 .success(true)
                 .build();
     }
+
+    @Transactional(readOnly = true)
+    public Integer getMissedCountByScheduleId(Long callScheduleId) {
+        CallSchedule callSchedule = scheduleRepository.findById(callScheduleId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 통화 일정입니다."));
+        
+        return callSchedule.getMissedCount();
+    }
+
+    @Transactional
+    public Integer increaseMissedCountByScheduleId(Long callScheduleId) {
+        CallSchedule callSchedule = scheduleRepository.findById(callScheduleId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 통화 일정입니다."));
+        
+        // 부재중 개수 증가
+        callSchedule.setMissedCount(callSchedule.getMissedCount() + 1);
+        
+        return callSchedule.getMissedCount();
+    }
 }

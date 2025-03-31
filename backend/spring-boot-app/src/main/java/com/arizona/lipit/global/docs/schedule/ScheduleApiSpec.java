@@ -126,4 +126,28 @@ public interface ScheduleApiSpec {
     ResponseEntity<CommonResponse<ScheduleDeleteResponseDto>> deleteSchedule(
             @RequestParam @Parameter(description = "사용자 ID") Long memberId,
             @PathVariable @Parameter(description = "삭제할 일정 ID") Long callScheduleId);
+
+    @Operation(summary = "부재중 개수 조회", description = """
+        💡 특정 일정의 부재중 개수를 조회합니다.
+        """)
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "부재중 개수가 성공적으로 조회되었습니다."),
+            @ApiResponse(responseCode = "404",
+                    description = "`[CALL-004]` 존재하지 않는 통화 일정입니다.",
+                    content = @Content())
+    })
+    ResponseEntity<CommonResponse<Object>> getMissedCount(
+            @PathVariable @Parameter(description = "일정 ID") Long callScheduleId);
+
+    @Operation(summary = "부재중 개수 증가", description = """
+        💡 특정 일정의 부재중 개수를 1 증가시킵니다.
+        """)
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "전화 수신이 거절되었습니다."),
+            @ApiResponse(responseCode = "404",
+                    description = "`[CALL-004]` 존재하지 않는 통화 일정입니다.",
+                    content = @Content())
+    })
+    ResponseEntity<CommonResponse<Object>> increaseMissedCount(
+            @PathVariable @Parameter(description = "일정 ID") Long callScheduleId);
 }

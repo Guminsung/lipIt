@@ -61,4 +61,20 @@ public class ScheduleController implements ScheduleApiSpec {
 		ScheduleDeleteResponseDto response = scheduleService.deleteSchedule(callScheduleId, memberId);
 		return ResponseEntity.ok(CommonResponse.ok("일정이 성공적으로 삭제되었습니다.", response));
 	}
+
+	@GetMapping("/{callScheduleId}/reject")
+	public ResponseEntity<CommonResponse<Object>> getMissedCount(
+		@PathVariable Long callScheduleId) {
+		Integer missedCount = scheduleService.getMissedCountByScheduleId(callScheduleId);
+		return ResponseEntity.ok(CommonResponse.ok("부재중 개수가 성공적으로 조회되었습니다.", 
+			java.util.Map.of("missedCount", missedCount)));
+	}
+
+	@PatchMapping("/{callScheduleId}/reject")
+	public ResponseEntity<CommonResponse<Object>> increaseMissedCount(
+		@PathVariable Long callScheduleId) {
+		Integer missedCount = scheduleService.increaseMissedCountByScheduleId(callScheduleId);
+		return ResponseEntity.ok(CommonResponse.ok("전화 수신이 거절되었습니다.", 
+			java.util.Map.of("missedCount", missedCount)));
+	}
 }
