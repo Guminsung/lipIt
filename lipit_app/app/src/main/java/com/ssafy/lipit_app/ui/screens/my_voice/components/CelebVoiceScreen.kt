@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.myvoice.components
+package com.ssafy.lipit_app.ui.screens.my_voice.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween

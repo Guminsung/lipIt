@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.myvoice
+package com.ssafy.lipit_app.ui.screens.my_voice
 
 data class MyVoiceState(
     //  현재 선택된 목소리 관련

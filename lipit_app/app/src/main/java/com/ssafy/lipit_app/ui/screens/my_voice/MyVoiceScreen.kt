@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.myvoice
+package com.ssafy.lipit_app.ui.screens.my_voice
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -42,8 +42,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
-import com.ssafy.lipit_app.ui.screens.myvoice.components.CelebVoiceScreen
-import com.ssafy.lipit_app.ui.screens.myvoice.components.CustomVoiceScreen
+import com.ssafy.lipit_app.ui.screens.my_voice.components.CelebVoiceScreen
+import com.ssafy.lipit_app.ui.screens.my_voice.components.CustomVoiceScreen
 import mx.platacard.pagerindicator.PagerIndicator
 
 @Composable
