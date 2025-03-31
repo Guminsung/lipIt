@@ -42,12 +42,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.myvoice.components.CelebVoiceScreen
+import com.ssafy.lipit_app.ui.screens.myvoice.components.CustomVoiceScreen
 import mx.platacard.pagerindicator.PagerIndicator
 
 @Composable
-fun MyVoiceScreen() {
-
-
+fun MyVoiceScreen(
+    state: MyVoiceState,
+    onIntent: (MyVoiceIntent) -> Unit
+) {
     var selectedTab by remember { mutableStateOf("Celebrity") }
     val pagerState = rememberPagerState(pageCount = { 10 })
 
@@ -193,6 +196,19 @@ fun MyVoiceScreen() {
 @Preview(showBackground = true)
 @Composable
 fun MyVoiceScreenPreview() {
-    MyVoiceScreen()
+    MyVoiceScreen(
+        state = MyVoiceState(
+            selectedVoiceName = "Harry Potter",
+            selectedVoiceUrl = "test",
+
+            myCelebrityVoiceList = listOf(
+                voice("Harry Potter", "test"),
+            ),
+            myCustomVoiceList = listOf(
+                voice("Harry Potter", "test"),
+            )
+        ),
+        onIntent = { }
+    )
 }
 

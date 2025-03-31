@@ -21,7 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ssafy.lipit_app.data.model.response.report.NativeExpression
+import com.ssafy.lipit_app.data.model.dto.report.NativeExpression
 
 val purpleDark = Color(0xFF603981)
 val purpleLight = Color(0xFFE7D1F4)

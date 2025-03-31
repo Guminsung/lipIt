@@ -1,6 +1,4 @@
-package com.ssafy.lipit_app.data.model.response.report
-
-import java.sql.Date
+package com.ssafy.lipit_app.data.model.dto.report
 
 data class ReportSummary(
     val reportId: Long = -1,
