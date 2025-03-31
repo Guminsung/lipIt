@@ -45,3 +45,9 @@ class Error:
     REPORT_INTERNAL_ERROR = ErrorCode(
         "REPORT-002", "보고서 처리 중 오류가 발생했습니다."
     )
+    
+    # Daily Sentence
+    DAILY_SENTENCE_NOT_FOUND = ErrorCode("DAILY-001", "오늘의 문장을 찾을 수 없습니다.")
+    DAILY_SENTENCE_INTERNAL_ERROR = ErrorCode(
+        "DAILY-002", "오늘의 문장 처리 중 오류가 발생했습니다."
+    )
