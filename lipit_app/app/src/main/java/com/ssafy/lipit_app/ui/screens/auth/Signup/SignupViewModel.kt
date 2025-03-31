@@ -114,6 +114,7 @@ class SignupViewModel : ViewModel() {
                     errorMessage = result.exceptionOrNull()?.message
                 )
             }
+
         }
     }
 }
