@@ -1,5 +1,7 @@
 package com.ssafy.lipit_app.ui.screens.auth.components
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -9,16 +11,18 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ssafy.lipit_app.ui.screens.auth.Login.LoginState
 
 @Composable
-fun CustomFilledButton(text: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun CustomFilledButton(text: String, context: Context, state: LoginState, onClick: () -> Unit) {
     Button(
         onClick = onClick,
-        modifier = modifier
+        modifier = Modifier
             .height(50.dp)
             .fillMaxWidth(),
         colors = ButtonDefaults.buttonColors(
@@ -28,6 +32,26 @@ fun CustomFilledButton(text: String, modifier: Modifier = Modifier, onClick: () 
         shape = RoundedCornerShape(12.dp)
     ) {
         Text(text = text, fontWeight = FontWeight.Bold, color = Color.White)
+
+        Toast.makeText(
+            context,
+            "입력된 아이디: ${state.id}\n비밀번호: ${state.pw}",
+            Toast.LENGTH_SHORT
+        ).show()
+
+        // 로그인 성공 이벤트
+        LaunchedEffect(state.isLoginSuccess) {
+            if (state.isLoginSuccess) {
+                // main 으로 이동 및 로그인 성공 토스트 출력
+                Toast.makeText(context, "로그인 성공!", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        LaunchedEffect(state.errorMessage) {
+            state.errorMessage?.let {
+                // 로그로 에러 메시지 출력
+            }
+        }
     }
 }
 

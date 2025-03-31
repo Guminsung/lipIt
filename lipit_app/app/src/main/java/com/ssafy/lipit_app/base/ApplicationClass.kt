@@ -1,32 +1,27 @@
-package com.ssafy.lipit_app.base
-
 import android.app.Application
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.ssafy.lipit_app.BuildConfig
-import com.ssafy.lipit_app.BuildConfig.SERVER_URL
+import com.ssafy.lipit_app.base.AuthInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-// Retrofit 초기화 및 관리 - 서버 통신을 위한 Retrofit 인스턴스를 만들어줌
 class ApplicationClass : Application() {
 
     companion object {
         lateinit var retrofit: Retrofit
-        const val BASE_URL = BuildConfig.SERVER_URL
     }
 
     override fun onCreate() {
         super.onCreate()
-        Log.d("SERVER", "🌐 서버 주소: $BASE_URL")
 
-        Log.d("LipItApplication ", "TokenManager 초기화됨")
+        val serverUrl = BuildConfig.SERVER_URL
+        Log.d("SERVER", "🌐 서버 주소: $serverUrl")
 
-        // 로그 찍기
         val loggingInterceptor = HttpLoggingInterceptor { message ->
             try {
                 val decodedMessage =
@@ -37,7 +32,6 @@ class ApplicationClass : Application() {
             }
         }.setLevel(HttpLoggingInterceptor.Level.BODY)
 
-        // 기본 서버 API용 클라이언트
         val client = OkHttpClient.Builder()
             .readTimeout(5000, TimeUnit.MILLISECONDS)
             .connectTimeout(5000, TimeUnit.MILLISECONDS)
@@ -50,13 +44,10 @@ class ApplicationClass : Application() {
             .disableHtmlEscaping()
             .create()
 
-        // 서버 API Retrofit 인스턴스
         retrofit = Retrofit.Builder()
-            .baseUrl(SERVER_URL)
+            .baseUrl(serverUrl)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
-
     }
 }
-

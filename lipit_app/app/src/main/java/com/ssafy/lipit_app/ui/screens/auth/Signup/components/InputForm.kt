@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.auth.Signup.components
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,12 +20,16 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -32,22 +37,22 @@ import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.components.SpacerHeight
 import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupIntent
 import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupState
-import com.ssafy.lipit_app.ui.screens.auth.Signup.validateSignupInput
-import com.ssafy.lipit_app.ui.screens.auth.components.CustomFilledButton
 import com.ssafy.lipit_app.ui.screens.auth.components.GenderSelectDialog
 
 @Composable
 fun InputForm(state: SignupState, onSuccess: () -> Unit, onIntent: (SignupIntent) -> Unit) {
-    // InputData
-//    var name by remember { mutableStateOf("") }
-//    var password by remember { mutableStateOf("") }
-//    var passwordConfirm by remember { mutableStateOf("") }
-//    var selectedGender by remember { mutableStateOf("") }
-//    var expanded by remember { mutableStateOf(false) } // 성별 드롭다운 메뉴 활/비활성화
-//
-//    var isPasswordVisible_1 by remember { mutableStateOf(false) }
-//    var isPasswordVisible_2 by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
+
+    if(state.errorMessage != null){
+        Toast.makeText(context, state.errorMessage, Toast.LENGTH_SHORT).show()
+        onSuccess()
+    }
+
+    if(state.signupSuccess){
+        Toast.makeText(context, "회원가입 성공!", Toast.LENGTH_SHORT).show()
+        onSuccess()
+    }
 
     Column(
         modifier = Modifier
@@ -101,7 +106,13 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit, onIntent: (SignupIntent
                     contentDescription = if (state.isPasswordVisible_1) "비밀번호 숨기기" else "비밀번호 보기",
                     tint = Color(0xFFE2C7FF),
                     modifier = Modifier
-                        .clickable(onClick = { onIntent(SignupIntent.OnisPasswordVisible1Changed(state.isPasswordVisible_1)) })
+                        .clickable(onClick = {
+                            onIntent(
+                                SignupIntent.OnisPasswordVisible1Changed(
+                                    state.isPasswordVisible_1
+                                )
+                            )
+                        })
                 )
             }
         )
@@ -134,7 +145,13 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit, onIntent: (SignupIntent
                     contentDescription = if (state.isPasswordVisible_2) "비밀번호 숨기기" else "비밀번호 보기",
                     tint = Color(0xFFE2C7FF),
                     modifier = Modifier
-                        .clickable(onClick = { onIntent(SignupIntent.OnisPasswordVisible2Changed(state.isPasswordVisible_2)) })
+                        .clickable(onClick = {
+                            onIntent(
+                                SignupIntent.OnisPasswordVisible2Changed(
+                                    state.isPasswordVisible_2
+                                )
+                            )
+                        })
                 )
             }
         )
@@ -166,7 +183,7 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit, onIntent: (SignupIntent
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onIntent(SignupIntent.OnExpandedChanged(state.expanded))},
+                .clickable { onIntent(SignupIntent.OnExpandedChanged(state.expanded)) },
         ) {
             OutlinedTextField(
                 value = state.selectedGender,
@@ -225,34 +242,68 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit, onIntent: (SignupIntent
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // TODO: 회원가입 이벤트 정의
-            CustomFilledButton(text = "JOIN") {
-                val errorMessage =
-                    validateSignupInput(
-                        state.id,
-                        state.pw,
-                        state.pwConfirm,
-                        state.englishName,
-                        state.selectedGender
-                    )
-
-                if (errorMessage != null) {
-                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(
-                        context,
-                        "${state.id} ${state.pw} ${state.pwConfirm} ${state.englishName} ${state.selectedGender}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    // TODO: 회원가입 진행 API 실행
-
-                    // TODO: 회원 가입 성공 시, 로그인 화면으로 이동
-                    onSuccess()
+            CustomFilledSignupButton(
+                text = "JOIN",
+                context = context,
+                state = state,
+                onClick = {
+                    onIntent(SignupIntent.OnSignupClicked)
                 }
-            }
+            )
+
+
             SpacerHeight(12)
         }
 
         SpacerHeight(94)
+    }
+}
+
+@Composable
+fun CustomFilledSignupButton(text: String, context: Context, state: SignupState, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .height(50.dp)
+            .fillMaxWidth(),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFFA37BBD),
+            contentColor = Color.White
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Text(text = text, fontWeight = FontWeight.Bold, color = Color.White)
+
+        LaunchedEffect(state.signupSuccess) {
+            if (state.signupSuccess) {
+                Toast.makeText(context, "회원가입 성공!", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        LaunchedEffect(state.errorMessage) {
+            state.errorMessage?.let {
+                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+}
+
+
+// Input 유효성 검사 함수
+fun validateSignupInput(
+    id: String,
+    password: String,
+    passwordConfirm: String,
+    name: String,
+    selectedGender: String
+): String? {
+    return when {
+        id.isBlank() -> "아이디를 입력해주세요."
+        password.isBlank() -> "비밀번호를 입력해주세요."
+        passwordConfirm.isBlank() -> "비밀번호 확인을 입력해주세요."
+        password != passwordConfirm -> "비밀번호가 일치하지 않아요."
+        name.isBlank() -> "영문 이름을 입력해주세요."
+        selectedGender.isBlank() -> "성별을 선택해주세요."
+        else -> null // 문제 없음
     }
 }

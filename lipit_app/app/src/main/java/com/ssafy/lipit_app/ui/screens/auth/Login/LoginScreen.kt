@@ -1,6 +1,5 @@
 package com.ssafy.lipit_app.ui.screens.auth.Login
 
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,13 +14,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
-import androidx.compose.material.Text
-import androidx.compose.material3.IconButton
 import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,12 +34,13 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ssafy.lipit_app.R
-import androidx.compose.runtime.*
 import com.ssafy.lipit_app.ui.screens.auth.components.CustomFilledButton
 
 
 @Composable
 fun LoginScreen(
+    state: LoginState,
+    onIntent: (LoginIntent) -> Unit,
     onSuccess: () -> Unit
 ) {
     val context = LocalContext.current
@@ -85,7 +87,7 @@ fun LoginScreen(
                 painter = painterResource(id = R.drawable.img_3d_crop),
                 contentDescription = "타이틀 로고",
                 modifier = Modifier
-                    .fillMaxWidth() // ✅ 어떤 화면에서도 가로 꽉 채우기
+                    .fillMaxWidth() // 어떤 화면에서도 가로 꽉 채우기
                     .wrapContentHeight(),
                 contentScale = ContentScale.FillWidth
             )
@@ -154,18 +156,10 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    CustomFilledButton(text = "LOGIN") {
-                        Toast.makeText(
-                            context,
-                            "입력된 아이디: ${id}\n비밀번호: ${password}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-
-                        // TODO: 로그인 성공 이벤트
-                        onSuccess()
-                    }
+                    CustomFilledButton(text = "LOGIN", context, state, onClick = {
+                        onIntent(LoginIntent.OnLoginClicked)
+                    })
                 }
-
 
                 Spacer(modifier = Modifier.height(94.dp))
             }
@@ -177,5 +171,15 @@ fun LoginScreen(
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
-    LoginScreen( onSuccess = {})
+    LoginScreen(
+        state = LoginState(
+            id = "",
+            pw = "",
+            isLoginClicked = false,
+            isLoginSuccess = false,
+            errorMessage = ""
+        ),
+        onIntent = {},
+        onSuccess = {}
+    )
 }

@@ -65,24 +65,6 @@ fun SignupScreen(
     }
 }
 
-// Input 유효성 검사 함수
-fun validateSignupInput(
-    id: String,
-    password: String,
-    passwordConfirm: String,
-    name: String,
-    selectedGender: String
-): String? {
-    return when {
-        id.isBlank() -> "아이디를 입력해주세요."
-        password.isBlank() -> "비밀번호를 입력해주세요."
-        passwordConfirm.isBlank() -> "비밀번호 확인을 입력해주세요."
-        password != passwordConfirm -> "비밀번호가 일치하지 않아요."
-        name.isBlank() -> "영문 이름을 입력해주세요."
-        selectedGender.isBlank() -> "성별을 선택해주세요."
-        else -> null // 문제 없음
-    }
-}
 
 
 @Preview(showBackground = true)

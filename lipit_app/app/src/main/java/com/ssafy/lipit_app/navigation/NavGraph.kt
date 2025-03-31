@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.ssafy.lipit_app.ui.screens.auth.Login.LoginScreen
+import com.ssafy.lipit_app.ui.screens.auth.Login.LoginViewModel
 import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupScreen
 import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupViewModel
 import com.ssafy.lipit_app.ui.screens.auth.components.AuthStartScreen
@@ -46,7 +47,11 @@ fun NavGraph(
         }
 
         composable("login") {
+            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<LoginViewModel>()
+            val state by viewModel.state.collectAsState()
             LoginScreen(
+                state = state,
+                onIntent = { viewModel.onIntent(it) },
                 onSuccess = { navController.navigate("main") }
             )
         }
