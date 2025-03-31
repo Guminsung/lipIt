@@ -4,6 +4,7 @@ import logging
 from typing import Union
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import text
 from app.graph.call_graph import (
     build_add_message_graph,
     build_start_call_graph,
@@ -117,15 +118,23 @@ async def add_message_to_call(
         call_record.updated_at = end_time
 
         await save_call(db, call_record)
-
-        # RAG Embedding 저장
-        # asyncio.create_task(
-        #     store_call_history_embedding(
-        #         call_id=call_record.call_id,
-        #         member_id=call_record.member_id,
-        #         messages=[Message(**m) for m in call_record.messages],
-        #     )
-        # )
+       
+        # member의 total_report_count 증가 - raw SQL 사용
+        try:
+            await db.execute(
+                text("""
+                    UPDATE member 
+                    SET total_report_count = COALESCE(total_report_count, 0) + 1 
+                    WHERE member_id = :member_id
+                """),
+                {"member_id": call_record.member_id}
+            )
+            await db.commit()
+            logger.info(f"Member {call_record.member_id}의 total_report_count를 증가시켰습니다.")
+        except Exception as e:
+            logger.error(f"total_report_count 증가 실패: {str(e)}")
+            # 이 오류로 인해 전체 흐름이 중단되지 않도록 pass
+            pass
 
         duration = int((end_time - to_kst(call_record.start_time)).total_seconds())
 
@@ -197,6 +206,23 @@ async def end_call(
     #         messages=[Message(**m) for m in call_record.messages],
     #     )
     # )
+    
+    # member의 total_report_count 증가 - raw SQL 사용
+    try:
+        await db.execute(
+            text("""
+                UPDATE member 
+                SET total_report_count = COALESCE(total_report_count, 0) + 1 
+                WHERE member_id = :member_id
+            """),
+            {"member_id": call_record.member_id}
+        )
+        await db.commit()
+        logger.info(f"Member {call_record.member_id}의 total_report_count를 증가시켰습니다.")
+    except Exception as e:
+        logger.error(f"total_report_count 증가 실패: {str(e)}")
+        # 이 오류로 인해 전체 흐름이 중단되지 않도록 pass
+        pass
 
     # 리포트 생성
     asyncio.create_task(
