@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.data.model.response.report
+package com.ssafy.lipit_app.data.model.dto.report
 
 data class NativeExpression(
     val nativeExpressionId: Int,

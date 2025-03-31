@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.login
+package com.ssafy.lipit_app.ui.screens.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

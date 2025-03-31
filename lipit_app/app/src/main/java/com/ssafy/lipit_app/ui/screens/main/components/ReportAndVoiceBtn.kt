@@ -2,6 +2,7 @@ package com.ssafy.lipit_app.ui.screens.main.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,10 +25,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.main.MainIntent
 
 // Call log 버튼 (reports & my voices 버튼들 영역)
 @Composable
-fun ReportAndVoiceBtn() {
+fun ReportAndVoiceBtn(
+    onIntent: (MainIntent) -> Unit
+) {
     Row(
         modifier = Modifier
             .height(80.dp)
@@ -40,6 +44,9 @@ fun ReportAndVoiceBtn() {
                 .fillMaxHeight()
                 .weight(1f)
                 .align(Alignment.CenterVertically)
+                .clickable { // 화면 이동
+                    onIntent(MainIntent.NavigateToReports)
+                }
                 .offset(y = (-3).dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -76,6 +83,9 @@ fun ReportAndVoiceBtn() {
                 .background(color = Color(0xB2F3E7F9), shape = RoundedCornerShape(size = 15.dp))
                 .fillMaxHeight()
                 .offset(y = (-3).dp)
+                .clickable { // 화면 이동
+                    onIntent(MainIntent.NavigateToMyVoices)
+                }
                 .weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -101,7 +111,7 @@ fun ReportAndVoiceBtn() {
                 ),
                 modifier = Modifier
                     .offset(y = (-5).dp),
-                )
+            )
         }
     }
 }

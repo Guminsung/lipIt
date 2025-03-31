@@ -2,6 +2,7 @@ package com.ssafy.lipit_app.ui.screens.main
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -64,7 +65,7 @@ fun MainScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         // 리포트 & 마이 보이스로 넘어가는 버튼들
-        ReportAndVoiceBtn()
+        ReportAndVoiceBtn(onIntent)
 
         // 레벨업 파트
         NextLevel(state.sentenceCnt, state.wordCnt, state.attendanceCnt, state.attendanceTotal)
@@ -76,7 +77,7 @@ fun MainScreen(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
-            CallButton()
+            CallButton(onIntent)
         }
     }
 }
@@ -84,12 +85,15 @@ fun MainScreen(
 
 // 전화 걸기 버튼
 @Composable
-fun CallButton() {
+fun CallButton(onIntent: (MainIntent) -> Unit) {
     Image(
         painterResource(id = R.drawable.main_call_icon),
         contentDescription = "전화 걸기",
         modifier = Modifier
             .size(70.dp)
+            .clickable { // 화면 이동
+                onIntent(MainIntent.NavigateToCallScreen)
+            }
     )
 }
 
