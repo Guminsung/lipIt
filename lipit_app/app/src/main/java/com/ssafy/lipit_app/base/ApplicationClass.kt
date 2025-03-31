@@ -5,6 +5,7 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.ssafy.lipit_app.BuildConfig
+import com.ssafy.lipit_app.BuildConfig.SERVER_URL
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -16,11 +17,13 @@ class ApplicationClass : Application() {
 
     companion object {
         lateinit var retrofit: Retrofit
-        const val SERVER_URL = BuildConfig.SERVER_URL
+        const val BASE_URL = BuildConfig.SERVER_URL
     }
 
     override fun onCreate() {
         super.onCreate()
+        Log.d("SERVER", "🌐 서버 주소: $BASE_URL")
+
         Log.d("LipItApplication ", "TokenManager 초기화됨")
 
         // 로그 찍기

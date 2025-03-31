@@ -1,3 +1,12 @@
+import java.io.FileInputStream
+import java.util.Properties
+
+// local.properties 읽기
+val localProperties = Properties().apply {
+    load(FileInputStream(rootProject.file("local.properties")))
+}
+val serverUrl = localProperties["SERVER_URL"] as String
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -25,6 +34,13 @@ android {
     }
 
     buildTypes {
+        getByName("debug") {
+            buildConfigField("String", "SERVER_URL", "\"$serverUrl\"")
+        }
+        getByName("release") {
+            buildConfigField("String", "SERVER_URL", "\"$serverUrl\"")
+        }
+
         release {
             isMinifyEnabled = false
             proguardFiles(
