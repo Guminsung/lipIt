@@ -10,9 +10,6 @@ public class ScheduleResponseDto {
     @Schema(description = "전화 일정 ID", example = "1")
     private Long callScheduleId;
 
-    @Schema(description = "사용자 ID", example = "1")
-    private Long memberId;
-
     @Schema(description = "사용자 선택 요일", example = "MONDAY")
     private String scheduledDay;
 
@@ -21,10 +18,4 @@ public class ScheduleResponseDto {
 
     @Schema(description = "사용자 선택 카테고리", example = "SPORTS")
     private String topicCategory;
-    
-    @Schema(description = "부재중 개수", example = "0")
-    private Integer missedCount;
-    
-    @Schema(description = "통화 수신 여부", example = "false")
-    private Boolean isCalled;
 }

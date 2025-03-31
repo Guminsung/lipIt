@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.arizona.lipit.domain.schedule.dto.CallStatusDto;
 import com.arizona.lipit.domain.schedule.dto.ScheduleDeleteResponseDto;
 import com.arizona.lipit.domain.schedule.dto.ScheduleRequestDto;
 import com.arizona.lipit.domain.schedule.dto.ScheduleResponseDto;
@@ -45,6 +46,33 @@ public interface ScheduleApiSpec {
     })
     ResponseEntity<CommonResponse<List<ScheduleResponseDto>>> getAllSchedules(
             @RequestParam @Parameter(description = "사용자 ID") Long memberId);
+
+    @Operation(summary = "오늘의 일정 조회", description = """
+        💡 사용자의 오늘 요일에 해당하는 일정을 조회합니다.
+        """)
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "일정이 성공적으로 조회되었습니다."),
+            @ApiResponse(responseCode = "401",
+                    description = """
+                `[AUTH-001]` 인증되지 않은 사용자입니다. 로그인 후 다시 시도하세요.
+                
+                `[AUTH-002]` 유효하지 않은 토큰입니다.
+                
+                `[AUTH-003]` 만료된 Access Token입니다.
+                
+                `[AUTH-004]` Access Token이 누락되었습니다.
+                """,
+                    content = @Content()),
+            @ApiResponse(responseCode = "404",
+                    description = "`[ALALM-004]` 일정이 존재하지 않습니다.",
+                    content = @Content()),
+            @ApiResponse(responseCode = "500",
+                    description = "서버 내부 오류가 발생했습니다.",
+                    content = @Content())
+    })
+    ResponseEntity<CommonResponse<ScheduleResponseDto>> getTodaySchedule(
+            @RequestParam @Parameter(description = "사용자 ID") Long memberId,
+            @RequestParam @Parameter(description = "오늘자 요일") String callScheduleDay);
 
     @Operation(summary = "일정 생성", description = """
         💡 새로운 일정을 생성합니다.
@@ -136,11 +164,11 @@ public interface ScheduleApiSpec {
                     description = "`[CALL-004]` 존재하지 않는 통화 일정입니다.",
                     content = @Content())
     })
-    ResponseEntity<CommonResponse<Object>> getMissedCount(
+    ResponseEntity<CommonResponse<CallStatusDto>> getMissedCount(
             @PathVariable @Parameter(description = "일정 ID") Long callScheduleId);
 
-    @Operation(summary = "부재중 개수 증가", description = """
-        💡 특정 일정의 부재중 개수를 1 증가시킵니다.
+    @Operation(summary = "전화 수신 거절", description = """
+        💡 특정 일정의 부재중 개수를 1 증가시키고 통화 상태를 반환합니다.
         """)
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "전화 수신이 거절되었습니다."),
@@ -148,6 +176,6 @@ public interface ScheduleApiSpec {
                     description = "`[CALL-004]` 존재하지 않는 통화 일정입니다.",
                     content = @Content())
     })
-    ResponseEntity<CommonResponse<Object>> increaseMissedCount(
+    ResponseEntity<CommonResponse<CallStatusDto>> rejectCall(
             @PathVariable @Parameter(description = "일정 ID") Long callScheduleId);
 }

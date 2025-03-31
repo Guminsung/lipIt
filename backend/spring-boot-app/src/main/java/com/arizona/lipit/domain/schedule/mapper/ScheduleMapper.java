@@ -21,9 +21,8 @@ public interface ScheduleMapper {
     // CallSchedule → ScheduleResponseDto 변환
     @Mapping(target = "callScheduleId", source = "callScheduleId")
     @Mapping(target = "scheduledDay", expression = "java(callSchedule.getScheduledDay().name())")
+    @Mapping(target = "scheduledTime", source = "scheduledTime")
     @Mapping(target = "topicCategory", expression = "java(callSchedule.getTopicCategory() != null ? callSchedule.getTopicCategory().name() : null)")
-    @Mapping(target = "missedCount", source = "missedCount")
-    @Mapping(target = "isCalled", source = "isCalled")
     ScheduleResponseDto toDto(CallSchedule callSchedule);
 
     // 여러 일정을 DTO 리스트로 변환

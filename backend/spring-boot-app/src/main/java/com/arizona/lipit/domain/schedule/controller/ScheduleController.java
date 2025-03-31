@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.arizona.lipit.domain.schedule.dto.CallStatusDto;
 import com.arizona.lipit.domain.schedule.dto.ScheduleDeleteResponseDto;
 import com.arizona.lipit.domain.schedule.dto.ScheduleRequestDto;
 import com.arizona.lipit.domain.schedule.dto.ScheduleResponseDto;
+import com.arizona.lipit.domain.schedule.entity.DayOfWeek;
 import com.arizona.lipit.domain.schedule.service.ScheduleService;
 import com.arizona.lipit.global.docs.schedule.ScheduleApiSpec;
 import com.arizona.lipit.global.response.CommonResponse;
@@ -35,6 +37,19 @@ public class ScheduleController implements ScheduleApiSpec {
 		@RequestParam Long memberId) {
 		List<ScheduleResponseDto> schedules = scheduleService.getAllSchedulesByMemberId(memberId);
 		return ResponseEntity.ok(CommonResponse.ok("일정이 성공적으로 조회되었습니다.", schedules));
+	}
+
+	@GetMapping("/today")
+	public ResponseEntity<CommonResponse<ScheduleResponseDto>> getTodaySchedule(
+		@RequestParam Long memberId,
+		@RequestParam String callScheduleDay) {
+		// String에서 DayOfWeek Enum으로 변환
+		DayOfWeek dayOfWeek = DayOfWeek.valueOf(callScheduleDay);
+		
+		// 오늘의 일정 조회
+		ScheduleResponseDto todaySchedule = scheduleService.getTodaySchedule(memberId, dayOfWeek);
+		
+		return ResponseEntity.ok(CommonResponse.ok("일정이 성공적으로 조회되었습니다.", todaySchedule));
 	}
 
 	@PostMapping
@@ -63,18 +78,16 @@ public class ScheduleController implements ScheduleApiSpec {
 	}
 
 	@GetMapping("/{callScheduleId}/reject")
-	public ResponseEntity<CommonResponse<Object>> getMissedCount(
+	public ResponseEntity<CommonResponse<CallStatusDto>> getMissedCount(
 		@PathVariable Long callScheduleId) {
-		Integer missedCount = scheduleService.getMissedCountByScheduleId(callScheduleId);
-		return ResponseEntity.ok(CommonResponse.ok("부재중 개수가 성공적으로 조회되었습니다.", 
-			java.util.Map.of("missedCount", missedCount)));
+		CallStatusDto callStatus = scheduleService.getCallStatusByScheduleId(callScheduleId);
+		return ResponseEntity.ok(CommonResponse.ok("부재중 개수가 성공적으로 조회되었습니다.", callStatus));
 	}
 
 	@PatchMapping("/{callScheduleId}/reject")
-	public ResponseEntity<CommonResponse<Object>> increaseMissedCount(
+	public ResponseEntity<CommonResponse<CallStatusDto>> rejectCall(
 		@PathVariable Long callScheduleId) {
-		Integer missedCount = scheduleService.increaseMissedCountByScheduleId(callScheduleId);
-		return ResponseEntity.ok(CommonResponse.ok("전화 수신이 거절되었습니다.", 
-			java.util.Map.of("missedCount", missedCount)));
+		CallStatusDto callStatus = scheduleService.increaseMissedCountByScheduleId(callScheduleId);
+		return ResponseEntity.ok(CommonResponse.ok("전화 수신이 거절되었습니다.", callStatus));
 	}
 }

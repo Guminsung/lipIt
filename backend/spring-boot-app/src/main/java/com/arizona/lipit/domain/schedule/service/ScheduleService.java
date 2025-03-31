@@ -1,5 +1,6 @@
 package com.arizona.lipit.domain.schedule.service;
 
+import com.arizona.lipit.domain.schedule.dto.CallStatusDto;
 import com.arizona.lipit.domain.schedule.dto.ScheduleDeleteResponseDto;
 import com.arizona.lipit.domain.schedule.dto.ScheduleRequestDto;
 import com.arizona.lipit.domain.schedule.dto.ScheduleResponseDto;
@@ -86,21 +87,40 @@ public class ScheduleService {
     }
 
     @Transactional(readOnly = true)
-    public Integer getMissedCountByScheduleId(Long callScheduleId) {
+    public CallStatusDto getCallStatusByScheduleId(Long callScheduleId) {
         CallSchedule callSchedule = scheduleRepository.findById(callScheduleId)
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 통화 일정입니다."));
         
-        return callSchedule.getMissedCount();
+        return CallStatusDto.builder()
+                .missedCount(callSchedule.getMissedCount())
+                .isCalled(callSchedule.getIsCalled())
+                .build();
     }
 
     @Transactional
-    public Integer increaseMissedCountByScheduleId(Long callScheduleId) {
+    public CallStatusDto increaseMissedCountByScheduleId(Long callScheduleId) {
         CallSchedule callSchedule = scheduleRepository.findById(callScheduleId)
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 통화 일정입니다."));
         
         // 부재중 개수 증가
         callSchedule.setMissedCount(callSchedule.getMissedCount() + 1);
         
-        return callSchedule.getMissedCount();
+        return CallStatusDto.builder()
+                .missedCount(callSchedule.getMissedCount())
+                .isCalled(callSchedule.getIsCalled())
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public ScheduleResponseDto getTodaySchedule(Long memberId, DayOfWeek dayOfWeek) {
+        CallSchedule callSchedule = scheduleRepository.findByMemberIdAndScheduledDay(memberId, dayOfWeek)
+                .orElseThrow(() -> new EntityNotFoundException("일정이 존재하지 않습니다."));
+        
+        return ScheduleResponseDto.builder()
+                .callScheduleId(callSchedule.getCallScheduleId())
+                .scheduledDay(callSchedule.getScheduledDay().name())
+                .scheduledTime(callSchedule.getScheduledTime())
+                .topicCategory(callSchedule.getTopicCategory() != null ? callSchedule.getTopicCategory().name() : null)
+                .build();
     }
 }
