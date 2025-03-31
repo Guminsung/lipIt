@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.auth
+package com.ssafy.lipit_app.ui.screens.auth.components
 
 import android.widget.Toast
 import androidx.compose.foundation.Image

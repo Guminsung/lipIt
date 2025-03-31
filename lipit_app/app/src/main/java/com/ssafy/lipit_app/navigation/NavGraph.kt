@@ -9,9 +9,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.ssafy.lipit_app.ui.screens.auth.AuthStartScreen
-import com.ssafy.lipit_app.ui.screens.auth.LoginScreen
-import com.ssafy.lipit_app.ui.screens.auth.SignupScreen
+import com.ssafy.lipit_app.ui.screens.auth.Login.LoginScreen
+import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupScreen
+import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupViewModel
+import com.ssafy.lipit_app.ui.screens.auth.components.AuthStartScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallViewModel
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallScreen
@@ -34,7 +35,7 @@ fun NavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = "main" // 첫 진입 화면
+        startDestination = "auth_start" // 첫 진입 화면
     ) {
 
         composable("auth_start") {
@@ -51,7 +52,11 @@ fun NavGraph(
         }
 
         composable("join") {
+            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<SignupViewModel>()
+            val state by viewModel.state.collectAsState()
             SignupScreen(
+                state = state,
+                onIntent = { viewModel.onIntent(it) },
                 onSuccess = { navController.navigate("login") }
             )
         }
