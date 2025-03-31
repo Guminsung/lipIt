@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.auth
+package com.ssafy.lipit_app.ui.screens.auth.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ssafy.lipit_app.ui.components.SpacerHeight
 
 @Composable
 fun GenderSelectDialog(

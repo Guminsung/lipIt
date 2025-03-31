@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.auth
+package com.ssafy.lipit_app.ui.screens.auth.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.fillMaxWidth
