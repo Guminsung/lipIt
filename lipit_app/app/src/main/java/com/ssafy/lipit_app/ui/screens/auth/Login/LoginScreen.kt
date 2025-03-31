@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.auth
+package com.ssafy.lipit_app.ui.screens.auth.Login
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -34,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ssafy.lipit_app.R
 import androidx.compose.runtime.*
+import com.ssafy.lipit_app.ui.screens.auth.components.CustomFilledButton
 
 
 @Composable
