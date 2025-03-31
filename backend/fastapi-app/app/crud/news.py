@@ -76,6 +76,11 @@ async def crawl_content(url: str) -> str:
                 text = re.sub(r"▷\s*네이버,\s*유튜브에서.*", "", text)
                 text = re.sub(r"KBS\s+뉴스를\s+구독해주세요!.*", "", text)
                 text = re.sub(r"◎\s*공감언론.*", "", text)
+                # 앵커 텍스트와 종합 텍스트 제거
+                text = re.sub(r"\[앵커\][^\n]*\n?", "", text)
+                text = re.sub(r"□\s*\(종합\)[^\n]*\n?", "", text)
+                # KBS 지역 표시 제거
+                text = re.sub(r"\[KBS\s+[^\]]+\]\s*", "", text)
 
                 # 연속된 공백 제거
                 text = re.sub(r"\s+", " ", text)
