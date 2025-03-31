@@ -30,13 +30,14 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.components.SpacerHeight
+import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupIntent
 import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupState
 import com.ssafy.lipit_app.ui.screens.auth.Signup.validateSignupInput
 import com.ssafy.lipit_app.ui.screens.auth.components.CustomFilledButton
 import com.ssafy.lipit_app.ui.screens.auth.components.GenderSelectDialog
 
 @Composable
-fun InputForm(state: SignupState, onSuccess: () -> Unit) {
+fun InputForm(state: SignupState, onSuccess: () -> Unit, onIntent: (SignupIntent) -> Unit) {
     // InputData
 //    var name by remember { mutableStateOf("") }
 //    var password by remember { mutableStateOf("") }
@@ -58,7 +59,7 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit) {
         // 1. Input: ID
         OutlinedTextField(
             value = state.id,
-            onValueChange = { state.id = it },
+            onValueChange = { onIntent(SignupIntent.OnIdChanged(it)) },
             placeholder = { Text("ID", color = Color(0xFFE2C7FF)) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -76,7 +77,7 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit) {
         SpacerHeight(18)
         OutlinedTextField(
             value = state.pw,
-            onValueChange = { state.pw = it },
+            onValueChange = { onIntent(SignupIntent.OnPwChanged(it)) },
             placeholder = { Text("PW", color = Color(0xFFE2C7FF)) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -90,20 +91,18 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit) {
             singleLine = true,
             visualTransformation = if (state.isPasswordVisible_1) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
-                androidx.compose.material3.IconButton(onClick = {
-                    state.isPasswordVisible_1 = !state.isPasswordVisible_1
-                }) {
-                    Icon(
-                        painter = painterResource(
-                            id = if (state.isPasswordVisible_1)
-                                R.drawable.ic_pw_closed2
-                            else
-                                R.drawable.ic_pw_show
-                        ),
-                        contentDescription = if (state.isPasswordVisible_1) "비밀번호 숨기기" else "비밀번호 보기",
-                        tint = Color(0xFFE2C7FF)
-                    )
-                }
+                Icon(
+                    painter = painterResource(
+                        id = if (state.isPasswordVisible_1)
+                            R.drawable.ic_pw_closed2
+                        else
+                            R.drawable.ic_pw_show
+                    ),
+                    contentDescription = if (state.isPasswordVisible_1) "비밀번호 숨기기" else "비밀번호 보기",
+                    tint = Color(0xFFE2C7FF),
+                    modifier = Modifier
+                        .clickable(onClick = { onIntent(SignupIntent.OnisPasswordVisible1Changed(state.isPasswordVisible_1)) })
+                )
             }
         )
 
@@ -111,7 +110,7 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit) {
         SpacerHeight(18)
         OutlinedTextField(
             value = state.pwConfirm,
-            onValueChange = { state.pwConfirm = it },
+            onValueChange = { onIntent(SignupIntent.OnPwConfirmChanged(it)) },
             placeholder = { Text("Re-enter PW", color = Color(0xFFE2C7FF)) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -125,20 +124,18 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit) {
             singleLine = true,
             visualTransformation = if (state.isPasswordVisible_2) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
-                androidx.compose.material3.IconButton(onClick = {
-                    state.isPasswordVisible_2 = !state.isPasswordVisible_2
-                }) {
-                    Icon(
-                        painter = painterResource(
-                            id = if (state.isPasswordVisible_2)
-                                R.drawable.ic_pw_closed2
-                            else
-                                R.drawable.ic_pw_show
-                        ),
-                        contentDescription = if (state.isPasswordVisible_2) "비밀번호 숨기기" else "비밀번호 보기",
-                        tint = Color(0xFFE2C7FF)
-                    )
-                }
+                Icon(
+                    painter = painterResource(
+                        id = if (state.isPasswordVisible_2)
+                            R.drawable.ic_pw_closed2
+                        else
+                            R.drawable.ic_pw_show
+                    ),
+                    contentDescription = if (state.isPasswordVisible_2) "비밀번호 숨기기" else "비밀번호 보기",
+                    tint = Color(0xFFE2C7FF),
+                    modifier = Modifier
+                        .clickable(onClick = { onIntent(SignupIntent.OnisPasswordVisible2Changed(state.isPasswordVisible_2)) })
+                )
             }
         )
 
@@ -147,9 +144,8 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit) {
         OutlinedTextField(
             value = state.englishName,
             onValueChange = { // 알파벳만 허용 (대소문자 모두)
-
                 if (it.matches(Regex("^[a-zA-Z]*$"))) {
-                    state.englishName = it
+                    onIntent(SignupIntent.OnEnglishNameChanged(it))
                 }
             },
             placeholder = { Text("English Name", color = Color(0xFFE2C7FF)) },
@@ -170,7 +166,7 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { state.expanded = true },
+                .clickable { onIntent(SignupIntent.OnExpandedChanged(state.expanded))},
         ) {
             OutlinedTextField(
                 value = state.selectedGender,
@@ -203,9 +199,9 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit) {
 
                     DropdownMenu(
                         expanded = state.expanded,
-                        onDismissRequest = { state.expanded = false },
+                        onDismissRequest = { onIntent(SignupIntent.OnExpandedChanged(state.expanded)) },
                         modifier = Modifier
-                            .width(maxWidth) // ✅ 직접 너비 지정!
+                            .width(maxWidth) // 직접 너비 지정!
                             .padding(horizontal = 20.dp)
                             .background(Color.Transparent)
                     ) {
@@ -215,7 +211,7 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit) {
                                 state.selectedGender = it
                             },
                             onDismiss = {
-                                state.expanded = false
+                                onIntent(SignupIntent.OnExpandedChanged(state.expanded))
                             }
                         )
                     }
@@ -232,7 +228,13 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit) {
             // TODO: 회원가입 이벤트 정의
             CustomFilledButton(text = "JOIN") {
                 val errorMessage =
-                    validateSignupInput(state.id, state.pw, state.pwConfirm, state.englishName, state.selectedGender)
+                    validateSignupInput(
+                        state.id,
+                        state.pw,
+                        state.pwConfirm,
+                        state.englishName,
+                        state.selectedGender
+                    )
 
                 if (errorMessage != null) {
                     Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()

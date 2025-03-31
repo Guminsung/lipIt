@@ -59,7 +59,7 @@ fun SignupScreen(
             )
 
             // 입력 폼
-            InputForm(state, onSuccess)
+            InputForm(state, onSuccess, onIntent)
 
         }
     }
