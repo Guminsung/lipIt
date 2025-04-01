@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.components.SelectedVoiceCard
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.components.WeeklySchedule
 
+ // Main > Settings 누르면 보여지는 BottomSheet
 @Composable
 fun WeeklyCallsScreen(
     state: WeeklyCallsState,
@@ -45,10 +46,10 @@ fun WeeklyCallsScreen(
                 )
         )
 
-        // 상단 - 선택 보이스 출력
+        // 현재 선택된 보이스
         SelectedVoiceCard(state.VoiceName, state.VoiceImageUrl, onIntent = onIntent)
 
-        // 하단 - Call 스케줄표
+        // 일주일 스케줄 일정
         WeeklySchedule(
             callSchedules = state.callSchedules,
             onTapSchedule = {

@@ -4,6 +4,13 @@ import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsState
 
 // state: 화면에 보여줄 모든 데이터 상태가 담김
 
+// BottomSheet 종류는 총 3가지
+enum class BottomSheetContent {
+    WEEKLY_CALLS, // 일주일 콜 목록
+    RESCHEDULE_CALL, // 콜 수정 화면
+    MY_VOICES // 현재 보유하고 있는 음성 수
+}
+
 data class MainState(
     // 상단 user 정보
     val userName: String = "Sarah",
@@ -32,12 +39,11 @@ data class MainState(
     val sentenceOriginal: String = "With your talent and hard work, sky’s the limit!",
     val sentenceTranslated: String = "너의 재능과 노력이라면, 한계란 없지!",
 
-
     // [Weekly Calls] 일주일 일정 확인
     val isSettingsSheetVisible: Boolean = false,
+//    val weeklyCallsState: WeeklyCallsState = WeeklyCallsState()
+    val bottomSheetContent: BottomSheetContent = BottomSheetContent.WEEKLY_CALLS, // 👈 추가
     val weeklyCallsState: WeeklyCallsState = WeeklyCallsState()
-
-    // 일정 수정 관련
 )
 
 // 오늘 요일 찾기

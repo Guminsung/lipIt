@@ -33,5 +33,15 @@ class ScheduleRepository {
         }
     }
 
+    suspend fun deleteSchedule(callScheduleId:Long, memberId: Long): Result<Unit> {
+        return try {
+            val response = RetrofitUtil.scheduleService.deleteSchedule(callScheduleId, memberId)
+            if (response.isSuccessful) Result.success(Unit)
+            else Result.failure(Exception("삭제 실패"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
 
 }

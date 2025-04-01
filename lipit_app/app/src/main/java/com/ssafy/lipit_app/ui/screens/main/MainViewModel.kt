@@ -9,6 +9,8 @@ import com.ssafy.lipit_app.data.model.response_dto.schedule.TopicCategory
 import com.ssafy.lipit_app.domain.repository.ScheduleRepository
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.CallSchedule
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsState
+import com.ssafy.lipit_app.util.SharedPreferenceUtils
+import com.ssafy.lipit_app.util.sortSchedulesByDay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -19,7 +21,6 @@ class MainViewModel : ViewModel() {
     val state: StateFlow<MainState> = _state
 
     private val scheduleRepository by lazy { ScheduleRepository() }
-
 
     fun onIntent(intent:MainIntent){
         when(intent){
@@ -39,18 +40,26 @@ class MainViewModel : ViewModel() {
                 // 네비게이션 관련 상태 업데이트
             }
 
-            // [Weekly Calls] BottomSheet: 스케쥴 조회
+            // BottomSheet: 상태관리
             is MainIntent.OnSettingsClicked -> {
                 getWeeklyCallsSchedule()
             }
             is MainIntent.OnCloseSettingsSheet -> {
                 _state.update { it.copy(isSettingsSheetVisible = false) }
             }
+            is MainIntent.ResetBottomSheetContent -> {
+                _state.update {
+                    it.copy(bottomSheetContent = BottomSheetContent.WEEKLY_CALLS)
+                }
+            }
 
-            // TODO : 수정/삭제 단계에서 AlarmManager, FullScreen.. 관련 수정 필요함
-            // [Weekly Calls] BottomSheet: 스케쥴 수정
-
-            // [Weekly Calls] BottomSheet: 스케쥴 삭제
+            // 04.02 화면저환 위해 추가 test
+            is MainIntent.ShowWeeklyCallsScreen -> {
+                _state.update { it.copy(bottomSheetContent = BottomSheetContent.WEEKLY_CALLS) }
+            }
+            is MainIntent.ShowRescheduleScreen -> {
+                _state.update { it.copy(bottomSheetContent = BottomSheetContent.RESCHEDULE_CALL) }
+            }
 
             else -> {
 
@@ -60,30 +69,37 @@ class MainViewModel : ViewModel() {
 
     // [Weekly Calls: BottomSheet] 요일별 스케쥴 리스트
     private fun getWeeklyCallsSchedule() {
+        // TODO : 로그아웃 기능 구현 되면 수정
+//        val memberId = SharedPreferenceUtils.getMemberId()
+        val memberId: Long = 1
+
         viewModelScope.launch {
             try {
-                val response = scheduleRepository.getWeeklyCallsSchedule(memberId = 1)
+                val response = scheduleRepository.getWeeklyCallsSchedule(memberId = memberId)
 
                 response.onSuccess { scheduleList ->
+                    // 1. ScheduleResponse → CallSchedule로 변환
+                    val convertedSchedules = scheduleList.map { schedule ->
+                        CallSchedule(
+                            callScheduleId = schedule.callScheduleId,
+                            memberId = memberId,
+                            scheduleDay = schedule.scheduledDay,
+                            scheduledTime = schedule.scheduledTime,
+                            topicCategory = TopicCategory.fromEnglish(schedule.topicCategory)?.koreanName ?: "기타"
+                        )
+                    }
+
+                    // 2. 요일 정렬 유틸 적용
+                    val sortedSchedules = sortSchedulesByDay(convertedSchedules)
+
+                    // 3. 상태 업데이트
                     _state.update {
                         it.copy(
-                            // 바텀 시트 활성화
                             isSettingsSheetVisible = true,
-
-                            // API 호출 결과 (일주일 스케쥴 데이터 추가)
                             weeklyCallsState = WeeklyCallsState(
-                                VoiceName = "Harry Potter2", // 추후 서버 연동
-                                VoiceImageUrl = "...",       // 추후 서버 연동
-                                callSchedules = scheduleList.map { schedule ->
-                                    CallSchedule(
-                                        callScheduleId = schedule.callScheduleId,
-                                        memberId = 1, //하드코딩
-                                        scheduleDay = schedule.scheduledDay,
-                                        scheduledTime = schedule.scheduledTime,
-//                                        topicCategory = schedule.topicCategory
-                                        topicCategory = TopicCategory.fromEnglish(schedule.topicCategory)?.koreanName ?: "기타"
-                                    )
-                                }
+                                VoiceName = "Harry Potter2", // TODO: 서버 연동 시 교체
+                                VoiceImageUrl = "...",
+                                callSchedules = sortedSchedules
                             )
                         )
                     }
@@ -96,5 +112,7 @@ class MainViewModel : ViewModel() {
             }
         }
     }
+
+
 
 }
