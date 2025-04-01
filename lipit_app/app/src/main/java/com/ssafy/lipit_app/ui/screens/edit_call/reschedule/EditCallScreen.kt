@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -39,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -47,9 +47,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
-import androidx.xr.compose.testing.toDp
 import com.ssafy.lipit_app.R
-import kotlinx.coroutines.selects.select
 
 @Composable
 fun EditCallScreen(
@@ -365,7 +363,10 @@ fun CustomSegmentedButtons(
             .padding(4.dp)
             .height(40.dp)
     ) {
-        val totalWidth = constraints.maxWidth.toDp() // 전체 너비
+        val density = LocalDensity.current
+        val totalWidth = with(density) { constraints.maxWidth.toDp() }
+
+        // val totalWidth = constraints.maxWidth.toDp() // 전체 너비
         val buttonWidth = totalWidth / items.size    // 항목 개수로 나누기
         val indicatorOffset by animateDpAsState(
             targetValue = selectedIndex * buttonWidth,
@@ -409,6 +410,7 @@ fun CustomSegmentedButtons(
         }
     }
 }
+
 
 
 @Preview(showBackground = true)
