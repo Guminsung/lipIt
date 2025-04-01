@@ -1,0 +1,36 @@
+package com.ssafy.lipit_app.base
+
+import android.app.Application
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import java.util.concurrent.TimeUnit
+
+class ApplicationClass : Application() {
+
+    companion object {
+        lateinit var gson: Gson
+        lateinit var client: OkHttpClient
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+
+        TokenManager.init(this)
+
+        gson = GsonBuilder()
+            .setLenient()
+            .disableHtmlEscaping()
+            .create()
+
+        client = OkHttpClient.Builder()
+            .readTimeout(5000, TimeUnit.MILLISECONDS)
+            .connectTimeout(5000, TimeUnit.MILLISECONDS)
+            .addInterceptor(AuthInterceptor(this))
+            .addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            })
+            .build()
+    }
+}
