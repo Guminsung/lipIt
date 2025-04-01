@@ -41,15 +41,13 @@ class AIMessageResponse(BaseModel):
     aiMessage: str
     aiMessageKor: str
     aiAudioUrl: str
-
-
-# 대화 종료 요청 DTO
-class EndCallRequest(BaseModel):
-    userMessage: str
-    userMessageKor: Optional[str] = None
+    endTime: Optional[str] = None
+    duration: Optional[int] = None
+    reportCreated: bool
 
 
 # 대화 종료 응답 DTO
-class EndCallResponse(AIMessageResponse):  # 상속
+class EndCallResponse(BaseModel):  # 상속
     endTime: str
     duration: int
+    reportCreated: bool

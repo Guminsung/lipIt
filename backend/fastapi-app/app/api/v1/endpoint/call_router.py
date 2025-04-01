@@ -7,7 +7,6 @@ from app.api.v1.endpoint.call import (
 from app.core.base_router import BaseRouter
 from app.schema.call import (
     AIMessageResponse,
-    EndCallRequest,
     EndCallResponse,
     StartCallRequest,
     StartCallResponse,
@@ -54,12 +53,12 @@ router.api_doc(
     endpoint=add_message_to_call_endpoint,
     methods=["PATCH"],
     request_model=UserMessageRequest,
-    response_model=APIResponse[Union[AIMessageResponse, EndCallResponse]],
-    success_model=Union[AIMessageResponse, EndCallResponse],
+    response_model=APIResponse[AIMessageResponse],
     request_example={
         "userMessage": "I don't like sports that much.",
         "userMessageKor": "저는 스포츠를 그다지 좋아하지 않습니다.",
     },
+    success_model=AIMessageResponse,
     success_example={
         200: {
             "summary": "일반 대화 응답",
@@ -74,11 +73,12 @@ router.api_doc(
             "summary": "통화 종료 응답",
             "description": "사용자의 발화로 통화가 종료될 때의 응답 예시",
             "value": {
-                "endTime": "2025-03-14T14:25:45.678Z",
-                "duration": 315,
                 "aiMessage": "Alright, sounds good! If you have any more questions in the future, feel free to reach out. Have a great day!",
                 "aiMessageKor": "좋아요, 좋아요! 앞으로 더 궁금한 점이 있으면 언제든지 질문해 주세요. 좋은 하루 되세요!",
                 "aiAudioUrl": "https://dlxayir1dj7sa.cloudfront.net/audio/65991ce5-5332-435a-8c23-4be6c92749a9.mp3",
+                "endTime": "2025-03-14T14:25:45.678Z",
+                "duration": 315,
+                "reportCreated": True,
             },
         },
     },
@@ -100,19 +100,13 @@ router.api_doc(
     path="/{callId}/end",
     endpoint=end_call_endpoint,
     methods=["PATCH"],
-    request_model=EndCallRequest,
+    request_model=None,
     response_model=APIResponse[EndCallResponse],
     success_model=EndCallResponse,
-    request_example={
-        "userMessage": "I think that’s all for today.",
-        "userMessageKor": "오늘은 여기까지인 것 같습니다.",
-    },
     success_example={
         "endTime": "2025-03-14T14:25:45.678Z",
         "duration": 315,
-        "aiMessage": "Alright, sounds good! If you have any more questions in the future, feel free to reach out. Have a great day!",
-        "aiMessageKor": "좋아요, 좋아요! 앞으로 더 궁금한 점이 있으면 언제든지 질문해 주세요. 좋은 하루 되세요!",
-        "aiAudioUrl": "https://dlxayir1dj7sa.cloudfront.net/audio/65991ce5-5332-435a-8c23-4be6c92749a9.mp3",
+        "reportCreated": True,
     },
     errors={
         400: {
@@ -129,5 +123,5 @@ router.api_doc(
         },
     },
     summary="📞 통화 종료",
-    description="사용자 요청 또는 시간 초과 등으로 통화를 종료하고 종료 메시지를 기록합니다.",
+    description="사용자가 통화 종료 버튼을 클릭하여 통화를 종료합니다.",
 )

@@ -24,7 +24,6 @@ from app.schema.call import (
     StartCallResponse,
     Message,
     UserMessageRequest,
-    EndCallRequest,
     EndCallResponse,
 )
 
@@ -76,7 +75,7 @@ async def start_call(db: AsyncSession, request: StartCallRequest) -> StartCallRe
 
 async def add_message_to_call(
     db: AsyncSession, call_id: int, request: UserMessageRequest
-) -> Union[AIMessageResponse, EndCallResponse]:
+) -> AIMessageResponse:
     call_record = await get_call_by_id(db, call_id)
     if not call_record:
         raise APIException(404, Error.CALL_NOT_FOUND)
@@ -118,34 +117,36 @@ async def add_message_to_call(
 
         await save_call(db, call_record)
 
-        # RAG Embedding 저장
-        # asyncio.create_task(
-        #     store_call_history_embedding(
-        #         call_id=call_record.call_id,
-        #         member_id=call_record.member_id,
-        #         messages=[Message(**m) for m in call_record.messages],
-        #     )
-        # )
-
         duration = int((end_time - to_kst(call_record.start_time)).total_seconds())
 
-        # 리포트 생성
-        asyncio.create_task(
-            generate_report(
-                db=db,
-                member_id=call_record.member_id,
-                call_id=call_record.call_id,
-                duration=duration,
-                messages=[Message(**m) for m in call_record.messages],
-            )
+        # "human" 메시지의 content 길이 합산
+        total_human_content_length = sum(
+            len(m.get("content", ""))
+            for m in call_record.messages
+            if m.get("type") == "human"
         )
 
-        return EndCallResponse(
-            endTime=to_kst_isoformat(end_time),
-            duration=duration,
+        # 조건에 따라 reportCreated 설정
+        reportCreated = total_human_content_length > 100
+
+        if reportCreated:
+            # 리포트 생성
+            asyncio.create_task(
+                generate_report(
+                    db=db,
+                    member_id=call_record.member_id,
+                    call_id=call_record.call_id,
+                    duration=duration,
+                    messages=[Message(**m) for m in call_record.messages],
+                )
+            )
+
+        return AIMessageResponse(
             aiMessage=result["ai_response"],
             aiMessageKor=result["ai_response_kor"],
             aiAudioUrl=result["ai_audio_url"],
+            endTime=to_kst_isoformat(end_time),
+            duration=duration,
         )
 
     # 일반 응답
@@ -157,26 +158,14 @@ async def add_message_to_call(
     )
 
 
-async def end_call(
-    db: AsyncSession, call_id: int, request: EndCallRequest
-) -> EndCallResponse:
+async def end_call(db: AsyncSession, call_id: int) -> EndCallResponse:
     call_record = await get_call_by_id(db, call_id)
+
     if not call_record:
         raise APIException(404, Error.CALL_NOT_FOUND)
+
     if call_record.end_time:
         raise APIException(400, Error.CALL_ALREADY_ENDED)
-
-    state = {
-        "call_id": call_record.call_id,
-        "member_id": call_record.member_id,
-        "input": request.userMessage,
-        "messages": [convert_to_lc_message(Message(**m)) for m in call_record.messages],
-    }
-
-    try:
-        result = await end_call_graph.ainvoke(state)
-    except Exception:
-        raise APIException(500, Error.CALL_INTERNAL_ERROR)
 
     end_time = now_kst()
     duration = int((end_time - to_kst(call_record.start_time)).total_seconds())
@@ -185,34 +174,32 @@ async def end_call(
     call_record.end_time = end_time
     call_record.updated_at = end_time
 
-    append_messages_to_call(
-        call_record, [safe_convert_message_to_dict(m) for m in result["messages"][-2:]]
-    )
     await save_call(db, call_record)
 
-    # asyncio.create_task(
-    #     store_call_history_embedding(
-    #         call_id=call_record.call_id,
-    #         member_id=call_record.member_id,
-    #         messages=[Message(**m) for m in call_record.messages],
-    #     )
-    # )
-
-    # 리포트 생성
-    asyncio.create_task(
-        generate_report(
-            db=db,
-            member_id=call_record.member_id,
-            call_id=call_record.call_id,
-            duration=duration,
-            messages=[Message(**m) for m in call_record.messages],
-        )
+    # "human" 메시지의 content 길이 합산
+    total_human_content_length = sum(
+        len(m.get("content", ""))
+        for m in call_record.messages
+        if m.get("type") == "human"
     )
+
+    # 조건에 따라 reportCreated 설정
+    reportCreated = total_human_content_length > 100
+
+    if reportCreated:
+        # 리포트 생성 (비동기 태스크)
+        asyncio.create_task(
+            generate_report(
+                db=db,
+                member_id=call_record.member_id,
+                call_id=call_record.call_id,
+                duration=duration,
+                messages=[Message(**m) for m in call_record.messages],
+            )
+        )
 
     return EndCallResponse(
         endTime=to_kst_isoformat(end_time),
         duration=duration,
-        aiMessage=result["ai_response"],
-        aiMessageKor=result["ai_response_kor"],
-        aiAudioUrl=result["ai_audio_url"],
+        reportCreated=reportCreated,
     )
