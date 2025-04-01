@@ -19,6 +19,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -175,9 +176,18 @@ fun LoginScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
 
                     ) {
+
+                    if (state.isLoginClicked) {
+                        // 로딩 인디케이터 표시
+                        CircularProgressIndicator(
+                            color = Color(0xFFE2C7FF),
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    } else {
                     CustomFilledButton(text = "LOGIN", context, state, onClick = {
                         onIntent(LoginIntent.OnLoginClicked)
                     })
+                        }
                 }
 
                 Spacer(modifier = Modifier.height(94.dp))
