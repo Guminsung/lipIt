@@ -23,7 +23,7 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ScheduleService {
- 
+
     // 일정 조회
     @GET("/schedule")
     suspend fun getScheduleList(

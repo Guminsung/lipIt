@@ -7,20 +7,30 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -28,10 +38,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.CallSchedule
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsIntent
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsScreen
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsState
 import com.ssafy.lipit_app.ui.screens.main.components.NextLevel
 import com.ssafy.lipit_app.ui.screens.main.components.ReportAndVoiceBtn
 import com.ssafy.lipit_app.ui.screens.main.components.TodaysSentence
 import com.ssafy.lipit_app.ui.screens.main.components.WeeklyCallsSection
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -39,45 +54,118 @@ fun MainScreen(
     state: MainState,
     onIntent: (MainIntent) -> Unit
 ) {
-    //val state by viewModel.state.collectAsState()
-    var selectedDay by remember { mutableStateOf(state.selectedDay) }
+    // [Weekly Calls] Bottom Sheet 보여지는 조건 정의
+    val coroutineScope = rememberCoroutineScope()
+    val bottomSheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFFDF8FF))
-            .padding(start = 20.dp, end = 20.dp, top = 40.dp),
+    // 상태값에 따라 바텀시트 show/hide
+    androidx.compose.runtime.LaunchedEffect(state.isSettingsSheetVisible) {
+        if (state.isSettingsSheetVisible) {
+            bottomSheetState.show()
+        } else {
+            bottomSheetState.hide()
+        }
+    }
+    // BottomSheet 닫힘 감지 코드 : 다른영역을 터치해서 닫았을 때에도 감지하고 변수값을 변경시켜줘야함
+    androidx.compose.runtime.LaunchedEffect(bottomSheetState.isVisible) {
+        if (!bottomSheetState.isVisible && state.isSettingsSheetVisible) {
+            onIntent(MainIntent.OnCloseSettingsSheet)
+        }
+    }
 
-        ) {
-        UserInfoSection(state.userName) // 상단의 유저 이름, 등급 부분
-        TodaysSentence(state.sentenceOriginal, state.sentenceTranslated) // 오늘의 문장
+    ModalBottomSheetLayout(
+        sheetState = bottomSheetState,
+        sheetBackgroundColor = Color.Transparent,
+        sheetContent = {
+            Surface( // ← 여기서부터 라운드 처리!
+                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                color = Color(0xFFFDF8FF), // 원래 배경색 (원하면 바꿔도 됨)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.9f)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(vertical = 10.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(vertical = 8.dp)
+                            .size(width = 40.dp, height = 4.dp)
+                            .background(Color.LightGray, RoundedCornerShape(2.dp))
+                    )
 
-        WeeklyCallsSection(
-            selectedDay = selectedDay, //state의 selectedDay -> screen 안에서 정의한 selectedDay로 변경
-            callItems = state.callItems,
-            onIntent = {
-                if (it is MainIntent.OnDaySelected) {
-                    selectedDay = it.day
+                    // WeeklyCallsScreen
+                    WeeklyCallsScreen(
+                        state = WeeklyCallsState(
+                            VoiceName = "Harry Potter",
+                            VoiceImageUrl = "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png",
+                            callSchedules = listOf(
+                                CallSchedule(1, 1, "월", "08:00:00", "자유주제"),
+                                CallSchedule(2, 1, "화", "09:30:00", "자유주제"),
+                                CallSchedule(3, 1, "수", "10:00:00", "자유주제"),
+                                CallSchedule(4, 1, "목", "14:00:00", "여행"),
+                                CallSchedule(5, 1, "금", "16:30:00", "음식"),
+                                CallSchedule(6, 1, "토", "11:00:00", "취미"),
+                                CallSchedule(7, 1, "일", "13:00:00", "문화")
+                            )
+                        ),
+                        onIntent = { intent ->
+                            if (intent is WeeklyCallsIntent.OnEditSchedule) {
+                                println("Edit 눌림!")
+                            }
+                        }
+                    )
                 }
             }
-        )
+        }
+    ) {
+        // ✅ 기존 MainScreen UI
+        var selectedDay by remember { mutableStateOf(state.selectedDay) }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // 리포트 & 마이 보이스로 넘어가는 버튼들
-        ReportAndVoiceBtn(onIntent)
-
-        // 레벨업 파트
-        NextLevel(state.sentenceCnt, state.wordCnt, state.attendanceCnt, state.attendanceTotal)
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // 전화 걸기 버튼
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFFDF8FF))
+                .padding(start = 20.dp, end = 20.dp, top = 40.dp)
         ) {
-            CallButton(onIntent)
+            UserInfoSection(state.userName)
+            TodaysSentence(state.sentenceOriginal, state.sentenceTranslated)
+
+            WeeklyCallsSection(
+                selectedDay = selectedDay,
+                callItems = state.callItems,
+                onIntent = {
+                    if (it is MainIntent.OnDaySelected) {
+                        selectedDay = it.day
+                    } else {
+                        onIntent(it) // 나머지 이벤트 넘기기 (예: OnSettingsClicked)
+                    }
+                }
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+            ReportAndVoiceBtn(onIntent)
+            NextLevel(
+                state.sentenceCnt,
+                state.wordCnt,
+                state.attendanceCnt,
+                state.attendanceTotal
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                CallButton(onIntent)
+            }
         }
     }
 }
