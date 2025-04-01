@@ -1,10 +1,13 @@
-package com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls
+ package com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -25,13 +28,11 @@ fun WeeklyCallsScreen(
     Column(
         modifier = Modifier
             .padding(top = 30.dp, start = 20.dp, end = 20.dp)
-            //.background(Color(0xFFFDF8FF))
+//            .background(Color(0xFFFDF8FF))
             .fillMaxWidth()
-            .height(
-                650.dp
-            )
+            .height(650.dp)
             .fillMaxHeight(0.7f)
-    ) {
+    ){
         // 제목
         Text(
             text = "Weekly Calls",

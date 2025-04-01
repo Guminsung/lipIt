@@ -26,6 +26,18 @@ class MainViewModel : ViewModel() {
             is MainIntent.NavigateToCallScreen -> {
                 // 네비게이션 관련 상태 업데이트
             }
+
+            // [Weekly Calls] BottomSheet 이벤트
+            is MainIntent.OnSettingsClicked -> {
+                _state.update { it.copy(isSettingsSheetVisible = true) }
+            }
+            is MainIntent.OnCloseSettingsSheet -> {
+                _state.update { it.copy(isSettingsSheetVisible = false) }
+            }
+
+            else -> {
+
+            }
         }
     }
 }
