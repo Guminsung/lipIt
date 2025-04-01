@@ -19,7 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ssafy.lipit_app.data.model.dto.report.TotalScript
+import com.ssafy.lipit_app.data.model.request_dto.report.TotalScript
 
 
 @Composable

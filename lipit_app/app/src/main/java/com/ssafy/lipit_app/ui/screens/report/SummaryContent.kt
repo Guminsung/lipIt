@@ -23,7 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ssafy.lipit_app.data.model.dto.report.ReportSummary
+import com.ssafy.lipit_app.data.model.request_dto.report.ReportSummary
 import com.ssafy.lipit_app.util.CommonUtils.formatDate
 import com.ssafy.lipit_app.util.CommonUtils.formatSeconds
 

@@ -1,8 +1,8 @@
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
-import com.ssafy.lipit_app.data.model.response.BaseResponse
-import com.ssafy.lipit_app.data.model.response.ErrorResponse
+import com.ssafy.lipit_app.data.model.response_dto.BaseResponse
+import com.ssafy.lipit_app.data.model.response_dto.ErrorResponse
 import retrofit2.Response
 
 inline fun <reified T> handleResponse(response: Response<BaseResponse<T>>): Result<T> {

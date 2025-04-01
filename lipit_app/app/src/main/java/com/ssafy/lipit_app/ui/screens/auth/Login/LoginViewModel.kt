@@ -2,7 +2,7 @@ package com.ssafy.lipit_app.ui.screens.auth.Login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssafy.lipit_app.data.model.dto.auth.LoginRequest
+import com.ssafy.lipit_app.data.model.request_dto.auth.LoginRequest
 import com.ssafy.lipit_app.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

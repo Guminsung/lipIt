@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.data.model.dto.report
+package com.ssafy.lipit_app.data.model.request_dto.report
 
 data class TotalScript(
     val isAI: Boolean, // true면 진한 보라색, false면 연한 보라색

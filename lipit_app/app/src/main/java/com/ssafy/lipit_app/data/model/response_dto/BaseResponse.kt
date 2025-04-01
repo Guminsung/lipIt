@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.data.model.response
+package com.ssafy.lipit_app.data.model.response_dto
 
 // 공통 응답 wrapper
 data class BaseResponse<T>(
