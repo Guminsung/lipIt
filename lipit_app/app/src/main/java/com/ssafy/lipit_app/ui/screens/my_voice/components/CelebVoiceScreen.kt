@@ -2,7 +2,9 @@ package com.ssafy.lipit_app.ui.screens.my_voice.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,6 +28,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -126,27 +130,50 @@ fun CelebVoiceScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Spacer(modifier = Modifier.height(32.dp))
 
-                    // 3D 캐릭터 이미지
-                    if (voice.customImageUrl.isNotEmpty()) {
-                        Image(
-                            painter = rememberAsyncImagePainter(model = voice.customImageUrl),
-//                        painter = painterResource(id = R.drawable.bg_myvoice_card),
-                            contentDescription = "3D Avatar",
+                    Box() {
+                        if (voice.customImageUrl.isNotEmpty()) {
+                            Image(
+                                painter = rememberAsyncImagePainter(model = voice.customImageUrl),
+                                contentDescription = "3D Avatar",
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+
+                        } else {
+                            Image(
+                                painter = painterResource(id = R.drawable.avatar_3d),
+                                contentDescription = "3D Avatar",
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+
+                        Box(
                             modifier = Modifier
-                                .size(200.dp)
-                                .weight(1f),
-                            contentScale = ContentScale.Fit
+                                .matchParentSize()
+                                .background(
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.Transparent,
+                                            Color.Black.copy(alpha = 0.6f)
+                                        ),
+                                        startY = 0f,
+                                        endY = Float.POSITIVE_INFINITY
+                                    )
+                                )
                         )
-                    } else {
-                        Image(
-                            painter = painterResource(id = R.drawable.avatar_3d),
-                            contentDescription = "3D Avatar",
+
+                        Text(
+                            text = voice.voiceName,
+                            color = Color.White,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Light,
                             modifier = Modifier
-                                .size(200.dp)
-                                .weight(1f),
-                            contentScale = ContentScale.Fit
+                                .align(Alignment.BottomCenter)
+                                .padding(16.dp)
                         )
                     }
 
@@ -158,12 +185,12 @@ fun CelebVoiceScreen(
                             .fillMaxWidth()
                             .padding(bottom = 32.dp)
                     ) {
-                        Text(
-                            text = voice.voiceName,
-                            color = Color.White,
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+//                        Text(
+//                            text = voice.voiceName,
+//                            color = Color.White,
+//                            fontSize = 28.sp,
+//                            fontWeight = FontWeight.Bold
+//                        )
 
                         // 이미 선택된 음성이면 표시
                         if (voice.activated) {
@@ -210,7 +237,6 @@ fun CelebVoiceScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
-                // 뒷면 배경 이미지 (다른 배경을 사용하거나 동일한 배경 사용 가능)
                 Image(
                     painter = painterResource(id = R.drawable.bg_myvoice_card),
                     contentDescription = null,
@@ -228,29 +254,14 @@ fun CelebVoiceScreen(
                 ) {
 
                     Text(
-                        text = "Voice Details",
+                        text = voice.voiceName,
                         color = Color.White,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold
                     )
 
-                    Text(
-                        text = voice.voiceName,
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    Text(
-                        text = "Harry Potter's iconic British accent with a young, magical tone. Perfect for spells and adventures.",
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Normal
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
 
                 }
             }
