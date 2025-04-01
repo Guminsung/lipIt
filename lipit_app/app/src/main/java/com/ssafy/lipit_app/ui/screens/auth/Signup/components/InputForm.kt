@@ -44,12 +44,12 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit, onIntent: (SignupIntent
 
     val context = LocalContext.current
 
-    if(state.errorMessage != null){
+    if (state.errorMessage != null) {
         Toast.makeText(context, state.errorMessage, Toast.LENGTH_SHORT).show()
         onSuccess()
     }
 
-    if(state.signupSuccess){
+    if (state.signupSuccess) {
         Toast.makeText(context, "회원가입 성공!", Toast.LENGTH_SHORT).show()
         onSuccess()
     }
@@ -260,7 +260,12 @@ fun InputForm(state: SignupState, onSuccess: () -> Unit, onIntent: (SignupIntent
 }
 
 @Composable
-fun CustomFilledSignupButton(text: String, context: Context, state: SignupState, onClick: () -> Unit) {
+fun CustomFilledSignupButton(
+    text: String,
+    context: Context,
+    state: SignupState,
+    onClick: () -> Unit
+) {
     Button(
         onClick = onClick,
         modifier = Modifier

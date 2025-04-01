@@ -1,5 +1,7 @@
 package com.ssafy.lipit_app.ui.screens.auth.Login
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,10 +21,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,11 +44,23 @@ fun LoginScreen(
 ) {
     val context = LocalContext.current
 
-    // ID
-    var id by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var isPasswordVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(state.isLoginSuccess) {
+        if (state.isLoginSuccess) {
+            Log.d("login", "LaunchedEffect: onSuccess 호출됨")
+            Toast.makeText(context, "로그인 성공!", Toast.LENGTH_SHORT).show()
+            onSuccess()
+            onIntent(LoginIntent.OnLoginHandled)
+        }
+    }
 
+
+    LaunchedEffect(state.errorMessage) {
+        state.errorMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // ID
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -100,8 +111,8 @@ fun LoginScreen(
             ) {
                 // Input: ID
                 OutlinedTextField(
-                    value = id,
-                    onValueChange = { id = it },
+                    value = state.id,
+                    onValueChange = { onIntent(LoginIntent.onIdChanged(it)) },
                     placeholder = { Text("ID", color = Color(0xFFE2C7FF)) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -119,8 +130,8 @@ fun LoginScreen(
 
                 // Input: PW
                 OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
+                    value = state.pw,
+                    onValueChange = { onIntent(LoginIntent.onPwChanged(it)) },
                     placeholder = { Text("PW", color = Color(0xFFE2C7FF)) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -132,17 +143,23 @@ fun LoginScreen(
                     ),
                     shape = RoundedCornerShape(12.dp),
                     singleLine = true,
-                    visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    visualTransformation = if (state.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
-                        IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                        IconButton(onClick = {
+                            onIntent(
+                                LoginIntent.OnisPasswordVisibleChanged(
+                                    state.isPasswordVisible
+                                )
+                            )
+                        }) {
                             Icon(
                                 painter = painterResource(
-                                    id = if (isPasswordVisible)
+                                    id = if (state.isPasswordVisible)
                                         R.drawable.ic_pw_closed2
                                     else
                                         R.drawable.ic_pw_show
                                 ),
-                                contentDescription = if (isPasswordVisible) "비밀번호 숨기기" else "비밀번호 보기",
+                                contentDescription = if (state.isPasswordVisible) "비밀번호 숨기기" else "비밀번호 보기",
                                 tint = Color(0xFFE2C7FF)
                             )
                         }
@@ -153,9 +170,11 @@ fun LoginScreen(
 
                 // 로그인 버튼
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+
+                    ) {
                     CustomFilledButton(text = "LOGIN", context, state, onClick = {
                         onIntent(LoginIntent.OnLoginClicked)
                     })
