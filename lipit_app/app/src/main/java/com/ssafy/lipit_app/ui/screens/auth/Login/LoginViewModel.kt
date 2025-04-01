@@ -3,7 +3,6 @@ package com.ssafy.lipit_app.ui.screens.auth.Login
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.ssafy.lipit_app.base.SecureDataStore
 import com.ssafy.lipit_app.data.model.request_dto.auth.LoginRequest
@@ -47,7 +46,6 @@ class LoginViewModel(private val context: Context) : ViewModel() {
             is LoginIntent.OnLoginHandled -> {
                 _state.value = _state.value.copy(isLoginSuccess = false, errorMessage = null)
             }
-
         }
 
     }
@@ -108,7 +106,7 @@ class LoginViewModel(private val context: Context) : ViewModel() {
 
     }
 
-    private fun extractErrorMessages(errorBody: String?): String {
+    fun extractErrorMessages(errorBody: String?): String {
         if (errorBody.isNullOrEmpty()) return "알 수 없는 오류가 발생했어요."
 
         return try {
