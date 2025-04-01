@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
-import com.ssafy.lipit_app.data.model.dto.auth.SignUpRequest
+import com.ssafy.lipit_app.data.model.request_dto.auth.SignUpRequest
 import com.ssafy.lipit_app.domain.repository.AuthRepository
 import com.ssafy.lipit_app.ui.screens.auth.Signup.components.validateSignupInput
 import kotlinx.coroutines.flow.MutableStateFlow

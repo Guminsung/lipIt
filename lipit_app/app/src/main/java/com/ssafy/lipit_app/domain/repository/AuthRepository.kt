@@ -1,15 +1,15 @@
 package com.ssafy.lipit_app.domain.repository
 
 import android.util.Log
-import com.ssafy.lipit_app.data.model.dto.auth.LoginRequest
-import com.ssafy.lipit_app.data.model.dto.auth.LogoutRequest
-import com.ssafy.lipit_app.data.model.dto.auth.RefreshAccessTokenRequest
-import com.ssafy.lipit_app.data.model.dto.auth.SignUpRequest
-import com.ssafy.lipit_app.data.model.response.auth.LevelResponse
-import com.ssafy.lipit_app.data.model.response.auth.LoginResponse
-import com.ssafy.lipit_app.data.model.response.auth.LogoutResponse
-import com.ssafy.lipit_app.data.model.response.auth.RefreshAccessTokenResponse
-import com.ssafy.lipit_app.data.model.response.auth.SignupResponse
+import com.ssafy.lipit_app.data.model.request_dto.auth.LoginRequest
+import com.ssafy.lipit_app.data.model.request_dto.auth.LogoutRequest
+import com.ssafy.lipit_app.data.model.request_dto.auth.RefreshAccessTokenRequest
+import com.ssafy.lipit_app.data.model.request_dto.auth.SignUpRequest
+import com.ssafy.lipit_app.data.model.response_dto.auth.LevelResponse
+import com.ssafy.lipit_app.data.model.response_dto.auth.LoginResponse
+import com.ssafy.lipit_app.data.model.response_dto.auth.LogoutResponse
+import com.ssafy.lipit_app.data.model.response_dto.auth.RefreshAccessTokenResponse
+import com.ssafy.lipit_app.data.model.response_dto.auth.SignupResponse
 import com.ssafy.lipit_app.data.remote.RetrofitUtil
 import handleResponse
 
