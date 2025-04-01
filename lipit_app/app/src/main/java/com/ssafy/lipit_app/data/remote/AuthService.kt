@@ -18,22 +18,22 @@ import retrofit2.http.Path
 
 interface AuthService {
     // 회원가입
-    @POST("api/auth/signup")
+    @POST("auth/signup")
     suspend fun signUp(@Body request: SignUpRequest): Response<BaseResponse<SignupResponse>>
 
     // 로그인
-    @POST("api/auth/login")
+    @POST("auth/login")
     suspend fun login(@Body request: LoginRequest): Response<BaseResponse<LoginResponse>>
 
     // 로그아웃
-    @POST("api/auth/logout")
+    @POST("auth/logout")
     suspend fun logout(@Body request: LogoutRequest): Response<BaseResponse<LogoutResponse>>
 
     // 엑세스 토큰 재발급
-    @POST("api/auth/token")
+    @POST("auth/token")
     suspend fun refreshAccessToken(@Body request: RefreshAccessTokenRequest): Response<BaseResponse<RefreshAccessTokenResponse>>
 
     // 회원 등급 조회
-    @GET("api/members/{memberId}/level")
+    @GET("members/{memberId}/level")
     suspend fun getMemberLevel(@Path("memberId") memberId: Long): Response<BaseResponse<LevelResponse>>
 }
