@@ -33,9 +33,11 @@ data class MainState(
     val sentenceTranslated: String = "너의 재능과 노력이라면, 한계란 없지!",
 
 
-    // [Weekly Calls] 일주일치 일정 확인
+    // [Weekly Calls] 일주일 일정 확인
     val isSettingsSheetVisible: Boolean = false,
     val weeklyCallsState: WeeklyCallsState = WeeklyCallsState()
+
+    // 일정 수정 관련
 )
 
 // 오늘 요일 찾기

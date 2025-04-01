@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.ssafy.lipit_app.data.model.request_dto.auth.SignUpRequest
+import com.ssafy.lipit_app.data.model.response_dto.schedule.TopicCategory
 import com.ssafy.lipit_app.domain.repository.ScheduleRepository
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.CallSchedule
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsState
@@ -38,14 +39,18 @@ class MainViewModel : ViewModel() {
                 // 네비게이션 관련 상태 업데이트
             }
 
-            // [Weekly Calls] BottomSheet 이벤트
+            // [Weekly Calls] BottomSheet: 스케쥴 조회
             is MainIntent.OnSettingsClicked -> {
                 getWeeklyCallsSchedule()
-//                _state.update { it.copy(isSettingsSheetVisible = true) }
             }
             is MainIntent.OnCloseSettingsSheet -> {
                 _state.update { it.copy(isSettingsSheetVisible = false) }
             }
+
+            // TODO : 수정/삭제 단계에서 AlarmManager, FullScreen.. 관련 수정 필요함
+            // [Weekly Calls] BottomSheet: 스케쥴 수정
+
+            // [Weekly Calls] BottomSheet: 스케쥴 삭제
 
             else -> {
 
@@ -62,9 +67,12 @@ class MainViewModel : ViewModel() {
                 response.onSuccess { scheduleList ->
                     _state.update {
                         it.copy(
+                            // 바텀 시트 활성화
                             isSettingsSheetVisible = true,
+
+                            // API 호출 결과 (일주일 스케쥴 데이터 추가)
                             weeklyCallsState = WeeklyCallsState(
-                                VoiceName = "Harry Potter", // 추후 서버 연동
+                                VoiceName = "Harry Potter2", // 추후 서버 연동
                                 VoiceImageUrl = "...",       // 추후 서버 연동
                                 callSchedules = scheduleList.map { schedule ->
                                     CallSchedule(
@@ -72,7 +80,8 @@ class MainViewModel : ViewModel() {
                                         memberId = 1, //하드코딩
                                         scheduleDay = schedule.scheduledDay,
                                         scheduledTime = schedule.scheduledTime,
-                                        topicCategory = schedule.topicCategory
+//                                        topicCategory = schedule.topicCategory
+                                        topicCategory = TopicCategory.fromEnglish(schedule.topicCategory)?.koreanName ?: "기타"
                                     )
                                 }
                             )
