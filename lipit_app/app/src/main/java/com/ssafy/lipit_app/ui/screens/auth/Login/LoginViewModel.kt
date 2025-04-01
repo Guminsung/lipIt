@@ -1,7 +1,9 @@
 package com.ssafy.lipit_app.ui.screens.auth.Login
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssafy.lipit_app.base.TokenManager
 import com.ssafy.lipit_app.data.model.request_dto.auth.LoginRequest
 import com.ssafy.lipit_app.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -58,12 +60,14 @@ class LoginViewModel : ViewModel() {
             val result = authRepository.login(request)
 
             if (result.isSuccess) {
-                _state.value = _state.value.copy(isLoginSuccess = true)
+                // 토큰 저장
+                if (result.isSuccess) {
+                    val accessToken = result.getOrNull()?.accessToken
+                    TokenManager.saveAccessToken(accessToken ?: "")
+                    Log.d("tokenManager", TokenManager.getAccessToken().toString())
 
-//                val loginData = result.getOrNull() // BaseResponse<LoginResponse>의 data
-//                val accessToken = loginData?.accessToken
-//                Log.d("LoginViewModel", "받은 accessToken: $accessToken")
-//                TokenManager.saveAccessToken(accessToken ?: "")
+                    _state.value = _state.value.copy(isLoginSuccess = true)
+                }
 
             } else {
                 val exception = result.exceptionOrNull()
