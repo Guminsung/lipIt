@@ -70,16 +70,16 @@ public class VoiceService {
 						case "스윙스":
 							activated = currentLevel >= 1; // 레벨 1 이상
 							break;
-						case "카디비":
+						case "아리아나 그란데":
 							activated = currentLevel >= 2; // 레벨 2 이상
 							break;
-						case "셀럽 C":
+						case "베네딕트 컴버배치":
 							activated = currentLevel >= 3; // 레벨 3 이상
 							break;
-						case "셀럽 D":
+						case "마이클잭슨":
 							activated = currentLevel >= 4; // 레벨 4 이상
 							break;
-						case "셀럽 E":
+						case "MIJI":
 							activated = currentLevel >= 5; // 레벨 5
 							break;
 					}
