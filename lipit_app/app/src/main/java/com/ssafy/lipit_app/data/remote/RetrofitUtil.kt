@@ -1,5 +1,7 @@
 package com.ssafy.lipit_app.data.remote
 
+import android.util.Log
+import com.google.gson.GsonBuilder
 import com.ssafy.lipit_app.BuildConfig
 import com.ssafy.lipit_app.base.ApplicationClass
 import okhttp3.OkHttpClient
@@ -9,13 +11,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitUtil {
 
-    private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
-    }
-
-    private val client = OkHttpClient.Builder()
-        .addInterceptor(loggingInterceptor)
-        .build()
 
     private val springRetrofit: Retrofit by lazy {
         Retrofit.Builder()
@@ -40,4 +35,9 @@ object RetrofitUtil {
     val scheduleService: ScheduleService by lazy {
         springRetrofit.create(ScheduleService::class.java)
     }
+
+    val myVoiceService: MyVoiceService by lazy {
+        springRetrofit.create(MyVoiceService::class.java)
+    }
+
 }

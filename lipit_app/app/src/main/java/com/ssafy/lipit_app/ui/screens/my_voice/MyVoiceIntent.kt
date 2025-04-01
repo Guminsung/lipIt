@@ -1,4 +1,13 @@
 package com.ssafy.lipit_app.ui.screens.my_voice
 
-class MyVoiceIntent {
+sealed class MyVoiceIntent {
+    // Select voice
+    data class SelectVoice(val voiceName: String, val voiceUrl: String) : MyVoiceIntent()
+
+    // Load voices
+    object LoadCelebrityVoices : MyVoiceIntent()
+    object LoadCustomVoices : MyVoiceIntent()
+
+    // Tab selection
+    data class SelectTab(val tabName: String) : MyVoiceIntent()
 }
