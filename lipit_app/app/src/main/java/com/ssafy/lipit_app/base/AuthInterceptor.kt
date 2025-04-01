@@ -21,7 +21,7 @@ class AuthInterceptor(private val context: Context) : Interceptor {
         Log.d("AuthInterceptor", "요청 URL: $url")
 
         // 로그인/회원가입 API 요청인 경우 `Authorization` 헤더를 추가하지 않음
-        if (url.contains("/api/auth")) {
+        if (url.contains("/auth")) {
             Log.d("AuthInterceptor", "인증이 필요하지 않은 요청: $url")
             return chain.proceed(originalRequest)
         }
@@ -29,8 +29,8 @@ class AuthInterceptor(private val context: Context) : Interceptor {
         // 로그인 요청이 아닌 경우, 토큰을 가져와서 헤더에 추가
         var token: String? = null
         try {
-            token = runBlocking { SecureDataStore.getInstance(context).getAccessToken() }.toString()
-            Log.d("AuthInterceptor", "토큰 가져오기: ${token?.take(15) ?: "null"}...")
+            token = runBlocking { SecureDataStore.getInstance(context).getAccessToken().first() }.toString()
+            Log.d("AuthInterceptor", "토큰 가져오기: ${token}...")
         } catch (e: Exception) {
             Log.e("AuthInterceptor", "토큰 가져오기 실패", e)
         }

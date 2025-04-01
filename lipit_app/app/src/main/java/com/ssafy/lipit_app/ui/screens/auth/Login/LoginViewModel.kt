@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.ssafy.lipit_app.base.SecureDataStore
 import com.ssafy.lipit_app.data.model.request_dto.auth.LoginRequest
 import com.ssafy.lipit_app.domain.repository.AuthRepository
+import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -75,9 +76,13 @@ class LoginViewModel(private val context: Context) : ViewModel() {
                 val loginData = result.getOrNull()
 
                 loginData?.let { data ->
-                    // SecureDataStore를 사용하여 로그인 정보 저장
-                    Log.d("LoginViewModel", "로그인 성공: ${data.email}, 토큰: ${data.accessToken.take(15)}...")
+
+                    Log.d(
+                        "LoginViewModel",
+                        "로그인 성공: ${data.email}, 토큰: ${data.accessToken.take(15)}..."
+                    )
                     SecureDataStore.getInstance(context).saveUserInfo(data)
+                    SharedPreferenceUtils.saveMemberId(data.memberId)
 
                     // 로그인 성공 상태로 업데이트
                     _state.value = _state.value.copy(isLoginSuccess = true, isLoginClicked = false)
