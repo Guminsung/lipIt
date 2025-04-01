@@ -1,4 +1,3 @@
-
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
@@ -7,18 +6,18 @@ import com.ssafy.lipit_app.data.model.response.ErrorResponse
 import retrofit2.Response
 
 inline fun <reified T> handleResponse(response: Response<BaseResponse<T>>): Result<T> {
-    return if (response.isSuccessful) ({
+    return if (response.isSuccessful) {
         val body = response.body()
         if (body != null) {
-            if (body.statusCode == 200) {
-                Result.success(body.data)
+            if (body.statusCode == 200 || body.statusCode == 0) {
+                Result.success(body.data!!)
             } else {
                 Result.failure(Exception("status ${body.statusCode}: ${body.message}"))
             }
         } else {
             Result.failure(Exception("response body is null"))
         }
-    }) as Result<T> else {
+    } else {
         val errorBody = response.errorBody()?.string()
 
         if (errorBody.isNullOrEmpty()) {

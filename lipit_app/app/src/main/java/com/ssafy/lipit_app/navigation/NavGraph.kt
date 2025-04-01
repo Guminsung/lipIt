@@ -52,7 +52,12 @@ fun NavGraph(
             LoginScreen(
                 state = state,
                 onIntent = { viewModel.onIntent(it) },
-                onSuccess = { navController.navigate("main") }
+                onSuccess = {
+                    navController.navigate("main") {
+                        popUpTo("login") { inclusive = true } // login 화면 제거
+                        launchSingleTop = true
+                    }
+                }
             )
         }
 

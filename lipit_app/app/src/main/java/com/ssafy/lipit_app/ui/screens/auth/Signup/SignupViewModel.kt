@@ -68,6 +68,7 @@ class SignupViewModel : ViewModel() {
             // ======================================
 
             // API 연동 관련
+            // 회원가입 눌렀을 때
             is SignupIntent.OnSignupClicked -> {
                 val error = validateSignupInput(
                     id = _state.value.id,
@@ -77,13 +78,13 @@ class SignupViewModel : ViewModel() {
                     selectedGender = _state.value.selectedGender
                 )
 
-                if (error != null) {
+                if (error != null) { // 제대로 입력이 되지 않았을 경우
                     _state.value = _state.value.copy(errorMessage = error)
 
                 } else {
                     // API 요청 또는 가입 성공 처리
                     signup()
-                    //_state.value = _state.value.copy(signupSuccess = true, errorMessage = null)
+                    _state.value = _state.value.copy(signupSuccess = true, errorMessage = null)
                 }
             }
         }
