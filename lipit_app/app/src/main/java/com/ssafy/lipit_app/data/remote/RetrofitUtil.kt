@@ -36,4 +36,8 @@ object RetrofitUtil {
     val authService: AuthService by lazy {
         springRetrofit.create(AuthService::class.java)
     }
+
+    val scheduleService: ScheduleService by lazy {
+        springRetrofit.create(ScheduleService::class.java)
+    }
 }
