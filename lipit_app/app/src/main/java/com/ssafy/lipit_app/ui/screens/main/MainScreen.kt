@@ -54,14 +54,12 @@ fun MainScreen(
     state: MainState,
     onIntent: (MainIntent) -> Unit
 ) {
-    // [Weekly Calls] Bottom Sheet 보여지는 조건 정의
-    val coroutineScope = rememberCoroutineScope()
+    // [Weekly Calls] Bottom Sheet
     val bottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
 
-    // 상태값에 따라 바텀시트 show/hide
     androidx.compose.runtime.LaunchedEffect(state.isSettingsSheetVisible) {
         if (state.isSettingsSheetVisible) {
             bottomSheetState.show()
@@ -102,19 +100,20 @@ fun MainScreen(
 
                     // WeeklyCallsScreen
                     WeeklyCallsScreen(
-                        state = WeeklyCallsState(
-                            VoiceName = "Harry Potter",
-                            VoiceImageUrl = "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png",
-                            callSchedules = listOf(
-                                CallSchedule(1, 1, "월", "08:00:00", "자유주제"),
-                                CallSchedule(2, 1, "화", "09:30:00", "자유주제"),
-                                CallSchedule(3, 1, "수", "10:00:00", "자유주제"),
-                                CallSchedule(4, 1, "목", "14:00:00", "여행"),
-                                CallSchedule(5, 1, "금", "16:30:00", "음식"),
-                                CallSchedule(6, 1, "토", "11:00:00", "취미"),
-                                CallSchedule(7, 1, "일", "13:00:00", "문화")
-                            )
-                        ),
+                        state = state.weeklyCallsState,
+//                        state = WeeklyCallsState(
+//                            VoiceName = "Harry Potter",
+//                            VoiceImageUrl = "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png",
+//                            callSchedules = listOf(
+//                                CallSchedule(1, 1, "월", "08:00:00", "자유주제"),
+//                                CallSchedule(2, 1, "화", "09:30:00", "자유주제"),
+//                                CallSchedule(3, 1, "수", "10:00:00", "자유주제"),
+//                                CallSchedule(4, 1, "목", "14:00:00", "여행"),
+//                                CallSchedule(5, 1, "금", "16:30:00", "음식"),
+//                                CallSchedule(6, 1, "토", "11:00:00", "취미"),
+//                                CallSchedule(7, 1, "일", "13:00:00", "문화")
+//                            )
+//                        ),
                         onIntent = { intent ->
                             if (intent is WeeklyCallsIntent.OnEditSchedule) {
                                 println("Edit 눌림!")
@@ -125,9 +124,8 @@ fun MainScreen(
             }
         }
     ) {
-        // ✅ 기존 MainScreen UI
+        // 기존 MainScreen UI
         var selectedDay by remember { mutableStateOf(state.selectedDay) }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()

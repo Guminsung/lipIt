@@ -25,30 +25,30 @@ import retrofit2.http.Query
 interface ScheduleService {
 
     // 일정 조회
-    @GET("/schedule")
+    @GET("schedule")
     suspend fun getScheduleList(
         @Query("memberId") memberId: Long
     ): Response<BaseResponse<List<ScheduleResponse>>>
 
     // 부재중 개수 조회
-    @GET("/schedule/{callScheduleId}/reject")
+    @GET("schedule/{callScheduleId}/reject")
     suspend fun getRejectCount(
         @Path("callScheduleId") callScheduleId: Long
     ): Response<BaseResponse<RejectCountResponse>>
 
     // 오늘의 일정 조회
-    @GET("/schedule/today")
+    @GET("schedule/today")
     suspend fun getTodaySchedule(
         @Query("memberId") memberId: Long,
         @Query("callScheduleDay") callScheduleDay: String
     ): Response<BaseResponse<ScheduleResponse>>
 
     // 일정 생성
-    @POST("/schedule")
+    @POST("schedule")
     suspend fun createSchedule(@Body request: ScheduleCreateRequest): Response<BaseResponse<ScheduleResponse>>
 
     // 일정 수정
-    @PATCH("/schedule/{callScheduleId}")
+    @PATCH("schedule/{callScheduleId}")
     suspend fun updateSchedule(
         @Query("memberId") memberId: Long,
         @Path("callScheduleId") callScheduleId: Long,
@@ -63,7 +63,7 @@ interface ScheduleService {
 //    ): Response<Void>
 
     // 일정 삭제 : Response 값이 Logout 이랑 동일해서 재사용
-    @DELETE("/schedule/{callScheduleId}")
+    @DELETE("schedule/{callScheduleId}")
     suspend fun deleteSchedule(
         @Path("callScheduleId") callScheduleId: Long,
         @Query("memberId") memberId: Long

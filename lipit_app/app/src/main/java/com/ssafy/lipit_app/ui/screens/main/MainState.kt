@@ -1,5 +1,7 @@
 package com.ssafy.lipit_app.ui.screens.main
 
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsState
+
 // state: 화면에 보여줄 모든 데이터 상태가 담김
 
 data class MainState(
@@ -32,7 +34,8 @@ data class MainState(
 
 
     // [Weekly Calls] 일주일치 일정 확인
-    val isSettingsSheetVisible: Boolean = false
+    val isSettingsSheetVisible: Boolean = false,
+    val weeklyCallsState: WeeklyCallsState = WeeklyCallsState()
 )
 
 // 오늘 요일 찾기
