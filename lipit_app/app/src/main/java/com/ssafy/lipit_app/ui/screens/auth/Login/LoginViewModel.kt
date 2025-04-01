@@ -60,8 +60,6 @@ class LoginViewModel : ViewModel() {
             val result = authRepository.login(request)
 
             if (result.isSuccess) {
-                _state.value = _state.value.copy(isLoginSuccess = true)
-
                 // 토큰 저장
                 if (result.isSuccess) {
                     val accessToken = result.getOrNull()?.accessToken
