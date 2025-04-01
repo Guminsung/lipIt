@@ -55,17 +55,6 @@ fun WeeklyCallsSection(
 
 
             // 편집 버튼
-//            Text(
-//                text = "Settings",
-//                style = TextStyle(
-//                    fontSize = 15.sp,
-//                    lineHeight = 15.sp,
-//                    fontWeight = FontWeight(600),
-//                    color = Color(0xFFA37BBD),
-//                    textAlign = TextAlign.End,
-//                ),
-//                modifier = Modifier.fillMaxWidth()
-//            )
             Text(
                 text = "Settings",
                 style = TextStyle(
