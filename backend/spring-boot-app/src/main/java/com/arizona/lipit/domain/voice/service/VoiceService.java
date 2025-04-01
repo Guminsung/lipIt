@@ -193,39 +193,45 @@ public class VoiceService {
 	@Transactional
 	public RecordingVoiceResponseDto saveRecordingVoice(RecordingVoiceRequestDto requestDto, Long memberId) {
 		try {
-			// 필수 필드 검증
-			if (requestDto.getVoiceName() == null || requestDto.getAudioUrl() == null) {
+			// null 체크 강화
+			if (requestDto == null || memberId == null) {
+				throw new CustomException(ErrorCode.INVALID_FORMAT, "필수 정보가 누락되었습니다.");
+			}
+
+			// 필수 필드 검증 강화
+			if (requestDto.getVoiceName() == null || requestDto.getVoiceName().trim().isEmpty() ||
+				requestDto.getAudioUrl() == null || requestDto.getAudioUrl().trim().isEmpty()) {
 				throw new CustomException(ErrorCode.INVALID_FORMAT, "필수 정보가 누락되었습니다.");
 			}
 
 			// URL 형식 검증
 			try {
 				new URL(requestDto.getAudioUrl());
-				if (requestDto.getImageUrl() != null) {
+				if (requestDto.getImageUrl() != null && !requestDto.getImageUrl().trim().isEmpty()) {
 					new URL(requestDto.getImageUrl());
 				}
 			} catch (MalformedURLException e) {
-				throw new CustomException(ErrorCode.INVALID_URL);
+				throw new CustomException(ErrorCode.INVALID_URL, "올바르지 않은 URL 형식입니다.");
 			}
 
 			// 사용자 존재 여부 확인
 			Member member = memberRepository.findById(memberId)
-				.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_ID_NOT_FOUND));
+				.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_ID_NOT_FOUND, "존재하지 않는 회원입니다."));
 
-			// 중복 음성 이름 확인
+			// 중복 음성 이름 확인 - trim 처리 추가
 			List<MemberVoice> existingVoices = memberVoiceRepository.findAllVoicesByMemberId(memberId);
 			boolean isDuplicate = existingVoices.stream()
-				.anyMatch(mv -> mv.getVoice().getVoiceName().equals(requestDto.getVoiceName()));
+				.anyMatch(mv -> mv.getVoice().getVoiceName().trim().equals(requestDto.getVoiceName().trim()));
 
 			if (isDuplicate) {
-				throw new CustomException(ErrorCode.VOICE_ALREADY_EXISTS);
+				throw new CustomException(ErrorCode.VOICE_ALREADY_EXISTS, "이미 존재하는 음성 이름입니다.");
 			}
 
 			// 새 Voice 엔티티 생성
 			Voice voice = Voice.builder()
-				.voiceName(requestDto.getVoiceName())
-				.audioUrl(requestDto.getAudioUrl())
-				.imageUrl(requestDto.getImageUrl())
+				.voiceName(requestDto.getVoiceName().trim())
+				.audioUrl(requestDto.getAudioUrl().trim())
+				.imageUrl(requestDto.getImageUrl() != null ? requestDto.getImageUrl().trim() : null)
 				.type(VoiceType.CUSTOM)
 				.build();
 
@@ -239,12 +245,14 @@ public class VoiceService {
 
 			MemberVoice savedMemberVoice = memberVoiceRepository.save(memberVoice);
 
-			// VoiceMapper를 사용하여 응답 생성
+			// 응답 생성
 			return voiceMapper.toRecordingVoiceResponseDto(savedMemberVoice);
+
 		} catch (CustomException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new CustomException(ErrorCode.VOICE_SERVER_ERROR);
+			e.printStackTrace(); // 로깅 추가
+			throw new CustomException(ErrorCode.VOICE_SERVER_ERROR, "음성 저장 중 오류가 발생했습니다.");
 		}
 	}
 }
