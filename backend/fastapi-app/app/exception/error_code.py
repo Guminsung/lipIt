@@ -12,13 +12,6 @@ class ErrorCode:
 
 # 실제 에러 코드 정의
 class Error:
-    # Call
-    CALL_NOT_FOUND = ErrorCode("CALL-001", "해당 통화 기록을 찾을 수 없습니다.")
-    CALL_ALREADY_ENDED = ErrorCode("CALL-002", "이미 종료된 통화입니다.")
-    CALL_INTERNAL_ERROR = ErrorCode("CALL-003", "서버 오류가 발생했습니다.")
-    CALL_AI_FAILED = ErrorCode("CALL-004", "AI 처리 중 오류가 발생했습니다.")
-    CALL_TTS_FAILED = ErrorCode("CALL-005", "TTS 처리 중 오류가 발생했습니다.")
-
     # Auth
     AUTH_UNAUTHORIZED = ErrorCode(
         "AUTH-001", "인증되지 않은 사용자입니다. 로그인 후 다시 시도하세요."
@@ -27,15 +20,26 @@ class Error:
     AUTH_EXPIRED_TOKEN = ErrorCode("AUTH-003", "만료된 Access Token입니다.")
     AUTH_TOKEN_MISSING = ErrorCode("AUTH-004", "Access Token이 누락되었습니다.")
 
+    # Call
+    CALL_NOT_FOUND = ErrorCode("CALL-001", "해당 통화 기록을 찾을 수 없습니다.")
+    CALL_ALREADY_ENDED = ErrorCode("CALL-002", "이미 종료된 통화입니다.")
+    CALL_INTERNAL_ERROR = ErrorCode(
+        "CALL-003", "전화 기능 처리 중 서버 오류가 발생했습니다."
+    )
+    CALL_AI_FAILED = ErrorCode("CALL-004", "AI 처리 중 서버 오류가 발생했습니다.")
+    CALL_TTS_FAILED = ErrorCode("CALL-005", "TTS 처리 중 서버 오류가 발생했습니다.")
+
     # News
     NEWS_QUERY_ERROR = ErrorCode("NEWS-001", "뉴스 조회 중 서버 오류가 발생했습니다.")
     NEWS_UPDATE_ERROR = ErrorCode(
         "NEWS-002", "뉴스 업데이트 중 서버 오류가 발생했습니다."
     )
-    NEWS_CRAWL_ERROR = ErrorCode("NEWS-003", "뉴스 크롤링 중 오류가 발생했습니다.")
+    NEWS_CRAWL_ERROR = ErrorCode("NEWS-003", "뉴스 크롤링 중 서버 오류가 발생했습니다.")
 
     # Audio
-    AUDIO_UPLOAD_ERROR = ErrorCode("AUDIO-001", "파일 업로드 중 오류가 발생했습니다.")
+    AUDIO_UPLOAD_ERROR = ErrorCode(
+        "AUDIO-001", "파일 업로드 중 서버 오류가 발생했습니다."
+    )
 
     # RAG
     RAG_SEARCH_ERROR = ErrorCode("RAG-001", "RAG 검색 중 서버 오류가 발생했습니다.")
@@ -43,7 +47,7 @@ class Error:
     # Report
     REPORT_NOT_FOUND = ErrorCode("REPORT-001", "보고서를 찾을 수 없습니다.")
     REPORT_INTERNAL_ERROR = ErrorCode(
-        "REPORT-002", "보고서 처리 중 오류가 발생했습니다."
+        "REPORT-002", "보고서 처리 중 서버 오류가 발생했습니다."
     )
     
     # Daily Sentence
