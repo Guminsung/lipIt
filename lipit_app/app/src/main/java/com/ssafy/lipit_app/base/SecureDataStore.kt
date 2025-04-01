@@ -1,6 +1,7 @@
 package com.ssafy.lipit_app.base
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
@@ -8,34 +9,45 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.ssafy.lipit_app.data.model.response_dto.auth.LoginResponse
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 
 private val Context.dataStore by preferencesDataStore(name = "secure_prefs")
 
 // 로그인 상태 유지 & 사용자 인증에 필요한 데이터
-object SecureDataStore {
-    // 앱 실행 시 로그인 상태 유지에 필요한 정보
-    private val ACCESS_TOKEN_KEY = stringPreferencesKey("access_token") // 로그인 후 발급된 JWT 엑세스 토큰
-    private val REFRESH_TOKEN_KEY = stringPreferencesKey("refresh_token") // 액세스 토큰 만료 시 재발급용 토큰
-    private val MEMBER_ID_KEY = longPreferencesKey("member_id")
+class SecureDataStore(private val context: Context) {
+    companion object {
 
-    // 사용자 식별 정보
-    private val EMAIL_KEY = stringPreferencesKey("user_email")
-    private val USER_NAME_KEY = stringPreferencesKey("user_name")
+        @Volatile
+        private var instance: SecureDataStore? = null
 
-    // 추가 정보
-    private val FIRST_LOGIN_KEY =
-        booleanPreferencesKey("is_first_login") // 첫 로그인 여부 -> 온보딩 보여주기 여부 확인용
+        // 싱글톤 인스턴스 가져오기
+        fun getInstance(context: Context): SecureDataStore {
+            return instance ?: synchronized(this) {
+                instance ?: SecureDataStore(context.applicationContext).also { instance = it }
+            }
+        }
+
+        // 키 정의
+        private val ACCESS_TOKEN_KEY = stringPreferencesKey("access_token") // 로그인 후 발급된 JWT 엑세스 토큰
+        private val REFRESH_TOKEN_KEY = stringPreferencesKey("refresh_token") // 액세스 토큰 만료 시 재발급용 토큰
+        private val MEMBER_ID_KEY = longPreferencesKey("member_id")
+        private val EMAIL_KEY = stringPreferencesKey("user_email")
+        private val USER_NAME_KEY = stringPreferencesKey("user_name")
+        private val FIRST_LOGIN_KEY = booleanPreferencesKey("is_first_login") // 첫 로그인 여부
+    }
 
     // JWT Access Token 가져오기
-    fun getAccessToken(context: Context): Flow<String?> {
+    fun getAccessToken(): Flow<String?> {
         return context.dataStore.data.map { preferences ->
             preferences[ACCESS_TOKEN_KEY]
         }
     }
 
     // JWT Access Token 저장
-    suspend fun saveUserInfo(context: Context, response: LoginResponse) {
+    suspend fun saveUserInfo(response: LoginResponse) {
+        Log.d("SecureDataStore", "사용자 정보 저장: ${response.email}")
         context.dataStore.edit { prefs ->
             prefs[ACCESS_TOKEN_KEY] = response.accessToken
             prefs[REFRESH_TOKEN_KEY] = response.refreshToken
@@ -46,31 +58,58 @@ object SecureDataStore {
     }
 
     // refresh token 가져오기
-    fun getRefreshToken(context: Context): Flow<String?> {
+    fun getRefreshToken(): Flow<String?> {
         return context.dataStore.data.map { prefs ->
             prefs[REFRESH_TOKEN_KEY]
         }
     }
 
     // 로그아웃 시 DataStore 초기화
-    suspend fun clearUserInfo(context: Context) {
+    suspend fun clearUserInfo() {
+        Log.d("SecureDataStore", "사용자 정보 삭제")
         context.dataStore.edit { prefs ->
             prefs.clear()
         }
     }
 
     // 첫 로그인 여부 저장 -> 온보딩 이후 상태 갱신 시 사용
-    suspend fun setFirstLogin(context: Context, isFirst: Boolean) {
+    suspend fun setFirstLogin(isFirst: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[FIRST_LOGIN_KEY] = isFirst
         }
     }
 
-    fun getFirstLogin(context: Context): Flow<Boolean?> {
+    // 첫 로그인 여부 가져오기
+    fun getFirstLogin(): Flow<Boolean?> {
         return context.dataStore.data.map { prefs ->
             prefs[FIRST_LOGIN_KEY]
         }
     }
 
+    // 토큰이 있는지 확인하는 비동기 함수
+    suspend fun hasAccessToken(): Boolean {
+        return try {
+            val token = getAccessToken().map { it?.isNotEmpty() ?: false }.firstOrNull() ?: false
+            Log.d("SecureDataStore", "토큰 존재 여부(비동기): $token")
+            token
+        } catch (e: Exception) {
+            Log.e("SecureDataStore", "토큰 확인 중 오류", e)
+            false
+        }
+    }
 
+    // 토큰이 있는지 동기적으로 확인하는 함수 (NavGraph 등에서 사용)
+    fun hasAccessTokenSync(): Boolean {
+        return runBlocking {
+            try {
+                val token = getAccessToken().firstOrNull()
+                val hasToken = !token.isNullOrEmpty()
+                Log.d("SecureDataStore", "토큰 존재 여부(동기): $hasToken")
+                hasToken
+            } catch (e: Exception) {
+                Log.e("SecureDataStore", "토큰 확인 중 오류", e)
+                false
+            }
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package com.ssafy.lipit_app.base
 
 import android.app.Application
+import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
@@ -17,20 +18,27 @@ class ApplicationClass : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        TokenManager.init(this)
 
         gson = GsonBuilder()
             .setLenient()
             .disableHtmlEscaping()
             .create()
 
+        val loggingInterceptor = HttpLoggingInterceptor { message ->
+            try {
+                val decodedMessage =
+                    message.toByteArray(Charsets.ISO_8859_1).toString(Charsets.UTF_8)
+                Log.e("POST", "log: message $decodedMessage")
+            } catch (e: Exception) {
+                Log.e("POST", "log: message (decode failed) $message")
+            }
+        }.setLevel(HttpLoggingInterceptor.Level.BODY)
+
         client = OkHttpClient.Builder()
             .readTimeout(5000, TimeUnit.MILLISECONDS)
             .connectTimeout(5000, TimeUnit.MILLISECONDS)
             .addInterceptor(AuthInterceptor(this))
-            .addInterceptor(HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
-            })
+            .addInterceptor(loggingInterceptor)
             .build()
     }
 }
