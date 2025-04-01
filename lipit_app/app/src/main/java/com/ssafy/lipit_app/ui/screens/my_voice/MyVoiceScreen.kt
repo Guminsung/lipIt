@@ -3,6 +3,7 @@ package com.ssafy.lipit_app.ui.screens.my_voice
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,17 +44,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.data.model.response_dto.myvoice.CelabResponse
+import com.ssafy.lipit_app.data.model.response_dto.myvoice.CustomResponse
 import com.ssafy.lipit_app.ui.screens.my_voice.components.CelebVoiceScreen
 import com.ssafy.lipit_app.ui.screens.my_voice.components.CustomVoiceScreen
 import mx.platacard.pagerindicator.PagerIndicator
 
 @Composable
 fun MyVoiceScreen(
-    state: MyVoiceState,
-    onIntent: (MyVoiceIntent) -> Unit
+//    state: MyVoiceState,
+//    onIntent: (MyVoiceIntent) -> Unit
+    viewModel: MyVoiceViewModel
 ) {
-    var selectedTab by remember { mutableStateOf("Celebrity") }
-    val pagerState = rememberPagerState(pageCount = { 10 })
+
+    val state by viewModel.state.collectAsState()
 
     Column(
         modifier = Modifier
@@ -142,51 +147,81 @@ fun MyVoiceScreen(
             Text(
                 text = "Celebrity",
                 fontSize = 20.sp,
-                color = if (selectedTab == "Celebrity") Color.White else Color.White.copy(0.4f),
+                color = if (state.selectedTab == "Celebrity") Color.White else Color.White.copy(0.4f),
                 modifier = Modifier.clickable {
                     // TODO:: Celebrity 선택 시 화면
-                    selectedTab = "Celebrity"
+                    viewModel.onIntent(MyVoiceIntent.SelectTab("Celebrity"))
                 }
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
                 text = "Custom",
                 fontSize = 20.sp,
-                color = if (selectedTab == "Custom") Color.White else Color.White.copy(0.4f),
+                color = if (state.selectedTab == "Custom") Color.White else Color.White.copy(0.4f),
                 modifier = Modifier.clickable {
                     // TODO:: Custom 선택 시 화면
-                    selectedTab = "Custom"
+                    viewModel.onIntent(MyVoiceIntent.SelectTab("Custom"))
                 }
             )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        when (selectedTab) {
+        when (state.selectedTab) {
             "Celebrity" -> {
-                HorizontalPager(state = pagerState) { page ->
-                    CelebVoiceScreen(pagerState, page)
-                }
+                if (state.myCelebrityVoiceList.isNotEmpty()) {
+                    val pagerState =
+                        rememberPagerState(pageCount = { state.myCelebrityVoiceList.size })
 
-                // PageIndicator는 Celebrity 탭에서만 표시
-//                Spacer(modifier = Modifier.height(2.dp))
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    PagerIndicator(
-                        pagerState = pagerState,
-                        activeDotColor = Color(0xff503D75),
-                        dotColor = Color.LightGray,
-                        dotCount = 5,
-                        activeDotSize = 8.dp
-                    )
+                    HorizontalPager(state = pagerState) { page ->
+                        CelebVoiceScreen(
+                            pagerState = pagerState,
+                            page = page,
+                            voice = state.myCelebrityVoiceList[page],
+                            onVoiceSelected = { voiceName, voiceUrl ->
+                                viewModel.onIntent(MyVoiceIntent.SelectVoice(voiceName, voiceUrl))
+                            }
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        PagerIndicator(
+                            pagerState = pagerState,
+                            activeDotColor = Color(0xff503D75),
+                            dotColor = Color.LightGray,
+                            dotCount = 5,
+                            activeDotSize = 8.dp
+                        )
+                    }
+                } else {
+                    // 셀럽 목소리가 없을 때
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "No celebrity voices",
+                            color = Color.White,
+                            fontSize = 16.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(70.dp))
+                    }
                 }
             }
 
             "Custom" -> {
                 // Custom 음성
-                CustomVoiceScreen()
+                CustomVoiceScreen(
+                    customVoices = state.myCustomVoiceList,
+                    onVoiceSelected = { voiceName, voiceUrl ->
+                        viewModel.onIntent(MyVoiceIntent.SelectVoice(voiceName, voiceUrl))
+                    }
+                )
             }
         }
 
@@ -196,19 +231,6 @@ fun MyVoiceScreen(
 @Preview(showBackground = true)
 @Composable
 fun MyVoiceScreenPreview() {
-    MyVoiceScreen(
-        state = MyVoiceState(
-            selectedVoiceName = "Harry Potter",
-            selectedVoiceUrl = "test",
-
-            myCelebrityVoiceList = listOf(
-                voice("Harry Potter", "test"),
-            ),
-            myCustomVoiceList = listOf(
-                voice("Harry Potter", "test"),
-            )
-        ),
-        onIntent = { }
-    )
+    val viewModel = MyVoiceViewModel()
+    MyVoiceScreen(viewModel = viewModel)
 }
-

@@ -1,9 +1,11 @@
 package com.ssafy.lipit_app.base
 
 import android.app.Application
+import android.content.Context
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
@@ -13,10 +15,20 @@ class ApplicationClass : Application() {
     companion object {
         lateinit var gson: Gson
         lateinit var client: OkHttpClient
+
+        private lateinit var context: Context
+
+        fun getApplicationContext(): Context {
+            return context
+        }
+
     }
 
     override fun onCreate() {
         super.onCreate()
+
+        context = this.applicationContext
+        SharedPreferenceUtils.init(context = context)
 
 
         gson = GsonBuilder()

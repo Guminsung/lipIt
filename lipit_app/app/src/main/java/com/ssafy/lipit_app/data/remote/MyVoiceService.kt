@@ -20,24 +20,24 @@ interface MyVoiceService {
     @GET("voices/celeb")
     suspend fun getCelebVoices(
         @Query("memberId") memberId: Long
-    ): Response<BaseResponse<CelabResponse>>
+    ): Response<BaseResponse<List<CelabResponse>>>
 
 
     // 커스텀 음성 목록 조회
     @GET("voices/custom")
     suspend fun getCustomVoices(
         @Query("memberId") memberId: Long
-    ): Response<BaseResponse<CustomResponse>>
+    ): Response<BaseResponse<List<CustomResponse>>>
 
 
     // 선택한 음성 조회
     @GET("members/{memberId}/voice")
-    suspend fun getSelectVoice(
+    suspend fun getVoice(
         @Query("memberId") memberId: Long
     ): Response<BaseResponse<CustomResponse>>
 
 
-    // 음성 선택
+    // 기본 음성 선택
     @PATCH("members/{memberId}/voice")
     suspend fun takeVoice(
         @Path("memberId") memberId: Long,
