@@ -53,5 +53,14 @@ object TokenManager {
         sharedPreferences.edit().remove(ACCESS_TOKEN_KEY).apply()
         Log.d("TokenManager", "Access Token 삭제됨")
     }
+
+    // 현재 토큰 보유 여부 확인 -> 자동 로그인 위해서 추가
+    fun hasAccessToken(): Boolean {
+        val token = getAccessToken()
+        Log.d("TokenManager", "hasAccessToken 체크 결과: ${!token.isNullOrEmpty()}")
+
+        return !token.isNullOrEmpty()
+    }
+
 }
 

@@ -5,7 +5,8 @@ import java.util.Properties
 val localProperties = Properties().apply {
     load(FileInputStream(rootProject.file("local.properties")))
 }
-val serverUrl = localProperties["SERVER_URL"] as String
+val serverUrl_spring = localProperties["SERVER_URL_SPRING"] as String
+val serverUrl_fastapi = localProperties["SERVER_URL_FASTAPI"] as String
 
 plugins {
     alias(libs.plugins.android.application)
@@ -35,10 +36,12 @@ android {
 
     buildTypes {
         getByName("debug") {
-            buildConfigField("String", "SERVER_URL", "\"$serverUrl\"")
+            buildConfigField("String", "SERVER_URL_SPRING", "\"$serverUrl_spring\"")
+            buildConfigField("String", "SERVER_URL_FASTAPI", "\"$serverUrl_fastapi\"")
         }
         getByName("release") {
-            buildConfigField("String", "SERVER_URL", "\"$serverUrl\"")
+            buildConfigField("String", "SERVER_URL_SPRING", "\"$serverUrl_spring\"")
+            buildConfigField("String", "SERVER_URL_FASTAPI", "\"$serverUrl_fastapi\"")
         }
 
         release {
