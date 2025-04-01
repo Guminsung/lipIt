@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.ssafy.lipit_app.base.TokenManager
 import com.ssafy.lipit_app.ui.screens.auth.Login.LoginScreen
 import com.ssafy.lipit_app.ui.screens.auth.Login.LoginViewModel
 import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupScreen
@@ -34,9 +35,13 @@ import com.ssafy.lipit_app.ui.screens.report.ReportScreen
 fun NavGraph(
     navController: NavHostController = rememberNavController()
 ) {
+    val tokenManager = TokenManager
+
     NavHost(
         navController = navController,
-        startDestination = "auth_start" // 첫 진입 화면
+
+        // 이미 토큰이 있다면 -> 로그인을 한 적이 있다면 메인으로 바로 이동
+        startDestination = if (tokenManager.hasAccessToken()) "main" else "auth_start" // 첫 진입 화면
     ) {
 
         composable("auth_start") {

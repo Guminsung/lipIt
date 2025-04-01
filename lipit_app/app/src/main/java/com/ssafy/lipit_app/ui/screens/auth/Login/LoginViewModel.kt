@@ -60,8 +60,12 @@ class LoginViewModel : ViewModel() {
             if (result.isSuccess) {
                 _state.value = _state.value.copy(isLoginSuccess = true)
 
-            } else {
+//                val loginData = result.getOrNull() // BaseResponse<LoginResponse>의 data
+//                val accessToken = loginData?.accessToken
+//                Log.d("LoginViewModel", "받은 accessToken: $accessToken")
+//                TokenManager.saveAccessToken(accessToken ?: "")
 
+            } else {
                 val exception = result.exceptionOrNull()
                 val errorMsg = if (exception is HttpException) {
                     val errorBody = exception.response()?.errorBody()?.string()

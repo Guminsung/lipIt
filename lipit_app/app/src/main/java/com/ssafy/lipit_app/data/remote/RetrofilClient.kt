@@ -1,10 +1,7 @@
 package com.ssafy.lipit_app.data.remote
 
-import com.ssafy.lipit_app.BuildConfig
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofilClient {
 
@@ -16,9 +13,9 @@ object RetrofilClient {
         .addInterceptor(loggingInterceptor)
         .build()
 
-    val instance: Retrofit = Retrofit.Builder()
-        .baseUrl(BuildConfig.SERVER_URL)
-        .addConverterFactory(GsonConverterFactory.create())
-        .client(okHttpClient)
-        .build()
+//    val instance: Retrofit = Retrofit.Builder()
+//        .baseUrl(BuildConfig.SERVER_URL)
+//        .addConverterFactory(GsonConverterFactory.create())
+//        .client(okHttpClient)
+//        .build()
 }

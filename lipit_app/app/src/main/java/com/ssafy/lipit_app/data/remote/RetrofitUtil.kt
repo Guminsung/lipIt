@@ -1,6 +1,7 @@
 package com.ssafy.lipit_app.data.remote
 
 import com.ssafy.lipit_app.BuildConfig
+import com.ssafy.lipit_app.base.ApplicationClass
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -16,15 +17,23 @@ object RetrofitUtil {
         .addInterceptor(loggingInterceptor)
         .build()
 
-    private val retrofit: Retrofit by lazy {
+    private val springRetrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl(BuildConfig.SERVER_URL)
-            .client(client)
-            .addConverterFactory(GsonConverterFactory.create())
+            .baseUrl(BuildConfig.SERVER_URL_SPRING)
+            .client(ApplicationClass.client)
+            .addConverterFactory(GsonConverterFactory.create(ApplicationClass.gson))
+            .build()
+    }
+
+    private val fastApiRetrofit: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(BuildConfig.SERVER_URL_FASTAPI)
+            .client(ApplicationClass.client)
+            .addConverterFactory(GsonConverterFactory.create(ApplicationClass.gson))
             .build()
     }
 
     val authService: AuthService by lazy {
-        retrofit.create(AuthService::class.java)
+        springRetrofit.create(AuthService::class.java)
     }
 }
