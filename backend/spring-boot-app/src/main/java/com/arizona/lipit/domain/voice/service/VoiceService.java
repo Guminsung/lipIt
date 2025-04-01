@@ -25,6 +25,7 @@ import com.arizona.lipit.domain.voice.repository.MemberVoiceRepository;
 import com.arizona.lipit.domain.voice.repository.VoiceRepository;
 import com.arizona.lipit.global.exception.CustomException;
 import com.arizona.lipit.global.exception.ErrorCode;
+import com.arizona.lipit.domain.member.entity.Level;
 
 import lombok.RequiredArgsConstructor;
 
@@ -44,11 +45,11 @@ public class VoiceService {
 			throw new CustomException(ErrorCode.INVALID_MEMBER_ID);
 		}
 
-		// 회원 확인
-		Member member = memberRepository.findById(memberId)
-			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_ID_NOT_FOUND));
-
 		try {
+			// 회원 확인
+			Member member = memberRepository.findById(memberId)
+				.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_ID_NOT_FOUND));
+
 			// 셀럽 음성 조회
 			List<Voice> celebVoices = voiceRepository.findByType(VoiceType.CELEB);
 
@@ -57,17 +58,30 @@ public class VoiceService {
 				throw new CustomException(ErrorCode.CELEB_VOICE_NOT_FOUND);
 			}
 
-			// 회원의 reportCount 가져오기
-			int reportCount = member.getTotalReportCount();
+			// 회원의 레벨 정보 가져오기
+			Level memberLevel = member.getLevel();
+			int currentLevel = memberLevel != null ? memberLevel.getLevel() : 0;
 
 			// 비즈니스 로직 및 맵핑 처리
 			return celebVoices.stream()
 				.map(voice -> {
 					boolean activated = false;
-					if (voice.getVoiceName().equals("스윙스")) {
-						activated = reportCount >= 0;
-					} else if (voice.getVoiceName().equals("셀럽 B")) {
-						activated = reportCount >= 10;
+					switch (voice.getVoiceName()) {
+						case "스윙스":
+							activated = currentLevel >= 1; // 레벨 1 이상
+							break;
+						case "아리아나 그란데":
+							activated = currentLevel >= 2; // 레벨 2 이상
+							break;
+						case "베네딕트 컴버배치":
+							activated = currentLevel >= 3; // 레벨 3 이상
+							break;
+						case "마이클잭슨":
+							activated = currentLevel >= 4; // 레벨 4 이상
+							break;
+						case "MIJI":
+							activated = currentLevel >= 5; // 레벨 5
+							break;
 					}
 					return voiceMapper.toCelebVoiceResponseDto(voice, activated);
 				})
