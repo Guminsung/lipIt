@@ -1,5 +1,9 @@
 package com.ssafy.lipit_app.ui.screens.main
 
+import android.app.Activity
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,12 +36,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.CallSchedule
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsIntent
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsScreen
@@ -54,12 +60,11 @@ fun MainScreen(
     state: MainState,
     onIntent: (MainIntent) -> Unit
 ) {
-    // [Weekly Calls] Bottom Sheet
+    // ***** Bottom Sheet 관리 : show/hide 처리
     val bottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
-
     androidx.compose.runtime.LaunchedEffect(state.isSettingsSheetVisible) {
         if (state.isSettingsSheetVisible) {
             bottomSheetState.show()
@@ -71,16 +76,40 @@ fun MainScreen(
     androidx.compose.runtime.LaunchedEffect(bottomSheetState.isVisible) {
         if (!bottomSheetState.isVisible && state.isSettingsSheetVisible) {
             onIntent(MainIntent.OnCloseSettingsSheet)
+            onIntent(MainIntent.ResetBottomSheetContent)
         }
     }
 
+    // ***** 뒤로가기 핸들링
+    // BottomSheet 가 있으면 닫기 / 아무것도 없을 경우 두번 빠르게 눌러 앱 종료
+    BackHandler(enabled = bottomSheetState.isVisible) {
+        // 바텀시트가 열려있을 때 → 닫기
+        onIntent(MainIntent.OnCloseSettingsSheet)
+        onIntent(MainIntent.ResetBottomSheetContent)
+    }
+
+    var backPressedTime by remember { mutableStateOf(0L) }
+    val context = LocalContext.current
+    BackHandler(enabled = !bottomSheetState.isVisible) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - backPressedTime < 2000) {
+            // 앱 종료
+            (context as? Activity)?.finish()
+        } else {
+            backPressedTime = currentTime
+            Toast.makeText(context, "한 번 더 누르면 종료됩니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // 1. (default: hide) BottomSheet 3가지 종류 : 일주일 스케줄, 수정, 보유 음성
+    // 2. (Base) MainScreen
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
         sheetBackgroundColor = Color.Transparent,
         sheetContent = {
-            Surface( // ← 여기서부터 라운드 처리!
+            Surface(
                 shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-                color = Color(0xFFFDF8FF), // 원래 배경색 (원하면 바꿔도 됨)
+                color = Color(0xFFFDF8FF),
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(0.9f)
@@ -90,6 +119,7 @@ fun MainScreen(
                         .fillMaxSize()
                         .padding(vertical = 10.dp)
                 ) {
+                    // 핸들바
                     Box(
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
@@ -98,20 +128,41 @@ fun MainScreen(
                             .background(Color.LightGray, RoundedCornerShape(2.dp))
                     )
 
-                    // WeeklyCallsScreen
-                    WeeklyCallsScreen(
-                        state = state.weeklyCallsState,
-                        onIntent = { intent ->
-                            if (intent is WeeklyCallsIntent.OnEditSchedule) {
-                                println("Edit 눌림!")
-                            }
+                    // ✅ 여기서 상태에 따라 바텀시트 내용 분기!
+                    when (state.bottomSheetContent) {
+                        BottomSheetContent.WEEKLY_CALLS -> {
+                            WeeklyCallsScreen(
+                                state = state.weeklyCallsState,
+                                onIntent = { intent ->
+                                    if (intent is WeeklyCallsIntent.OnEditSchedule) {
+                                        onIntent(MainIntent.ShowRescheduleScreen)
+                                    }
+                                }
+                            )
                         }
-                    )
+
+                        BottomSheetContent.RESCHEDULE_CALL -> {
+                            Log.d("TAG", "MainScreen: 스케줄 수정 화면 보여짐")
+//                            EditCallScreen(
+//                                state = state.weeklyCallsState,
+//                                onIntent = { intent ->
+//                                    if (intent is WeeklyCallsIntent.OnEditSchedule) {
+//                                        onIntent(MainIntent.ShowRescheduleScreen)
+//                                    }
+//                                }
+//                            )
+
+                        }
+
+                        BottomSheetContent.MY_VOICES -> {
+
+                        }
+                    }
                 }
             }
         }
     ) {
-        // 기존 MainScreen UI
+        // ***** 기존 MainScreen UI
         var selectedDay by remember { mutableStateOf(state.selectedDay) }
         Column(
             modifier = Modifier
@@ -126,6 +177,7 @@ fun MainScreen(
                 selectedDay = selectedDay,
                 callItems = state.callItems,
                 onIntent = {
+                    Log.d("TAG", "MainScreen: ${state.callItems}")
                     if (it is MainIntent.OnDaySelected) {
                         selectedDay = it.day
                     } else {

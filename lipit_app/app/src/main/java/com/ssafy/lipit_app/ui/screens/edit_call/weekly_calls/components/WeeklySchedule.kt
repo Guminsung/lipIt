@@ -22,7 +22,7 @@ fun WeeklySchedule(callSchedules: List<CallSchedule>, onTapSchedule: () -> Unit)
         ThisWeekSchedules(
             dayList = dayList,
             callSchedules = callSchedules,
-            onTapSchedule = onTapSchedule 
+            onTapSchedule = onTapSchedule
         )
 
     }
