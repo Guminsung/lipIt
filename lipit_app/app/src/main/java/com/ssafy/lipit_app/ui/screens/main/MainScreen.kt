@@ -1,5 +1,11 @@
 package com.ssafy.lipit_app.ui.screens.main
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,6 +21,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,11 +44,40 @@ import com.ssafy.lipit_app.ui.screens.main.components.TodaysSentence
 import com.ssafy.lipit_app.ui.screens.main.components.WeeklyCallsSection
 
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun MainScreen(
-    state: MainState,
-    onIntent: (MainIntent) -> Unit
+    onIntent: (MainIntent) -> Unit,
+    viewModel: MainViewModel
 ) {
+    val state by viewModel.state.collectAsState() // 고정된 값이 아닌 상태 관찰 -> 실시간 UI 반영
+
+    val context = LocalContext.current
+
+    // 브로드캐스트 수신기 등록
+    // 흐름: MyFirebaseMessageService에서 보낸 브로드 캐스트 수신 -> 뷰모델 상태 갱신
+    // -> state 변경되어 UI 자동 recomposition 됨
+    DisposableEffect(Unit) {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == "DAILY_SENTENCE_UPDATED") {
+                    viewModel.loadDailySentence()
+                }
+            }
+        }
+
+        val filter = IntentFilter("DAILY_SENTENCE_UPDATED")
+        context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
+
+        onDispose {
+            context.unregisterReceiver(receiver)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.loadDailySentence()
+    }
+
     //val state by viewModel.state.collectAsState()
     var selectedDay by remember { mutableStateOf(state.selectedDay) }
 
@@ -127,31 +166,33 @@ fun UserInfoSection(userName: String) {
 }
 
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Preview(showBackground = true)
 @Composable
 fun MainScreenPreview() {
     MainScreen(
-        state = MainState(
-            userName = "Sarah",
-            selectedDay = "월",
-            callItems = listOf(
-                CallItem(
-                    id = 1,
-                    name = "Harry Potter",
-                    topic = "자유주제",
-                    time = "08:00",
-                    imageUrl = "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png",
-                    "월"
-                )
-            ),
-            sentenceCnt = 50,
-            wordCnt = 10,
-            attendanceCnt = 20,
-            attendanceTotal = 20,
-            sentenceOriginal = "With your talent and hard work, sky’s the limit!",
-            sentenceTranslated = "너의 재능과 노력이라면, 한계란 없지!",
-        ),
-        onIntent = { }
+//        state = MainState(
+//            userName = "Sarah",
+//            selectedDay = "월",
+//            callItems = listOf(
+//                CallItem(
+//                    id = 1,
+//                    name = "Harry Potter",
+//                    topic = "자유주제",
+//                    time = "08:00",
+//                    imageUrl = "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png",
+//                    "월"
+//                )
+//            ),
+//            sentenceCnt = 50,
+//            wordCnt = 10,
+//            attendanceCnt = 20,
+//            attendanceTotal = 20,
+//            sentenceOriginal = "With your talent and hard work, sky’s the limit!",
+//            sentenceTranslated = "너의 재능과 노력이라면, 한계란 없지!",
+//        ),
+        onIntent = { },
+        viewModel = MainViewModel()
     )
 }
 

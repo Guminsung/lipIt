@@ -18,16 +18,15 @@ object DailySentenceManager {
 
     // 오늘의 문장 저장
     fun save(original: String, translated: String) {
-        sharedPreferences.edit()
-            .putString(ORIGINAL_KEY, original)
-            .putString(TRANSLATED_KEY, translated)
-            .apply()
+        sharedPreferences.edit().putString(ORIGINAL_KEY, original)
+            .putString(TRANSLATED_KEY, translated).apply()
         Log.d("DailySentenceManager", "문장 저장 완료")
     }
 
     // 원본 텍스트 가져오기
     fun getOriginal(): String {
-        return sharedPreferences.getString(ORIGINAL_KEY, "") ?: ""
+        return sharedPreferences.getString(ORIGINAL_KEY, "")
+            ?: ""
     }
 
     // 번역 텍스트 가져오기
