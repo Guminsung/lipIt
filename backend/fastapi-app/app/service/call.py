@@ -1,7 +1,6 @@
 # app/service/call.py
 import asyncio
 import logging
-from typing import Union
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
@@ -35,7 +34,9 @@ add_message_graph = build_add_message_graph()
 end_call_graph = build_end_call_graph()
 
 
-async def start_call(db: AsyncSession, request: StartCallRequest) -> StartCallResponse:
+async def start_call(
+    db: AsyncSession, request: StartCallRequest, member_id: int, voice_name: str
+) -> StartCallResponse:
     # 자유 주제(topic = None)인 경우 뉴스/날씨 데이터로 topic 추출
     topic = request.topic
     if not topic:
@@ -44,9 +45,10 @@ async def start_call(db: AsyncSession, request: StartCallRequest) -> StartCallRe
 
     state = {
         "call_id": -1,
-        "member_id": request.memberId,
+        "member_id": member_id,
         "topic": topic,
         "messages": [],
+        "voice_name": voice_name,
     }
 
     try:
@@ -56,7 +58,6 @@ async def start_call(db: AsyncSession, request: StartCallRequest) -> StartCallRe
 
     ai_message = result["messages"][-1]
     new_call = Call(
-        call_request_id=request.callRequestId,
         member_id=request.memberId,
         messages=[safe_convert_message_to_dict(ai_message)],
         start_time=now_kst(),
@@ -66,7 +67,7 @@ async def start_call(db: AsyncSession, request: StartCallRequest) -> StartCallRe
     await save_call(db, new_call)
 
     return StartCallResponse(
-        callId=new_call.call_id,
+        calld=new_call.call_id,
         startTime=to_kst_isoformat(new_call.start_time),
         aiMessage=result.get("ai_response"),
         aiMessageKor=result.get("ai_response_kor"),
@@ -75,7 +76,11 @@ async def start_call(db: AsyncSession, request: StartCallRequest) -> StartCallRe
 
 
 async def add_message_to_call(
-    db: AsyncSession, call_id: int, request: UserMessageRequest
+    db: AsyncSession,
+    call_id: int,
+    request: UserMessageRequest,
+    member_id: int,
+    voice_name: str,
 ) -> AIMessageResponse:
     call_record = await get_call_by_id(db, call_id)
     if not call_record:
@@ -89,7 +94,7 @@ async def add_message_to_call(
 
     state = {
         "call_id": call_record.call_id,
-        "member_id": call_record.member_id,
+        "member_id": member_id,
         "input": request.userMessage,
         "messages": [convert_to_lc_message(Message(**m)) for m in call_record.messages],
         "is_timeout": is_timeout,
@@ -164,7 +169,6 @@ async def add_message_to_call(
         return AIMessageResponse(
             aiMessage=result["ai_response"],
             aiMessageKor=result["ai_response_kor"],
-            aiAudioUrl=result["ai_audio_url"],
             endTime=to_kst_isoformat(end_time),
             duration=duration,
             reportCreated=reportCreated,
@@ -173,9 +177,7 @@ async def add_message_to_call(
     # 일반 응답
     await save_call(db, call_record)
     return AIMessageResponse(
-        aiMessage=result["ai_response"],
-        aiMessageKor=result["ai_response_kor"],
-        aiAudioUrl=result["ai_audio_url"],
+        aiMessage=result["ai_response"], aiMessageKor=result["ai_response_kor"]
     )
 
 

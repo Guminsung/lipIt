@@ -49,9 +49,17 @@ class Error:
     REPORT_INTERNAL_ERROR = ErrorCode(
         "REPORT-002", "보고서 처리 중 서버 오류가 발생했습니다."
     )
-    
+
     # Daily Sentence
     DAILY_SENTENCE_NOT_FOUND = ErrorCode("DAILY-001", "오늘의 문장을 찾을 수 없습니다.")
     DAILY_SENTENCE_INTERNAL_ERROR = ErrorCode(
         "DAILY-002", "오늘의 문장 처리 중 오류가 발생했습니다."
     )
+
+    # Member
+    MEMBER_NOT_FOUND = ("MEMBER-001", "사용자를 찾을 수 없습니다.")
+    MEMBER_NO_SELECTED_VOICE = ("MEMBER-002", "선택된 음성이 없습니다.")
+
+    # Voice
+    VOICE_NOT_FOUND = ("VOICE-001", "해당 음성을 찾을 수 없습니다.")
+    VOICE_AUDIO_URL_NOT_FOUND = ("VOICE-002", "해당 음성의 URL이 없습니다.")
