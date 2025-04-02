@@ -8,6 +8,7 @@ sealed class MyVoiceIntent {
     object LoadCelebrityVoices : MyVoiceIntent()
     object LoadCustomVoices : MyVoiceIntent()
 
-    // Tab selection
+
     data class SelectTab(val tabName: String) : MyVoiceIntent()
+    data class ChangeVoice(val voiceId: Long) : MyVoiceIntent()
 }
