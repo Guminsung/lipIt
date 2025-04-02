@@ -87,7 +87,7 @@ fun ReportScreen(
                     items(state.totalReportList) { reports ->
                         Report(report = reports,
                             onReportItemClick = { reportId ->
-                                onIntent(ReportIntent.ReportItemClicked(reportId))
+                                onIntent(ReportIntent.NavigateToReportDetail(reportId))
                             }
                         )
                     }
