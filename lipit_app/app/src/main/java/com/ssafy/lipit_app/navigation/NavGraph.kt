@@ -38,6 +38,7 @@ import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceIntent
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceScreen
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceViewModel
 import com.ssafy.lipit_app.ui.screens.report.ReportDetailScreen
+import com.ssafy.lipit_app.ui.screens.report.ReportDetailViewModel
 import com.ssafy.lipit_app.ui.screens.report.ReportIntent
 import com.ssafy.lipit_app.ui.screens.report.ReportScreen
 import com.ssafy.lipit_app.ui.screens.report.ReportViewModel
@@ -64,8 +65,6 @@ fun NavGraph(
         }
 
         composable("login") {
-//            val viewModel = viewModel<LoginViewModel>()
-            val context = LocalContext.current
             val viewModel: LoginViewModel = viewModel(
                 factory = object : ViewModelProvider.Factory {
                     @Suppress("UNCHECKED_CAST")
@@ -214,10 +213,21 @@ fun NavGraph(
             route = "report_detail_screen/{reportId}",
             arguments = listOf(navArgument("reportId") { type = NavType.LongType })
         ) { backStackEntry ->
+
             val reportId = backStackEntry.arguments?.getLong("reportId") ?: -1L
+            val viewModel: ReportDetailViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    @Suppress("UNCHECKED_CAST")
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return ReportDetailViewModel(reportId) as T
+                    }
+                }
+            )
+
             ReportDetailScreen(
                 reportId = reportId,
-                onBackClick = { navController.popBackStack() }
+                state = viewModel.state.collectAsState().value,
+                onIntent = viewModel::onIntent
             )
         }
 

@@ -32,8 +32,6 @@ class ReportViewModel : ViewModel() {
     fun onIntent(intent: ReportIntent) {
         when (intent) {
             is ReportIntent.LoadReportList -> loadReportList()
-            is ReportIntent.LoadReportScript -> loadReportScript(intent.reportId)
-            is ReportIntent.LoadNativeExpression -> loadNativeExpression(intent.reportId)
             is ReportIntent.ReportItemClicked -> {}
             is ReportIntent.NavigateToReportDetail -> {}
         }
@@ -75,74 +73,5 @@ class ReportViewModel : ViewModel() {
         }
     }
 
-    // 스크립트 불러오기
-    private fun loadReportScript(reportId: Long) {
-        viewModelScope.launch {
-            try {
-                _state.update { it.copy(isLoading = true, error = null) }
-
-                val result = reportRepository.getReportScript(reportId)
-                result.onSuccess { scripts ->
-                    _state.update { currentState ->
-                        currentState.copy(
-                            reportScript = scripts,
-                            isLoading = false,
-                            error = null
-                        )
-                    }
-                }.onFailure { error ->
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = error.message ?: "스크립트 목록을 불러오던 중 오류 발생"
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        error = e.message ?: "스크립트 목록을 불러오던 중 오류 발생"
-                    )
-                }
-            }
-        }
-    }
-
-    // 원어민 표현
-    private fun loadNativeExpression(reportId: Long) {
-
-        viewModelScope.launch {
-            try {
-                _state.update { it.copy(isLoading = true, error = null) }
-
-                val result = reportRepository.getNativeExpressions(reportId)
-                result.onSuccess { natives ->
-                    _state.update { currentState ->
-                        currentState.copy(
-                            nativeExpression = natives,
-                            isLoading = false,
-                            error = null
-                        )
-                    }
-                }.onFailure { error ->
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = error.message ?: "원어민 표현을 불러오던 중 오류 발생"
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        error = e.message ?: "원어민 표현을 불러오던 중 오류 발생"
-                    )
-                }
-            }
-        }
-
-    }
 
 }

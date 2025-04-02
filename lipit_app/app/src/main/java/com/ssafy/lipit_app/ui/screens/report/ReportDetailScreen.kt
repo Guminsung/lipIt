@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.report.components.FullScriptContent
 import com.ssafy.lipit_app.ui.screens.report.components.NativeSpeakerContent
@@ -40,11 +41,11 @@ import com.ssafy.lipit_app.ui.screens.report.components.SummaryContent
 @Composable
 fun ReportDetailScreen(
     reportId: Long,
-    onBackClick: () -> Unit
+    state: ReportDetailState,
+    onIntent: (ReportDetailIntent) -> Unit
 ) {
 
     val tabTitles = listOf("요약", "원어민 표현", "전체 스크립트")
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     Column(
         modifier = Modifier
@@ -73,12 +74,12 @@ fun ReportDetailScreen(
 
         // 탭 뷰
         TabRow(
-            selectedTabIndex = selectedTabIndex,
+            selectedTabIndex = state.selectedTabIndex,
             backgroundColor = Color.Transparent,
             contentColor = Color.White,
             indicator = { tabPositions ->
                 TabRowDefaults.Indicator(
-                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                    modifier = Modifier.tabIndicatorOffset(tabPositions[state.selectedTabIndex]),
                     color = Color.White
                 )
             },
@@ -88,18 +89,18 @@ fun ReportDetailScreen(
         ) {
             tabTitles.forEachIndexed { index, title ->
                 Tab(
-                    selected = selectedTabIndex == index,
-                    onClick = { selectedTabIndex = index },
+                    selected = state.selectedTabIndex == index,
+                    onClick = { onIntent(ReportDetailIntent.SelectTab(index)) },
                     modifier = Modifier.weight(1f),
                     text = {
                         Text(
                             text = title,
-                            color = if (selectedTabIndex == index) Color.White else Color.White.copy(
+                            color = if (state.selectedTabIndex == index) Color.White else Color.White.copy(
                                 alpha = 0.6f
                             ),
                             fontSize = 14.sp, // 글씨 크기 조절
                             maxLines = 1, // 한 줄로 제한
-                            fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Normal,
+                            fontWeight = if (state.selectedTabIndex == index) FontWeight.Bold else FontWeight.Normal,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -127,21 +128,12 @@ fun ReportDetailScreen(
                     .padding(vertical = 20.dp)
                     .clip(RoundedCornerShape(16.dp))
             ) {
-                when (selectedTabIndex) {
-                    0 -> SummaryContent()
-                    1 -> NativeSpeakerContent()
-                    2 -> FullScriptContent()
+                when (state.selectedTabIndex) {
+                    0 -> SummaryContent(state.reportSummary)
+                    1 -> NativeSpeakerContent(state.nativeExpression)
+                    2 -> FullScriptContent(state.reportScript)
                 }
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ReportDetailPreview() {
-    ReportDetailScreen(
-        reportId = 101,
-        onBackClick = {}
-    )
 }

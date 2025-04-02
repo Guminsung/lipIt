@@ -28,7 +28,7 @@ val purpleLight = Color(0xFFE7D1F4)
 
 
 @Composable
-fun NativeSpeakerContent() {
+fun NativeSpeakerContent(nativeExpressions: List<NativeExpression>) {
 
     /**
      *     "nativeExpressions": [
