@@ -70,7 +70,7 @@ fun MyVoiceScreen(
                 shape = RectangleShape
             )
             .paint(
-                painter = painterResource(id = R.drawable.bg_myvoice),
+                painter = painterResource(id = R.drawable.bg_without_logo),
                 contentScale = ContentScale.FillBounds
             )
             .padding(24.dp)
@@ -228,8 +228,8 @@ fun MyVoiceScreen(
                 // Custom 음성
                 CustomVoiceScreen(
                     customVoices = state.myCustomVoiceList,
-                    onVoiceSelected = { voiceName, voiceUrl ->
-                        viewModel.onIntent(MyVoiceIntent.SelectVoice(voiceName, voiceUrl))
+                    onVoiceChange = { voiceId ->
+                        viewModel.onIntent(MyVoiceIntent.ChangeVoice(voiceId))
                     }
                 )
             }

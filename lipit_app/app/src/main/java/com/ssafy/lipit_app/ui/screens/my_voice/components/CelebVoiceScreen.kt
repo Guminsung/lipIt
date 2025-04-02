@@ -52,7 +52,6 @@ fun CelebVoiceScreen(
     pagerState: PagerState,
     page: Int,
     voice: CelabResponse,
-//    onVoiceSelected: (String, String) -> Unit,
     onVoiceChange: (Long) -> Unit
 ) {
 
