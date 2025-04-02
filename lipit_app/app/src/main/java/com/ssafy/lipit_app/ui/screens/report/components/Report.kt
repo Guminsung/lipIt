@@ -13,9 +13,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import com.ssafy.lipit_app.data.model.response_dto.report.ReportListResponse
+import com.ssafy.lipit_app.ui.screens.report.ReportIntent
 
 @Composable
-fun Report(report: ReportListResponse, onReportItemClick: (Long) -> Unit) {
+fun Report(report: ReportListResponse,  onReportItemClick: (Long) -> Unit) {
 
     // 카드가 뒤집혔는지 상태 저장
     var isFlipped by remember { mutableStateOf(false) }
@@ -46,7 +47,10 @@ fun Report(report: ReportListResponse, onReportItemClick: (Long) -> Unit) {
                     alpha = if (isFrontVisible) 1f else 0f
                 }
         ) {
-            ReportFront(report, onReportItemClick)
+            ReportFront(
+                report = report,
+                onReportItemClick = onReportItemClick
+            )
         }
 
         // 카드 뒷면 (앞면이 보일 때 숨김)
