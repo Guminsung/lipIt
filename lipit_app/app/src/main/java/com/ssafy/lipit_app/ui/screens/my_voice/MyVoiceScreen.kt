@@ -79,7 +79,7 @@ fun MyVoiceScreen(
             text = "My Voices",
             color = Color.White,
             fontWeight = FontWeight.Bold,
-            fontSize = 30.sp,
+            fontSize = 28.sp,
             modifier = Modifier.padding(top = 46.dp)
         )
 
@@ -159,7 +159,6 @@ fun MyVoiceScreen(
                 fontSize = 20.sp,
                 color = if (state.selectedTab == "Celebrity") Color.White else Color.White.copy(0.4f),
                 modifier = Modifier.clickable {
-                    // TODO:: Celebrity 선택 시 화면
                     viewModel.onIntent(MyVoiceIntent.SelectTab("Celebrity"))
                 }
             )
@@ -169,7 +168,6 @@ fun MyVoiceScreen(
                 fontSize = 20.sp,
                 color = if (state.selectedTab == "Custom") Color.White else Color.White.copy(0.4f),
                 modifier = Modifier.clickable {
-                    // TODO:: Custom 선택 시 화면
                     viewModel.onIntent(MyVoiceIntent.SelectTab("Custom"))
                 }
             )
