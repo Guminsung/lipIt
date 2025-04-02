@@ -2,7 +2,9 @@ package com.ssafy.lipit_app.ui.screens.my_voice.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,6 +28,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -34,11 +38,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
+import coil.compose.rememberAsyncImagePainter
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.data.model.response_dto.myvoice.CelabResponse
 import kotlin.math.absoluteValue
 
 @Composable
-fun CelebVoiceScreen(pagerState: PagerState, page: Int) {
+fun CelebVoiceScreen(
+    pagerState: PagerState,
+    page: Int,
+    voice: CelabResponse,
+    onVoiceSelected: (String, String) -> Unit
+) {
 
     // 카드가 뒤집혔는지 여부를 저장하는 상태
     var isFlipped by remember { mutableStateOf(false) }
@@ -67,8 +78,15 @@ fun CelebVoiceScreen(pagerState: PagerState, page: Int) {
         modifier = Modifier
             .fillMaxWidth()
             .height(450.dp)
-            .padding(horizontal = 16.dp,  vertical = 24.dp)
-            .clickable { isFlipped = !isFlipped },
+            .padding(horizontal = 16.dp, vertical = 24.dp)
+            .clickable {
+                isFlipped = !isFlipped
+
+                // 카드 앞면이 보이는 상태에서 클릭 시 음성 선택
+                if (!isFlipped) {
+                    onVoiceSelected(voice.voiceName, voice.customImageUrl)
+                }
+            },
         contentAlignment = Alignment.Center
     ) {
         // 카드 앞면
@@ -112,18 +130,53 @@ fun CelebVoiceScreen(pagerState: PagerState, page: Int) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Spacer(modifier = Modifier.height(32.dp))
 
-                    // 3D 캐릭터 이미지
-                    Image(
-//                        painter = painterResource(id = R.drawable.avatar_3d),
-                        painter = painterResource(id = R.drawable.bg_myvoice_card),
-                        contentDescription = "3D Avatar",
-                        modifier = Modifier
-                            .size(200.dp)
-                            .weight(1f),
-                        contentScale = ContentScale.Fit
-                    )
+                    Box() {
+                        if (voice.customImageUrl.isNotEmpty()) {
+                            Image(
+                                painter = rememberAsyncImagePainter(model = voice.customImageUrl),
+                                contentDescription = "3D Avatar",
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+
+                        } else {
+                            Image(
+                                painter = painterResource(id = R.drawable.avatar_3d),
+                                contentDescription = "3D Avatar",
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .background(
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.Transparent,
+                                            Color.Black.copy(alpha = 0.6f)
+                                        ),
+                                        startY = 0f,
+                                        endY = Float.POSITIVE_INFINITY
+                                    )
+                                )
+                        )
+
+                        Text(
+                            text = voice.voiceName,
+                            color = Color.White,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Light,
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(16.dp)
+                        )
+                    }
+
 
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -132,18 +185,23 @@ fun CelebVoiceScreen(pagerState: PagerState, page: Int) {
                             .fillMaxWidth()
                             .padding(bottom = 32.dp)
                     ) {
-                        Text(
-                            text = "Harry Potter",
-                            color = Color.White,
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+//                        Text(
+//                            text = voice.voiceName,
+//                            color = Color.White,
+//                            fontSize = 28.sp,
+//                            fontWeight = FontWeight.Bold
+//                        )
 
-                        Text(
-                            text = "the United Kingdom",
-                            color = Color.White.copy(alpha = 0.8f),
-                            fontSize = 16.sp
-                        )
+                        // 이미 선택된 음성이면 표시
+                        if (voice.activated) {
+                            Text(
+                                text = "현재 선택됨",
+                                color = Color(0xffA37BBD),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -158,8 +216,14 @@ fun CelebVoiceScreen(pagerState: PagerState, page: Int) {
                     alpha = if (rotation >= 90f) pageAlpha else 0f
                     cameraDistance = 12f * density // 카메라 거리 설정 추가
                     // 회전 중에 약간 축소하여 짤림 방지
-                    scaleX = 0.9f + (0.1f * (1f - ((rotation - 180f) / 90f).absoluteValue.coerceIn(0f, 1f)))
-                    scaleY = 0.9f + (0.1f * (1f - ((rotation - 180f) / 90f).absoluteValue.coerceIn(0f, 1f)))
+                    scaleX = 0.9f + (0.1f * (1f - ((rotation - 180f) / 90f).absoluteValue.coerceIn(
+                        0f,
+                        1f
+                    )))
+                    scaleY = 0.9f + (0.1f * (1f - ((rotation - 180f) / 90f).absoluteValue.coerceIn(
+                        0f,
+                        1f
+                    )))
                 }
                 .clip(RoundedCornerShape(32.dp))
                 .border(
@@ -173,7 +237,6 @@ fun CelebVoiceScreen(pagerState: PagerState, page: Int) {
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
-                // 뒷면 배경 이미지 (다른 배경을 사용하거나 동일한 배경 사용 가능)
                 Image(
                     painter = painterResource(id = R.drawable.bg_myvoice_card),
                     contentDescription = null,
@@ -191,32 +254,15 @@ fun CelebVoiceScreen(pagerState: PagerState, page: Int) {
                 ) {
 
                     Text(
-                        text = "Voice Details",
+                        text = voice.voiceName,
                         color = Color.White,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold
                     )
 
-                    Text(
-                        text = "This is duitmyeon",
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    Text(
-                        text = "Harry Potter's iconic British accent with a young, magical tone. Perfect for spells and adventures.",
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Normal
-                    )
 
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // 여기에 음성 관련 추가 정보나 컨트롤을 배치할 수 있습니다
-                    // 예: 음성 샘플 재생 버튼, 톤 조절 슬라이더 등
                 }
             }
         }
