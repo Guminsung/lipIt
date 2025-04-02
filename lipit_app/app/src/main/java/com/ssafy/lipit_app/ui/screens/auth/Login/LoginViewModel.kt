@@ -71,6 +71,10 @@ class LoginViewModel(private val context: Context) : ViewModel() {
             val result = authRepository.login(request)
 
             if (result.isSuccess) {
+                val rawJson = result.toString()
+                Log.d("LOGIN_JSON", "응답 내용: $rawJson")
+
+
                 val loginData = result.getOrNull()
 
                 loginData?.let { data ->
@@ -79,6 +83,12 @@ class LoginViewModel(private val context: Context) : ViewModel() {
                         "LoginViewModel",
                         "로그인 성공: ${data.email}, 토큰: ${data.accessToken.take(15)}..."
                     )
+                    SecureDataStore.getInstance(context).saveUserInfo(data)
+                    SharedPreferenceUtils.saveMemberId(data.memberId)
+
+                    // 사용자 이름 저장 -> 따로 api가 없음
+                    SharedPreferenceUtils.saveUserName(data.name)
+
                     SecureDataStore.getInstance(context).saveUserInfo(data)
                     SharedPreferenceUtils.saveMemberId(data.memberId)
 
