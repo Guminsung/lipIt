@@ -96,7 +96,6 @@ fun MainScreen(
         viewModel.loadDailySentence()
     }
 
-    //val state by viewModel.state.collectAsState()
     var selectedDay by remember { mutableStateOf(state.selectedDay) }
 
     Column(
@@ -109,6 +108,7 @@ fun MainScreen(
         UserInfoSection(state.userName, state, onIntent, state.level) // 상단의 유저 이름, 등급 부분
         TodaysSentence(state.sentenceOriginal, state.sentenceTranslated) // 오늘의 문장
 
+        // 이번주 call 일정 살펴보기
         WeeklyCallsSection(
             selectedDay = selectedDay, //state의 selectedDay -> screen 안에서 정의한 selectedDay로 변경
             callItems = state.callItems,
@@ -157,7 +157,12 @@ fun CallButton(onIntent: (MainIntent) -> Unit) {
 
 // 사용자 정보 (이름 & 등급)
 @Composable
-fun UserInfoSection(userName: String, state: MainState, onIntent: (MainIntent) -> Unit, level: Int) {
+fun UserInfoSection(
+    userName: String,
+    state: MainState,
+    onIntent: (MainIntent) -> Unit,
+    level: Int
+) {
     var showPopup by remember { mutableStateOf(false) } // 로그아웃 팝업 관련
 
     Row(
