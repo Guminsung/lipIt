@@ -172,9 +172,7 @@ class MainViewModel(private val context: Context) : ViewModel() {
 
     // [Weekly Calls: BottomSheet] 요일별 스케쥴 리스트
     private fun getWeeklyCallsSchedule() {
-        // TODO : 로그아웃 기능 구현 되면 수정
-//        val memberId = SharedPreferenceUtils.getMemberId()
-        val memberId: Long = 1
+        val memberId = SharedPreferenceUtils.getMemberId()
 
         viewModelScope.launch {
             try {
