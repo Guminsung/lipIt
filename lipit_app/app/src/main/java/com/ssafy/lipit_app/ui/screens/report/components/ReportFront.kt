@@ -59,7 +59,7 @@ fun ReportFront(
                 modifier = Modifier
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom  // 여기에 baseline 정렬 추가
+                verticalAlignment = Alignment.Bottom
             ) {
                 Text(
                     text = formatDate(report.createdAt),
@@ -93,7 +93,7 @@ fun ReportFront(
 
             Text(
                 "착신 통화 ${formatSeconds(report.callDuration)}",
-                color = Color.White,
+                color = Color.White.copy(0.8f),
                 fontSize = 15.sp,
             )
         }
@@ -152,7 +152,7 @@ fun ReportFront(
             )
             Text(
                 text = report.communicationSummary,
-                color = Color.White,
+                color = Color.White.copy(0.8f),
                 fontSize = 14.sp,
                 lineHeight = 24.sp
             )
@@ -169,7 +169,7 @@ fun ReportFront(
             )
             Text(
                 text = report.feedbackSummary,
-                color = Color.White,
+                color = Color.White.copy(0.8f),
                 fontSize = 14.sp,
                 lineHeight = 24.sp
             )

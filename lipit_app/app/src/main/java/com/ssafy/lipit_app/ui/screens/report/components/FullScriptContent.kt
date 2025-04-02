@@ -23,7 +23,10 @@ import com.ssafy.lipit_app.data.model.request_dto.report.ReportScript
 
 
 @Composable
-fun FullScriptContent() {
+fun FullScriptContent(
+    reportScripts:
+    List<ReportScript>
+) {
 
     LazyColumn(
         modifier = Modifier
@@ -104,11 +107,4 @@ fun ChatBubble(reportScript: ReportScript) {
             }
         }
     }
-}
-
-
-@Composable
-@Preview(showBackground = true)
-fun FullScriptPreview() {
-    FullScriptContent()
 }
