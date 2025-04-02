@@ -193,13 +193,6 @@ fun MainScreen(
                             WeeklyCallsScreen(
                                 state = state.weeklyCallsState,
                                 onIntent = { intent ->
-//                                    if (intent is WeeklyCallsIntent.OnEditSchedule) {
-//                                        onIntent(MainIntent.ShowRescheduleScreen(state.selectedSchedule!!))
-//                                    }
-//                                    if (intent is WeeklyCallsIntent.OnEditSchedule) {
-//                                        onIntent(MainIntent.SelectSchedule(intent.schedule))
-//                                        onIntent(MainIntent.ShowRescheduleScreen(intent.schedule))
-//                                    }
                                     when (intent) {
                                         is WeeklyCallsIntent.OnEditSchedule -> {
                                             onIntent(MainIntent.SelectSchedule(intent.schedule))
@@ -209,10 +202,8 @@ fun MainScreen(
                                         is WeeklyCallsIntent.OnChangeVoice -> {
                                             onIntent(MainIntent.ShowMyVoicesScreen)
                                         }
-
                                         else -> {}
                                     }
-
                                 },
                                 onMainIntent = onIntent
                             )
