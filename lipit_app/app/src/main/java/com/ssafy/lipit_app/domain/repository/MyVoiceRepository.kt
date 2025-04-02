@@ -43,7 +43,7 @@ class MyVoiceRepository {
 
     // 선택한 음성 조회
     suspend fun getVoice(memberId: Long)
-            : Result<CustomResponse> {
+            : Result<List<CustomResponse>> {
         return try {
             val response = RetrofitUtil.myVoiceService.getVoice(memberId)
             if (response.isSuccessful) {
@@ -57,10 +57,10 @@ class MyVoiceRepository {
     }
 
     // 기본 음성 선택
-    suspend fun takeVoice(memberId: Long, voiceId: Long)
+    suspend fun changeVoice(memberId: Long, voiceId: Long)
             : Result<VoiceTakeResponse> {
         return try {
-            val response = RetrofitUtil.myVoiceService.takeVoice(memberId, voiceId)
+            val response = RetrofitUtil.myVoiceService.changeVoice(memberId, voiceId)
             if (response.isSuccessful) {
                 Log.d("MyVoiceRepository", "기본 음성 선택: ${response.body()}")
             }

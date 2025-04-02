@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,8 +19,13 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.CelabResponse
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.CustomResponse
@@ -52,12 +59,9 @@ import mx.platacard.pagerindicator.PagerIndicator
 
 @Composable
 fun MyVoiceScreen(
-//    state: MyVoiceState,
-//    onIntent: (MyVoiceIntent) -> Unit
-    viewModel: MyVoiceViewModel
+    state: MyVoiceState,
+    onIntent: (MyVoiceIntent) -> Unit
 ) {
-
-    val state by viewModel.state.collectAsState()
 
     Column(
         modifier = Modifier
@@ -69,7 +73,7 @@ fun MyVoiceScreen(
                 shape = RectangleShape
             )
             .paint(
-                painter = painterResource(id = R.drawable.bg_myvoice),
+                painter = painterResource(id = R.drawable.bg_without_logo),
                 contentScale = ContentScale.FillBounds
             )
             .padding(24.dp)
@@ -78,7 +82,7 @@ fun MyVoiceScreen(
             text = "My Voices",
             color = Color.White,
             fontWeight = FontWeight.Bold,
-            fontSize = 30.sp,
+            fontSize = 28.sp,
             modifier = Modifier.padding(top = 46.dp)
         )
 
@@ -112,29 +116,38 @@ fun MyVoiceScreen(
                 modifier = Modifier
                     .padding(12.dp)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground), // 프로필 이미지
-                    contentDescription = "Profile Image",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clip(CircleShape)
-                        .background(Color.Gray)
-                )
+
+                if (state.selectedVoiceUrl.isNotEmpty()) {
+                    AsyncImage(
+                        model = state.selectedVoiceUrl,
+                        contentDescription = "profile image",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(CircleShape)
+                            .background(Color.Gray)
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground), // 프로필 이미지
+                        contentDescription = "Profile Image",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(CircleShape)
+                            .background(Color.Gray)
+                    )
+
+                }
 
                 Spacer(modifier = Modifier.width(20.dp))
-
+                // 선택 음성 부분
                 Column {
                     Text(
-                        text = "Harry Potter",
+                        text = state.selectedVoiceName,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
+                        fontSize = 24.sp,
                         color = Color.Black
-                    )
-                    Text(
-                        text = "the United Kingdom",
-                        fontSize = 14.sp,
-                        color = Color.Gray
                     )
                 }
             }
@@ -143,27 +156,57 @@ fun MyVoiceScreen(
         Spacer(modifier = Modifier.height(30.dp))
 
         // Celebrity Custom
-        Row {
-            Text(
-                text = "Celebrity",
-                fontSize = 20.sp,
-                color = if (state.selectedTab == "Celebrity") Color.White else Color.White.copy(0.4f),
-                modifier = Modifier.clickable {
-                    // TODO:: Celebrity 선택 시 화면
-                    viewModel.onIntent(MyVoiceIntent.SelectTab("Celebrity"))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom
+        ) {
+            Row {
+                Text(
+                    text = "Celebrity",
+                    fontSize = 20.sp,
+                    color = if (state.selectedTab == "Celebrity") Color.White else Color.White.copy(
+                        0.4f
+                    ),
+                    modifier = Modifier.clickable {
+                        onIntent(MyVoiceIntent.SelectTab("Celebrity"))
+                    }
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = "Custom",
+                    fontSize = 20.sp,
+                    color = if (state.selectedTab == "Custom") Color.White else Color.White.copy(
+                        0.4f
+                    ),
+                    modifier = Modifier.clickable {
+                        onIntent(MyVoiceIntent.SelectTab("Custom"))
+                    }
+                )
+
+
+            }
+
+            // Custom 탭이 선택된 경우에만 플러스 버튼 표시
+            if (state.selectedTab == "Custom") {
+                Button(
+                    onClick = {
+                        onIntent(MyVoiceIntent.NavigateToAddVoice)
+                    },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFD7B7EC)),
+                    modifier = Modifier.size(25.dp),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Custom Voice",
+                        tint = Color(0xFF431768),
+                        modifier = Modifier.size(25.dp)
+                    )
                 }
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = "Custom",
-                fontSize = 20.sp,
-                color = if (state.selectedTab == "Custom") Color.White else Color.White.copy(0.4f),
-                modifier = Modifier.clickable {
-                    // TODO:: Custom 선택 시 화면
-                    viewModel.onIntent(MyVoiceIntent.SelectTab("Custom"))
-                }
-            )
+            }
         }
+
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -178,8 +221,8 @@ fun MyVoiceScreen(
                             pagerState = pagerState,
                             page = page,
                             voice = state.myCelebrityVoiceList[page],
-                            onVoiceSelected = { voiceName, voiceUrl ->
-                                viewModel.onIntent(MyVoiceIntent.SelectVoice(voiceName, voiceUrl))
+                            onVoiceChange = { voiceId ->
+                                onIntent(MyVoiceIntent.ChangeVoice(voiceId))
                             }
                         )
                     }
@@ -218,19 +261,12 @@ fun MyVoiceScreen(
                 // Custom 음성
                 CustomVoiceScreen(
                     customVoices = state.myCustomVoiceList,
-                    onVoiceSelected = { voiceName, voiceUrl ->
-                        viewModel.onIntent(MyVoiceIntent.SelectVoice(voiceName, voiceUrl))
+                    onVoiceChange = { voiceId ->
+                        onIntent(MyVoiceIntent.ChangeVoice(voiceId))
                     }
                 )
             }
         }
 
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MyVoiceScreenPreview() {
-    val viewModel = MyVoiceViewModel()
-    MyVoiceScreen(viewModel = viewModel)
 }

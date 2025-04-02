@@ -27,7 +27,6 @@ class MyVoiceViewModel() : ViewModel() {
     }
 
     init {
-        Log.d("myVoiceViewModel", memberId.toString())
         loadInitialData()
     }
 
@@ -62,23 +61,28 @@ class MyVoiceViewModel() : ViewModel() {
                     loadCustomVoices()
                 }
             }
+
+            is MyVoiceIntent.ChangeVoice -> changeVoice(intent.voiceId)
+            is MyVoiceIntent.NavigateToAddVoice -> {}
         }
     }
 
     private fun loadInitialData() {
+        Log.d("MyVoiceViewModel", "로그 호출")
         viewModelScope.launch {
             try {
                 _state.update { it.copy(isLoading = true, errorMessage = null) }
 
                 // 1. 현재 선택된 음성 정보 가져오기
                 val selectedVoiceResult = voiceRepository.getVoice(memberId)
+                Log.d("MyVoiceViewModel", "API 응답: $selectedVoiceResult")
 
                 selectedVoiceResult.onSuccess { voice ->
                     // 2. 선택된 음성 정보 저장
                     _state.update { currentState ->
                         currentState.copy(
-                            selectedVoiceName = voice.voiceName,
-                            selectedVoiceUrl = voice.customImageUrl
+                            selectedVoiceName = voice[0].voiceName,
+                            selectedVoiceUrl = voice[0].customImageUrl
                         )
                     }
                 }
@@ -161,6 +165,37 @@ class MyVoiceViewModel() : ViewModel() {
                     it.copy(
                         isLoading = false,
                         errorMessage = e.message ?: "커스텀 목소리를 불러오는 중 오류가 발생했습니다."
+                    )
+                }
+            }
+        }
+    }
+
+    private fun changeVoice(voiceId: Long) {
+        viewModelScope.launch {
+            try {
+                _state.update { it.copy(isLoading = true, errorMessage = null) }
+
+                // 1. 음성 변경 API 호출
+                val result = voiceRepository.changeVoice(memberId, voiceId)
+                Log.d("MyVoiceViewModel", "changeVoice API 응답: $result")
+
+                result.onSuccess { response ->
+                    Log.d("MyVoiceViewModel", "음성 변경 성공, 데이터 다시 로드")
+                    loadInitialData()
+                }.onFailure { error ->
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = error.message ?: "음성 변경 중 오류가 발생했습니다."
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = e.message ?: "음성 변경 중 오류가 발생했습니다."
                     )
                 }
             }
