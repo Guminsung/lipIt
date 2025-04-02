@@ -63,6 +63,7 @@ class MyVoiceViewModel() : ViewModel() {
             }
 
             is MyVoiceIntent.ChangeVoice -> changeVoice(intent.voiceId)
+            is MyVoiceIntent.NavigateToAddVoice -> {}
         }
     }
 

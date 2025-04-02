@@ -59,12 +59,9 @@ import mx.platacard.pagerindicator.PagerIndicator
 
 @Composable
 fun MyVoiceScreen(
-//    state: MyVoiceState,
-//    onIntent: (MyVoiceIntent) -> Unit
-    viewModel: MyVoiceViewModel
+    state: MyVoiceState,
+    onIntent: (MyVoiceIntent) -> Unit
 ) {
-
-    val state by viewModel.state.collectAsState()
 
     Column(
         modifier = Modifier
@@ -172,7 +169,7 @@ fun MyVoiceScreen(
                         0.4f
                     ),
                     modifier = Modifier.clickable {
-                        viewModel.onIntent(MyVoiceIntent.SelectTab("Celebrity"))
+                        onIntent(MyVoiceIntent.SelectTab("Celebrity"))
                     }
                 )
                 Spacer(modifier = Modifier.width(16.dp))
@@ -183,7 +180,7 @@ fun MyVoiceScreen(
                         0.4f
                     ),
                     modifier = Modifier.clickable {
-                        viewModel.onIntent(MyVoiceIntent.SelectTab("Custom"))
+                        onIntent(MyVoiceIntent.SelectTab("Custom"))
                     }
                 )
 
@@ -193,7 +190,9 @@ fun MyVoiceScreen(
             // Custom 탭이 선택된 경우에만 플러스 버튼 표시
             if (state.selectedTab == "Custom") {
                 Button(
-                    onClick = { /* TODO: 새 음성 추가 로직 */ },
+                    onClick = {
+                        onIntent(MyVoiceIntent.NavigateToAddVoice)
+                    },
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFD7B7EC)),
                     modifier = Modifier.size(25.dp),
                     contentPadding = PaddingValues(0.dp)
@@ -223,7 +222,7 @@ fun MyVoiceScreen(
                             page = page,
                             voice = state.myCelebrityVoiceList[page],
                             onVoiceChange = { voiceId ->
-                                viewModel.onIntent(MyVoiceIntent.ChangeVoice(voiceId))
+                                onIntent(MyVoiceIntent.ChangeVoice(voiceId))
                             }
                         )
                     }
@@ -263,18 +262,11 @@ fun MyVoiceScreen(
                 CustomVoiceScreen(
                     customVoices = state.myCustomVoiceList,
                     onVoiceChange = { voiceId ->
-                        viewModel.onIntent(MyVoiceIntent.ChangeVoice(voiceId))
+                        onIntent(MyVoiceIntent.ChangeVoice(voiceId))
                     }
                 )
             }
         }
 
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MyVoiceScreenPreview() {
-    val viewModel = MyVoiceViewModel()
-    MyVoiceScreen(viewModel = viewModel)
 }

@@ -11,4 +11,6 @@ sealed class MyVoiceIntent {
 
     data class SelectTab(val tabName: String) : MyVoiceIntent()
     data class ChangeVoice(val voiceId: Long) : MyVoiceIntent()
+
+    object NavigateToAddVoice : MyVoiceIntent()
 }
