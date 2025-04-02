@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.report
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.lipit_app.domain.repository.ReportRepository
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+private const val TAG = "ReportDetailViewModel"
 class ReportDetailViewModel(reportId: Long) : ViewModel() {
 
     private val _state = MutableStateFlow(ReportDetailState())
@@ -73,10 +75,11 @@ class ReportDetailViewModel(reportId: Long) : ViewModel() {
                 _state.update { it.copy(isLoading = true, error = null) }
 
                 val result = reportRepository.getReportScript(reportId)
+                Log.d(TAG, "loadReportScript: $result")
                 result.onSuccess { scripts ->
                     _state.update { currentState ->
                         currentState.copy(
-                            reportScript = scripts,
+                            reportScript = scripts.script,
                             isLoading = false,
                             error = null
                         )
