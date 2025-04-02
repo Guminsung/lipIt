@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
@@ -34,16 +36,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.CustomResponse
 
 @Composable
 fun CustomVoiceScreen(
     customVoices: List<CustomResponse> = emptyList(),
-    onVoiceSelected: (String, String) -> Unit = { _, _ -> }
+    onVoiceChange: (Long) -> Unit
 ) {
 
-    // UI 그리는데 필요한 데이터 : 이미지, 음성 이름
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -66,14 +68,24 @@ fun CustomVoiceScreen(
                 Spacer(modifier = Modifier.height(70.dp))
             }
         } else {
-            // 커스텀 음성 목록 표시
-            customVoices.forEach { voice ->
-                CustomColumn(
-                    imageUrl = voice.customImageUrl,
-                    voiceName = voice.voiceName,
-                    onVoiceSelected = { onVoiceSelected(voice.voiceName, voice.customImageUrl) }
-                )
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize().padding(bottom =10.dp), // FloatingActionButton 공간 확보
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // 커스텀 음성 목록 표시
+                items(customVoices) { voice ->
+                    CustomColumn(
+                        voiceId = voice.voiceId,
+                        imageUrl = voice.customImageUrl,
+                        voiceName = voice.voiceName,
+                        onVoiceChange = { onVoiceChange(voice.voiceId) }
+                    )
+
+                    Spacer(modifier = Modifier.height(15.dp))
+                }
             }
+
         }
 
         Spacer(modifier = Modifier.height(30.dp))
@@ -97,9 +109,10 @@ fun CustomVoiceScreen(
 
 @Composable
 fun CustomColumn(
+    voiceId: Long,
     imageUrl: String,
     voiceName: String,
-    onVoiceSelected: () -> Unit
+    onVoiceChange: (Long) -> Unit
 ) {
 
     Row(
@@ -118,15 +131,30 @@ fun CustomColumn(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground), // 프로필 이미지
-                contentDescription = "Profile Image",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(CircleShape)
-                    .background(Color.Gray)
-            )
+
+
+            if (imageUrl.isNotEmpty()) {
+                Image(
+                    painter = rememberAsyncImagePainter(model = imageUrl),
+                    contentDescription = "3D Avatar",
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color.Gray),
+                    contentScale = ContentScale.Crop
+                )
+
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_launcher_foreground), // 프로필 이미지
+                    contentDescription = "Profile Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color.Gray)
+                )
+            }
 
             Text(
                 text = voiceName,
@@ -136,7 +164,7 @@ fun CustomColumn(
         }
 
         Button(
-            onClick = { onVoiceSelected() },
+            onClick = { onVoiceChange(voiceId) },
             colors = ButtonDefaults.buttonColors(Color.Transparent),
             border = BorderStroke(
                 width = 1.dp,
@@ -154,10 +182,4 @@ fun CustomColumn(
         }
 
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun CustomVoicePreview() {
-    CustomVoiceScreen()
 }
