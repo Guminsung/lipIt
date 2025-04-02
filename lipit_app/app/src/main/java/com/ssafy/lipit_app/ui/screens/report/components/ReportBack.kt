@@ -53,6 +53,7 @@ fun ReportBack(
             VideoPlayer(
                 videoUrl = report.celebVideoUrl,
                 isLooping = true,
+                isVisible = isVisible,
                 modifier = Modifier.fillMaxWidth()
             )
         } else {

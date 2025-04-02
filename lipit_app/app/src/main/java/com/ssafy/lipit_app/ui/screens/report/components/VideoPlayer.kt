@@ -41,7 +41,7 @@ fun VideoPlayer(
     var isError by remember { mutableStateOf(false) }
 
     // ExoPlayer 인스턴스 생성
-    val exoPlayer = remember {
+    val exoPlayer =  remember {
         ExoPlayer.Builder(context).build().apply {
             val mediaItem = videoUrl?.let { MediaItem.fromUri(it) }
             if (mediaItem != null) {
@@ -58,20 +58,15 @@ fun VideoPlayer(
             })
 
             prepare()
-            playWhenReady = isVisible
-            volume = if (isVisible) 1f else 0f
         }
     }
 
-    // isVisible 상태가 변경될 때마다 재생 상태와 볼륨 업데이트
     LaunchedEffect(isVisible) {
         if (isVisible) {
-            // 보이게 되면 처음부터 재생
             exoPlayer.seekTo(0)
             exoPlayer.playWhenReady = true
             exoPlayer.volume = 1f
         } else {
-            // 안 보이게 되면 일시 정지 및 음소거
             exoPlayer.playWhenReady = false
             exoPlayer.volume = 0f
         }
