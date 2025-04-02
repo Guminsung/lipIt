@@ -19,7 +19,7 @@ async def search_relevant_call_memory(
 
     return [
         {
-            "chunk_id": match.id,
+            "chunkId": match.id,
             "content": match.metadata.get("content", ""),
             "score": match.score,
         }

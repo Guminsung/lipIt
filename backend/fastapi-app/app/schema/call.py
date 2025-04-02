@@ -14,40 +14,35 @@ class Message(BaseModel):
 
 # 대화 시작 요청 DTO
 class StartCallRequest(BaseModel):
-    callRequestId: int
     memberId: int
-    voiceId: int
-    voiceAudioUrl: str
     topic: Optional[str] = None
 
 
 # 대화 시작 응답 DTO
 class StartCallResponse(BaseModel):
-    callId: int
+    calld: int
     startTime: str
     aiMessage: str
     aiMessageKor: Optional[str] = None
-    aiAudioUrl: str
 
 
 # 사용자 메시지 요청 DTO
 class UserMessageRequest(BaseModel):
+    callId: int
     userMessage: str
-    userMessageKor: Optional[str] = None
 
 
 # AI 메시지 응답 DTO
 class AIMessageResponse(BaseModel):
     aiMessage: str
     aiMessageKor: str
-    aiAudioUrl: str
     endTime: Optional[str] = None
     duration: Optional[int] = None
     reportCreated: Optional[bool] = None
 
 
 # 대화 종료 응답 DTO
-class EndCallResponse(BaseModel):  # 상속
+class EndCallResponse(BaseModel):
     endTime: str
     duration: int
     reportCreated: bool

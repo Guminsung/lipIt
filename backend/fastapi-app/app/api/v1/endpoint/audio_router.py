@@ -10,7 +10,7 @@ class AudioUploadResponse(BaseModel):
     url: str
 
 
-router = BaseRouter(prefix="/api/audio", tags=["Audio"])
+router = BaseRouter(prefix="/api/audio", tags=["음성(테스트용)"])
 
 
 router.api_doc(

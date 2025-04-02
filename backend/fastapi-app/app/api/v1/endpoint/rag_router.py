@@ -5,7 +5,7 @@ from app.exception.error_code import Error
 from app.schema.common import APIResponse
 from app.schema.rag import RAGTestRequest, RAGTestResponse
 
-router = BaseRouter(prefix="/api/rag", tags=["RAG"])
+router = BaseRouter(prefix="/api/rag", tags=["RAG(테스트용)"])
 
 router.api_doc(
     path="/test",
