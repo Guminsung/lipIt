@@ -33,6 +33,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.report.components.FullScriptContent
+import com.ssafy.lipit_app.ui.screens.report.components.NativeSpeakerContent
+import com.ssafy.lipit_app.ui.screens.report.components.SummaryContent
 
 @Composable
 fun ReportDetailScreen(
