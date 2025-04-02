@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -34,19 +35,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.data.model.response_dto.myvoice.CustomResponse
 
 @Composable
-fun CustomVoiceScreen() {
-
-    /**
-     * memerId             사용자 id
-     * memberVoiceId       보유 음성 ID
-     * voiceId             커스텀 음성 ID
-     * voiceName           음성 이름
-     * type                음성 타입(항상 CUSTOM)
-     * imageUrl            음성 파일 URL
-     * audioUrl            활성화 여부
-     */
+fun CustomVoiceScreen(
+    customVoices: List<CustomResponse> = emptyList(),
+    onVoiceSelected: (String, String) -> Unit = { _, _ -> }
+) {
 
     // UI 그리는데 필요한 데이터 : 이미지, 음성 이름
     Column(
@@ -54,9 +49,31 @@ fun CustomVoiceScreen() {
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        for (cnt in 1..3) {
-            CustomColumn(imageUrl = "", voiceName = "SSAFY")
-            Spacer(modifier = Modifier.height(15.dp))
+
+        // 커스텀 음성이 없는 경우
+        if (customVoices.isEmpty()) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "No Custom voices",
+                    color = Color.White,
+                    fontSize = 16.sp
+                )
+
+                Spacer(modifier = Modifier.height(70.dp))
+            }
+        } else {
+            // 커스텀 음성 목록 표시
+            customVoices.forEach { voice ->
+                CustomColumn(
+                    imageUrl = voice.customImageUrl,
+                    voiceName = voice.voiceName,
+                    onVoiceSelected = { onVoiceSelected(voice.voiceName, voice.customImageUrl) }
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(30.dp))
@@ -79,7 +96,11 @@ fun CustomVoiceScreen() {
 }
 
 @Composable
-fun CustomColumn(imageUrl: String, voiceName: String) {
+fun CustomColumn(
+    imageUrl: String,
+    voiceName: String,
+    onVoiceSelected: () -> Unit
+) {
 
     Row(
         modifier = Modifier
@@ -115,7 +136,7 @@ fun CustomColumn(imageUrl: String, voiceName: String) {
         }
 
         Button(
-            onClick = { /*TODO*/ },
+            onClick = { onVoiceSelected() },
             colors = ButtonDefaults.buttonColors(Color.Transparent),
             border = BorderStroke(
                 width = 1.dp,
