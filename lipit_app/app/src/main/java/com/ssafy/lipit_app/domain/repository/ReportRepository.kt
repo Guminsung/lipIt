@@ -4,6 +4,7 @@ import android.util.Log
 import com.ssafy.lipit_app.data.model.request_dto.report.NativeExpression
 import com.ssafy.lipit_app.data.model.request_dto.report.ReportScript
 import com.ssafy.lipit_app.data.model.request_dto.report.ReportSummary
+import com.ssafy.lipit_app.data.model.response_dto.report.NativeResponse
 import com.ssafy.lipit_app.data.model.response_dto.report.ReportListResponse
 import com.ssafy.lipit_app.data.model.response_dto.report.ScriptResponse
 import com.ssafy.lipit_app.data.remote.RetrofitUtil
@@ -60,7 +61,7 @@ class ReportRepository {
 
     // 리포트 원어민 표현 조회
     suspend fun getNativeExpressions(reportId: Long)
-            : Result<List<NativeExpression>> {
+            : Result<NativeResponse> {
         return try {
             val response = RetrofitUtil.reportService.getNativeExpressions(reportId)
             if (response.isSuccessful) {

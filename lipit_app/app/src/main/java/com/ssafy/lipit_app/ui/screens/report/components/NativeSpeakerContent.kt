@@ -42,31 +42,6 @@ fun NativeSpeakerContent(nativeExpressions: List<NativeExpression>) {
      *     ]
      */
 
-    // 더미 데이터
-    val nativeExpressions = listOf(
-        NativeExpression(
-            nativeExpressionId = 1,
-            mySentence = "I want to include AI features like hearing. I want to include AI features like hearing.",
-            aISentence = "I want to incorporate AI features such as auditory capabilities.",
-            keyword = "incorporate AI features",
-            keywordKorean = "AI 기능을 포함하다"
-        ),
-        // Add more sample items if needed
-        NativeExpression(
-            nativeExpressionId = 2,
-            mySentence = "Nice to meet you.",
-            aISentence = "Pleasure to make your acquaintance.",
-            keyword = "greeting",
-            keywordKorean = "인사"
-        ),
-        NativeExpression(
-            nativeExpressionId = 3,
-            mySentence = "What's your name?",
-            aISentence = "May I know what you're called?",
-            keyword = "introduction",
-            keywordKorean = "소개"
-        )
-    )
 
     Box(
         modifier = Modifier
@@ -152,47 +127,11 @@ fun NativeContent(expression: NativeExpression) {
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = expression.aISentence,
+                text = expression.AISentence,
                 color = Color.White,
                 fontSize = 14.sp,
                 lineHeight = 24.sp
             )
         }
     }
-}
-
-@Composable
-@Preview(showBackground = true)
-fun NativeContentPreview() {
-
-    // 더미 데이터
-    val nativeExpressions = listOf(
-        NativeExpression(
-            nativeExpressionId = 1,
-            mySentence = "How are you?",
-            aISentence = "How have you been?",
-            keyword = "greeting",
-            keywordKorean = "인사"
-        ),
-        // Add more sample items if needed
-        NativeExpression(
-            nativeExpressionId = 2,
-            mySentence = "Nice to meet you.",
-            aISentence = "Pleasure to make your acquaintance.",
-            keyword = "greeting",
-            keywordKorean = "인사"
-        ),
-        NativeExpression(
-            nativeExpressionId = 3,
-            mySentence = "What's your name?",
-            aISentence = "May I know what you're called?",
-            keyword = "introduction",
-            keywordKorean = "소개"
-        )
-    )
-
-    for (express in nativeExpressions) {
-        NativeContent(express)
-    }
-
 }
