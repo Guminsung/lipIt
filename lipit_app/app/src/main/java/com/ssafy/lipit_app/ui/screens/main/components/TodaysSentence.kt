@@ -75,7 +75,7 @@ fun TodaysSentence(sentenceOriginal: String, sentenceTranslated: String) {
                 Text(
                     text = "$sentenceTranslated  ✦˚",
                     style = TextStyle(
-                        fontSize = 12.sp,
+                        fontSize = 14.sp,
                         lineHeight = 20.sp,
                         fontWeight = FontWeight(700),
                         color = Color(0xFFFFFFFF),

@@ -97,15 +97,18 @@ class MainViewModel(private val context: Context) : ViewModel() {
         }
     }
 
+    // 사용자 레벨 아이콘 가져오기
     fun fetchUserLevel(memberId: Long) {
         viewModelScope.launch {
             val result =
                 com.ssafy.lipit_app.domain.repository.AuthRepository().getMemberLevel(memberId)
-            result.onSuccess { levelData ->
-                Log.d("UserLevel", "등급 정보: $levelData")
+            result.onSuccess { levelData->
+                Log.d("UserLevel", "등급 정보: ${levelData.level}, 전화 누적 시간 퍼센트: ${levelData.totalCallDurationPercentage}, 리포트 개수 퍼센트: ${levelData.totalReportCountPercentage}")
                 _state.update {
                     it.copy(
-                        level = levelData.level
+                        level = levelData.level,
+                        callPercent = levelData.totalCallDurationPercentage,
+                        reportPercent = levelData.totalReportCountPercentage
                     )
                 }
             }.onFailure { e ->

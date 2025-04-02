@@ -12,7 +12,6 @@ import com.ssafy.lipit_app.data.model.response_dto.auth.RefreshAccessTokenRespon
 import com.ssafy.lipit_app.data.model.response_dto.auth.SignupResponse
 import retrofit2.Response
 import retrofit2.http.Body
-import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
 
@@ -33,7 +32,7 @@ interface AuthService {
     @POST("auth/token")
     suspend fun refreshAccessToken(@Body request: RefreshAccessTokenRequest): Response<BaseResponse<RefreshAccessTokenResponse>>
 
-    // 회원 등급 조회
-    @GET("members/{memberId}/level")
+    // 회원 등급 조회 및 레벨 관련 정보 조회
+    @POST("members/{memberId}/level")
     suspend fun getMemberLevel(@Path("memberId") memberId: Long): Response<BaseResponse<LevelResponse>>
 }

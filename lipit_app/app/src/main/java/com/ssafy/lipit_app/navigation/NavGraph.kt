@@ -218,9 +218,7 @@ fun NavGraph(
                 "월"
             )
         ),
-        sentenceCnt = 90,
-        wordCnt = 50,
-        attendanceCnt = 20,
-        attendanceTotal = 20
+        reportPercent = 50,
+        callPercent = 120
     )
 }
