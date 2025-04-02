@@ -35,7 +35,7 @@ class AuthInterceptor(private val context: Context) : Interceptor {
         var token: String? = null
         try {
             token = runBlocking { SecureDataStore.getInstance(context).getAccessToken().first() }.toString()
-            Log.d("AuthInterceptor", "토큰 가져오기: ${token}...")
+            Log.d("AuthInterceptor", "토큰 가져오기: ${token}")
         } catch (e: Exception) {
             Log.e("AuthInterceptor", "토큰 가져오기 실패", e)
         }
@@ -52,6 +52,8 @@ class AuthInterceptor(private val context: Context) : Interceptor {
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
             .build()
+
+        Log.d("AuthInterceptor", "보내는 토큰: Bearer $token")
 
         val response = chain.proceed(request)
 

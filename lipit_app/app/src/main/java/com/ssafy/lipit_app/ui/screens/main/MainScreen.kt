@@ -125,7 +125,7 @@ fun MainScreen(
         ReportAndVoiceBtn(onIntent)
 
         // 레벨업 파트
-        NextLevel(state.sentenceCnt, state.wordCnt, state.attendanceCnt, state.attendanceTotal)
+        NextLevel(reportPercentage = state.reportPercent, callTimePercentage = state.callPercent)
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -216,38 +216,5 @@ fun getLevelIcon(level: Int): Int {
         else -> R.drawable.user_level_1 // 기본값
     }
 }
-
-
-
-//@RequiresApi(Build.VERSION_CODES.TIRAMISU)
-//@Preview(showBackground = true)
-//@Composable
-//fun MainScreenPreview() {
-//    MainScreen(
-//        state = MainState(
-//            userName = "Sarah",
-//            selectedDay = "월",
-//            callItems = listOf(
-//                CallItem(
-//                    id = 1,
-//                    name = "Harry Potter",
-//                    topic = "자유주제",
-//                    time = "08:00",
-//                    imageUrl = "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png",
-//                    "월"
-//                )
-//            ),
-//            sentenceCnt = 50,
-//            wordCnt = 10,
-//            attendanceCnt = 20,
-//            attendanceTotal = 20,
-//            sentenceOriginal = "With your talent and hard work, sky’s the limit!",
-//            sentenceTranslated = "너의 재능과 노력이라면, 한계란 없지!",
-//        ),
-//        onIntent = { },
-//        viewModel = MainViewModel(context),
-//        onSuccess = {}
-//    )
-//}
 
 
