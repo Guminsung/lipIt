@@ -46,10 +46,10 @@ fun CustomVoiceScreen(
     onVoiceChange: (Long) -> Unit
 ) {
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        contentAlignment = Alignment.BottomCenter
     ) {
 
         // 커스텀 음성이 없는 경우
@@ -70,7 +70,9 @@ fun CustomVoiceScreen(
         } else {
 
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(bottom =10.dp), // FloatingActionButton 공간 확보
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // 커스텀 음성 목록 표시
@@ -86,21 +88,6 @@ fun CustomVoiceScreen(
                 }
             }
 
-        }
-
-        Spacer(modifier = Modifier.height(30.dp))
-
-        FloatingActionButton(
-            onClick = { /*TODO*/ },
-            modifier = Modifier.padding(bottom = 16.dp),
-            backgroundColor = Color(0xffA37BBD),
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Add Custom Voice",
-                tint = Color(0xff603981),
-                modifier = Modifier.size(30.dp)
-            )
         }
 
     }

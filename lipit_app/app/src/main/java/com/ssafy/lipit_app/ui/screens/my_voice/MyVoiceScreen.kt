@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,8 +19,13 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -153,25 +159,55 @@ fun MyVoiceScreen(
         Spacer(modifier = Modifier.height(30.dp))
 
         // Celebrity Custom
-        Row {
-            Text(
-                text = "Celebrity",
-                fontSize = 20.sp,
-                color = if (state.selectedTab == "Celebrity") Color.White else Color.White.copy(0.4f),
-                modifier = Modifier.clickable {
-                    viewModel.onIntent(MyVoiceIntent.SelectTab("Celebrity"))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom
+        ) {
+            Row {
+                Text(
+                    text = "Celebrity",
+                    fontSize = 20.sp,
+                    color = if (state.selectedTab == "Celebrity") Color.White else Color.White.copy(
+                        0.4f
+                    ),
+                    modifier = Modifier.clickable {
+                        viewModel.onIntent(MyVoiceIntent.SelectTab("Celebrity"))
+                    }
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = "Custom",
+                    fontSize = 20.sp,
+                    color = if (state.selectedTab == "Custom") Color.White else Color.White.copy(
+                        0.4f
+                    ),
+                    modifier = Modifier.clickable {
+                        viewModel.onIntent(MyVoiceIntent.SelectTab("Custom"))
+                    }
+                )
+
+
+            }
+
+            // Custom 탭이 선택된 경우에만 플러스 버튼 표시
+            if (state.selectedTab == "Custom") {
+                Button(
+                    onClick = { /* TODO: 새 음성 추가 로직 */ },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFD7B7EC)),
+                    modifier = Modifier.size(25.dp),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Custom Voice",
+                        tint = Color(0xFF431768),
+                        modifier = Modifier.size(25.dp)
+                    )
                 }
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = "Custom",
-                fontSize = 20.sp,
-                color = if (state.selectedTab == "Custom") Color.White else Color.White.copy(0.4f),
-                modifier = Modifier.clickable {
-                    viewModel.onIntent(MyVoiceIntent.SelectTab("Custom"))
-                }
-            )
+            }
         }
+
 
         Spacer(modifier = Modifier.height(16.dp))
 
