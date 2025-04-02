@@ -47,7 +47,7 @@ fun LoginScreen(
 
     LaunchedEffect(state.isLoginSuccess) {
         if (state.isLoginSuccess) {
-            Log.d("login", "LaunchedEffect: onSuccess 호출됨")
+            Log.d("auth", "LaunchedEffect: onSuccess 호출됨")
             Toast.makeText(context, "로그인 성공!", Toast.LENGTH_SHORT).show()
             onSuccess()
             onIntent(LoginIntent.OnLoginHandled)

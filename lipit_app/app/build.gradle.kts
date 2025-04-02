@@ -12,7 +12,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
-
 }
 
 android {
@@ -170,5 +169,6 @@ dependencies {
     //바텀시트 구현 관련
     implementation(platform("androidx.compose:compose-bom:2023.06.01"))
 
-
+    //FCM 관련
+    apply(plugin = "com.google.gms.google-services")
 }

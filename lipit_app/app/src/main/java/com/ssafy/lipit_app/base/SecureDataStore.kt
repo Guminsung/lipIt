@@ -52,7 +52,7 @@ class SecureDataStore(private val context: Context) {
             prefs[ACCESS_TOKEN_KEY] = response.accessToken
             prefs[REFRESH_TOKEN_KEY] = response.refreshToken
             prefs[MEMBER_ID_KEY] = response.memberId
-            prefs[USER_NAME_KEY] = response.username
+            prefs[USER_NAME_KEY] = response.name
             prefs[EMAIL_KEY] = response.email
         }
     }
