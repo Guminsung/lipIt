@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.report
+package com.ssafy.lipit_app.ui.screens.report.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
