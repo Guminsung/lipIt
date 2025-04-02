@@ -26,8 +26,9 @@ import androidx.compose.ui.window.Dialog
 
 @Composable
 fun DeleteCallDialog(
+    scheduleId: Long,
     onDismiss: () -> Unit,
-    onConfirm: () -> Unit
+    onConfirm: (Long) -> Unit
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Box(
@@ -75,7 +76,9 @@ fun DeleteCallDialog(
                             .height(40.dp)
                             .clip(RoundedCornerShape(10.dp))
                             .background(Color(0xFFD7D8DA))
-                            .clickable { onDismiss() },
+                            .clickable {
+                                onDismiss()
+                                       },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -96,7 +99,9 @@ fun DeleteCallDialog(
                             .height(40.dp)
                             .clip(RoundedCornerShape(10.dp))
                             .background(Color(0xFFA37BBD))
-                            .clickable { onConfirm() },
+                            .clickable {
+                                onConfirm(scheduleId)
+                                       },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(

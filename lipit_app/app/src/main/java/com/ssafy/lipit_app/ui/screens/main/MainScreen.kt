@@ -43,7 +43,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceScreen
+import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceState
 import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallScreen
+import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallState
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.CallSchedule
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsIntent
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsScreen
@@ -72,9 +75,8 @@ fun MainScreen(
             bottomSheetState.hide()
         }
     }
-    // BottomSheet 닫힘 감지 코드 : 다른영역을 터치해서 닫았을 때에도 감지하고 변수값을 변경시켜줘야함
     androidx.compose.runtime.LaunchedEffect(bottomSheetState.isVisible) {
-        if (!bottomSheetState.isVisible && state.isSettingsSheetVisible) {
+        if (!bottomSheetState.isVisible) { // && state.isSettingsSheetVisible
             onIntent(MainIntent.OnCloseSettingsSheet)
             onIntent(MainIntent.ResetBottomSheetContent)
         }
@@ -100,6 +102,9 @@ fun MainScreen(
             Toast.makeText(context, "한 번 더 누르면 종료됩니다.", Toast.LENGTH_SHORT).show()
         }
     }
+
+    // ***** BottomSheet 분기를위한 필드
+    val editVoiceState: EditVoiceState = EditVoiceState()
 
     // 1. (default: hide) BottomSheet 3가지 종류 : 일주일 스케줄, 수정, 보유 음성
     // 2. (Base) MainScreen
@@ -128,34 +133,81 @@ fun MainScreen(
                             .background(Color.LightGray, RoundedCornerShape(2.dp))
                     )
 
-                    // ✅ 여기서 상태에 따라 바텀시트 내용 분기!
+                    // 상태에 따라 바텀시트 내용 분기
                     when (state.bottomSheetContent) {
                         BottomSheetContent.WEEKLY_CALLS -> {
                             WeeklyCallsScreen(
                                 state = state.weeklyCallsState,
                                 onIntent = { intent ->
-                                    if (intent is WeeklyCallsIntent.OnEditSchedule) {
-                                        onIntent(MainIntent.ShowRescheduleScreen)
+//                                    if (intent is WeeklyCallsIntent.OnEditSchedule) {
+//                                        onIntent(MainIntent.ShowRescheduleScreen(state.selectedSchedule!!))
+//                                    }
+//                                    if (intent is WeeklyCallsIntent.OnEditSchedule) {
+//                                        onIntent(MainIntent.SelectSchedule(intent.schedule))
+//                                        onIntent(MainIntent.ShowRescheduleScreen(intent.schedule))
+//                                    }
+                                    when (intent) {
+                                        is WeeklyCallsIntent.OnEditSchedule -> {
+                                            onIntent(MainIntent.SelectSchedule(intent.schedule))
+                                            onIntent(MainIntent.ShowRescheduleScreen(intent.schedule))
+                                        }
+                                        is WeeklyCallsIntent.OnChangeVoice -> {
+                                            onIntent(MainIntent.ShowMyVoicesScreen)
+                                        }
+                                        else -> {}
                                     }
-                                }
+
+                                },
+                                onMainIntent = onIntent
                             )
                         }
 
                         BottomSheetContent.RESCHEDULE_CALL -> {
-                            Log.d("TAG", "MainScreen: 스케줄 수정 화면 보여짐")
-//                            EditCallScreen(
-//                                state = state.weeklyCallsState,
-//                                onIntent = { intent ->
-//                                    if (intent is WeeklyCallsIntent.OnEditSchedule) {
-//                                        onIntent(MainIntent.ShowRescheduleScreen)
-//                                    }
-//                                }
-//                            )
-
+                            val schedule = state.selectedSchedule
+                            Log.d("TAG", "MainScreen 시간: ${schedule!!.scheduledTime}")
+                            EditCallScreen(
+                                schedule = schedule,
+                                state = EditCallState(
+                                    isFreeModeSelected = false,
+                                    isCategoryModeSelected = false,
+                                    callScheduleId = schedule!!.callScheduleId,
+                                    scheduledTime = schedule.scheduledTime,
+                                    selectedCategory = schedule.topicCategory,
+                                ),
+                                onIntent = { intent ->
+                                    // 인텐트 처리
+                                    Log.d("TAG", "MainScreen: 수정에서 이벤트 밠ㅇ")
+                                },
+                                onBack = {
+//                                    onIntent(MainIntent.ShowWeeklyCallScreen)
+                                    onIntent(MainIntent.ShowWeeklyCallsScreen)
+                                },
+                                onSuccess = {
+                                    onIntent(MainIntent.ScheduleChanged)
+                                    onIntent(MainIntent.OnCloseSettingsSheet)
+                                }
+                            )
                         }
 
                         BottomSheetContent.MY_VOICES -> {
-
+                            EditVoiceScreen(
+                                state = EditVoiceState(
+                                    selectedVoiceName = "Gandalf",
+                                    selectedVoiceUrl = "https://example.com/gandalf.mp3",
+                                    celebrityVoices = listOf(/* ... */),
+                                    myCustomVoices = listOf(/* ... */)
+                                ), // MainState에서 정의된 값
+                                onIntent = { intent ->
+                                    // 필요하면 MainIntent로 감싸서 위임할 수도 있음
+                                    // ex) onIntent(MainIntent.SomeIntent(intent))
+                                },
+                                onBack = {
+                                    onIntent(MainIntent.OnCloseSettingsSheet)
+                                },
+                                onClickAddVoice = {
+//                                    onIntent(MainIntent.OnAddVoiceClicked)
+                                }
+                            )
                         }
                     }
                 }

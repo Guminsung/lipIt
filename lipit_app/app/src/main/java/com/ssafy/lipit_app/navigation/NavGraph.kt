@@ -131,7 +131,8 @@ fun NavGraph(
 
             WeeklyCallsScreen(
                 state = state.weeklyState,
-                onIntent = { viewModel.onIntent(it) }
+                onIntent = { viewModel.onIntent(it) },
+                onMainIntent = {}
             )
         }
 

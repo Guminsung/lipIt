@@ -5,6 +5,7 @@ import com.ssafy.lipit_app.data.model.request_dto.auth.LoginRequest
 import com.ssafy.lipit_app.data.model.request_dto.auth.LogoutRequest
 import com.ssafy.lipit_app.data.model.request_dto.auth.RefreshAccessTokenRequest
 import com.ssafy.lipit_app.data.model.request_dto.auth.SignUpRequest
+import com.ssafy.lipit_app.data.model.request_dto.schedule.ScheduleCreateRequest
 import com.ssafy.lipit_app.data.model.response_dto.auth.LevelResponse
 import com.ssafy.lipit_app.data.model.response_dto.auth.LoginResponse
 import com.ssafy.lipit_app.data.model.response_dto.auth.LogoutResponse
@@ -42,6 +43,64 @@ class ScheduleRepository {
             Result.failure(e)
         }
     }
+
+    // 스케줄 추가
+    suspend fun createSchedule(
+        memberId: Long,
+        scheduleDay: String,
+        scheduledTime: String,
+        topicCategory: String
+    ): Result<Unit> {
+        return try {
+            val request = ScheduleCreateRequest(
+                scheduledDay = scheduleDay,
+                scheduledTime = scheduledTime,
+                topicCategory = topicCategory
+            )
+            val response = RetrofitUtil.scheduleService.createSchedule(request)
+
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                val error = response.errorBody()?.string()
+                Result.failure(Exception("일정 생성 실패: $error"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // 수정
+    suspend fun updateSchedule(
+        callScheduleId: Long,
+        memberId: Long,
+        scheduleDay: String,
+        scheduledTime: String,
+        topicCategory: String
+    ): Result<Unit> {
+        return try {
+            val request = ScheduleCreateRequest(
+                scheduledDay = scheduleDay,
+                scheduledTime = scheduledTime,
+                topicCategory = topicCategory
+            )
+            val response = RetrofitUtil.scheduleService.updateSchedule(
+                callScheduleId = callScheduleId,
+                memberId = memberId,
+                request = request
+            )
+
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                val error = response.errorBody()?.string()
+                Result.failure(Exception("일정 수정 실패: $error"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
 
 
 }

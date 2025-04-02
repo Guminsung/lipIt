@@ -3,13 +3,10 @@ package com.ssafy.lipit_app.ui.screens.main
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
-import com.ssafy.lipit_app.data.model.request_dto.auth.SignUpRequest
 import com.ssafy.lipit_app.data.model.response_dto.schedule.TopicCategory
 import com.ssafy.lipit_app.domain.repository.ScheduleRepository
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.CallSchedule
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsState
-import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import com.ssafy.lipit_app.util.sortSchedulesByDay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -53,12 +50,35 @@ class MainViewModel : ViewModel() {
                 }
             }
 
-            // 04.02 화면저환 위해 추가 test
+            // BottomSheet: 종류 변경
             is MainIntent.ShowWeeklyCallsScreen -> {
                 _state.update { it.copy(bottomSheetContent = BottomSheetContent.WEEKLY_CALLS) }
             }
+            // 스케줄 변경할 아이템 선택
+            is MainIntent.SelectSchedule -> {
+                _state.update {
+                    it.copy(selectedSchedule = intent.schedule)
+                }
+            }
             is MainIntent.ShowRescheduleScreen -> {
-                _state.update { it.copy(bottomSheetContent = BottomSheetContent.RESCHEDULE_CALL) }
+                _state.update {
+                    it.copy(
+                        bottomSheetContent = BottomSheetContent.RESCHEDULE_CALL,
+                        selectedSchedule = intent.schedule
+                    )
+                }
+            }
+            is MainIntent.ShowMyVoicesScreen -> {
+                _state.update { it.copy(bottomSheetContent = BottomSheetContent.MY_VOICES) }
+
+            }
+
+            is MainIntent.DeleteSchedule -> {
+                deleteScheduleAndReload(intent.scheduleId)
+            }
+
+            is MainIntent.ScheduleChanged -> {
+                getWeeklyCallsSchedule()
             }
 
             else -> {
@@ -109,6 +129,24 @@ class MainViewModel : ViewModel() {
 
             } catch (e: Exception) {
                 println("예외 발생: ${e.message}")
+            }
+        }
+    }
+
+    private fun deleteScheduleAndReload(scheduleId: Long) {
+//        val memberId = SharedPreferenceUtils.getMemberId()
+        val memberId = 1L
+
+        viewModelScope.launch {
+            val result = scheduleRepository.deleteSchedule(
+                callScheduleId = scheduleId.toLong(),
+                memberId = memberId
+            )
+
+            if (result.isSuccess) {
+                getWeeklyCallsSchedule() // 삭제 후 다시 조회
+            } else {
+                Log.e("MainViewModel", "삭제 실패: ${result.exceptionOrNull()?.message}")
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.main
 
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.CallSchedule
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsIntent
 
 sealed interface MainIntent {
@@ -16,7 +17,18 @@ sealed interface MainIntent {
     object OnCloseSettingsSheet : MainIntent
     object ResetBottomSheetContent : MainIntent
 
+
+    data class SelectSchedule(val schedule: CallSchedule) : MainIntent
+    data class ShowRescheduleScreen(val schedule: CallSchedule) : MainIntent
     object ShowWeeklyCallsScreen : MainIntent
-    object ShowRescheduleScreen : MainIntent
+
+    // 스케줄 삭제 후, 리스트 갱신 이벤트를 받기 위해 정의
+    data class DeleteSchedule(val scheduleId: Long) : MainIntent
+
+    // 스케줄 추가 혹은 삭제 했을 때 이벤트 받기 위해 정의
+    object ScheduleChanged : MainIntent
+
+//    object ShowRescheduleScreen : MainIntent
+
     object ShowMyVoicesScreen: MainIntent
 }
