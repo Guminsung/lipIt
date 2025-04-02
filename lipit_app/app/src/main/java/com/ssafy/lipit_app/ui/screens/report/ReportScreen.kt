@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.response_dto.report.ReportListResponse
+import com.ssafy.lipit_app.ui.screens.report.components.Report
 import com.ssafy.lipit_app.ui.screens.report.components.ReportBack
 import com.ssafy.lipit_app.ui.screens.report.components.ReportFront
 
@@ -80,7 +81,7 @@ fun ReportScreen(
                 // 리포트 내용
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 16.dp),
+                    contentPadding = PaddingValues(bottom = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     items(state.totalReportList) { reports ->
@@ -121,55 +122,7 @@ fun ReportScreen(
     }
 }
 
-@Composable
-fun Report(report: ReportListResponse, onReportItemClick: (Long) -> Unit) {
 
-    // 카드가 뒤집혔는지 상태 저장
-    var isFlipped by remember { mutableStateOf(false) }
-
-    // 회전 애니메이션 값 계산
-    val rotation by animateFloatAsState(
-        targetValue = if (isFlipped) 180f else 0f,
-        animationSpec = tween(durationMillis = 500),
-        label = "rotationAnimation"
-    )
-
-    val isFrontVisible = rotation <= 90f
-    val isBackVisible = rotation > 90f
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { isFlipped = !isFlipped }
-    ) {
-
-        // 카드 앞면 (뒤집혔을 때 숨김)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .graphicsLayer {
-                    rotationY = rotation
-                    cameraDistance = 12f * density
-                    alpha = if (isFrontVisible) 1f else 0f
-                }
-        ) {
-            ReportFront(report, onReportItemClick)
-        }
-
-        // 카드 뒷면 (앞면이 보일 때 숨김)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .graphicsLayer {
-                    rotationY = rotation - 180f
-                    cameraDistance = 12f * density
-                    alpha = if (isBackVisible) 1f else 0f
-                }
-        ) {
-            ReportBack(report, isVisible = isBackVisible)
-        }
-    }
-}
 
 
 @Composable
