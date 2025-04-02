@@ -58,14 +58,23 @@ fun VideoPlayer(
             })
 
             prepare()
-            playWhenReady = true
+            playWhenReady = isVisible
+            volume = if (isVisible) 1f else 0f
         }
     }
 
     // isVisible 상태가 변경될 때마다 재생 상태와 볼륨 업데이트
     LaunchedEffect(isVisible) {
-        exoPlayer.playWhenReady = isVisible
-        exoPlayer.volume = if (isVisible) 1f else 0f
+        if (isVisible) {
+            // 보이게 되면 처음부터 재생
+            exoPlayer.seekTo(0)
+            exoPlayer.playWhenReady = true
+            exoPlayer.volume = 1f
+        } else {
+            // 안 보이게 되면 일시 정지 및 음소거
+            exoPlayer.playWhenReady = false
+            exoPlayer.volume = 0f
+        }
     }
 
     // 화면에서 벗어날 때 플레이어 해제
