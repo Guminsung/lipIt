@@ -57,9 +57,9 @@ class Error:
     )
 
     # Member
-    MEMBER_NOT_FOUND = ("MEMBER-001", "사용자를 찾을 수 없습니다.")
-    MEMBER_NO_SELECTED_VOICE = ("MEMBER-002", "선택된 음성이 없습니다.")
+    MEMBER_NOT_FOUND = ErrorCode("MEMBER-001", "사용자를 찾을 수 없습니다.")
+    MEMBER_NO_SELECTED_VOICE = ErrorCode("MEMBER-002", "선택된 음성이 없습니다.")
 
     # Voice
-    VOICE_NOT_FOUND = ("VOICE-001", "해당 음성을 찾을 수 없습니다.")
-    VOICE_AUDIO_URL_NOT_FOUND = ("VOICE-002", "해당 음성의 URL이 없습니다.")
+    VOICE_NOT_FOUND = ErrorCode("VOICE-001", "해당 음성을 찾을 수 없습니다.")
+    VOICE_AUDIO_URL_NOT_FOUND = ErrorCode("VOICE-002", "해당 음성의 URL이 없습니다.")
