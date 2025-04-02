@@ -34,6 +34,7 @@ import com.ssafy.lipit_app.ui.screens.main.MainIntent
 import com.ssafy.lipit_app.ui.screens.main.MainScreen
 import com.ssafy.lipit_app.ui.screens.main.MainState
 import com.ssafy.lipit_app.ui.screens.main.MainViewModel
+import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceIntent
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceScreen
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceViewModel
 import com.ssafy.lipit_app.ui.screens.report.ReportDetailScreen
@@ -137,7 +138,18 @@ fun NavGraph(
             val state by viewModel.state.collectAsState()
 
             MyVoiceScreen(
-                viewModel = viewModel
+                state = state,
+                onIntent = { intent ->
+                    when (intent) {
+                        is MyVoiceIntent.NavigateToAddVoice -> {
+                            navController.navigate("add_voice")
+                        }
+
+                        else -> {
+                            viewModel.onIntent(intent)
+                        }
+                    }
+                }
             )
         }
 
