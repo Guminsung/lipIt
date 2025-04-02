@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,6 +19,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
@@ -28,6 +30,7 @@ fun TodaysSentence(sentenceOriginal: String, sentenceTranslated: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .wrapContentHeight()
             .padding(top = 9.dp),
     ) {
         // 배경
@@ -37,13 +40,13 @@ fun TodaysSentence(sentenceOriginal: String, sentenceTranslated: String) {
             contentScale = ContentScale.FillWidth,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(110.dp)
+                .wrapContentHeight()
         )
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(110.dp),
+                .wrapContentHeight()
 
             ) {
             // 오늘의 문장 원문 + 번역 텍스트
@@ -51,7 +54,8 @@ fun TodaysSentence(sentenceOriginal: String, sentenceTranslated: String) {
                 modifier = Modifier
                     .weight(1f)
                     .align(Alignment.CenterVertically)
-                    .padding(top = 21.dp, start = 27.dp, bottom = 21.dp, end = 6.dp)
+                    .padding(top = 14.dp, start = 27.dp, bottom = 21.dp, end = 6.dp)
+                    .wrapContentHeight() // 텍스트 높이만큼 늘어나게 설정
             ) {
                 Text(
                     text = sentenceOriginal,
@@ -60,7 +64,10 @@ fun TodaysSentence(sentenceOriginal: String, sentenceTranslated: String) {
                         lineHeight = 20.sp,
                         fontWeight = FontWeight(400),
                         color = Color(0xFFFFFFFF),
-                    )
+                    ),
+                    maxLines = Int.MAX_VALUE, // 줄 수 제한 삭제
+                    overflow = TextOverflow.Clip, // 넘쳐도 글자 자르지 않음
+                    softWrap = true // 줄바꿈 허용
                 )
 
                 Spacer(modifier = Modifier.height(7.dp))
@@ -68,11 +75,14 @@ fun TodaysSentence(sentenceOriginal: String, sentenceTranslated: String) {
                 Text(
                     text = "$sentenceTranslated  ✦˚",
                     style = TextStyle(
-                        fontSize = 14.sp,
+                        fontSize = 12.sp,
                         lineHeight = 20.sp,
                         fontWeight = FontWeight(700),
                         color = Color(0xFFFFFFFF),
-                    )
+                    ),
+                    maxLines = Int.MAX_VALUE, // 줄 수 제한 삭제
+                    overflow = TextOverflow.Clip, // 넘쳐도 글자 자르지 않음
+                    softWrap = true // 줄바꿈 허용
                 )
             }
 
