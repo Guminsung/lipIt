@@ -3,6 +3,7 @@ package com.ssafy.lipit_app.ui.screens.my_voice.components
 import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -11,6 +12,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -78,171 +82,184 @@ fun CelebVoiceScreen(
     )
 
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(450.dp)
-            .padding(horizontal = 16.dp, vertical = 24.dp)
-            .clickable {
-                isFlipped = !isFlipped
-            },
-        contentAlignment = Alignment.Center
-    ) {
-        // 카드 앞면
-        Card(
-            Modifier
-                .fillMaxWidth()
-                .graphicsLayer {
-                    // 페이저 효과와 뒤집기 효과 결합
-                    alpha = if (rotation < 90f) pageAlpha else 0f
-                    rotationY = rotation
-                    cameraDistance = 12f * density // 카메라 거리 설정 추가
-                    // 회전 중에 약간 축소하여 짤림 방지
-                    scaleX = 0.9f + (0.1f * (1f - (rotation / 90f).absoluteValue.coerceIn(0f, 1f)))
-                    scaleY = 0.9f + (0.1f * (1f - (rotation / 90f).absoluteValue.coerceIn(0f, 1f)))
-                }
-                .clip(RoundedCornerShape(32.dp))
-                .border(
-                    width = 1.dp,
-                    color = Color.White,
-                    shape = RoundedCornerShape(32.dp)
-                ),
-            shape = RoundedCornerShape(32.dp),
-        ) {
+    Column {
 
-            Box(
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center,
+        Spacer(modifier = Modifier.height(30.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(350.dp)
+                .padding(horizontal = 16.dp, vertical = 24.dp)
+                .clickable {
+                    isFlipped = !isFlipped
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            // 카드 앞면
+            Card(
+                Modifier
+                    .fillMaxWidth()
+                    .graphicsLayer {
+                        // 페이저 효과와 뒤집기 효과 결합
+                        alpha = if (rotation < 90f) pageAlpha else 0f
+                        rotationY = rotation
+                        cameraDistance = 12f * density // 카메라 거리 설정 추가
+                        // 회전 중에 약간 축소하여 짤림 방지
+                        scaleX =
+                            0.9f + (0.1f * (1f - (rotation / 90f).absoluteValue.coerceIn(0f, 1f)))
+                        scaleY =
+                            0.9f + (0.1f * (1f - (rotation / 90f).absoluteValue.coerceIn(0f, 1f)))
+                    }
+                    .clip(RoundedCornerShape(32.dp))
+                    .border(
+                        width = 1.dp,
+                        color = Color.White,
+                        shape = RoundedCornerShape(32.dp)
+                    ),
+                shape = RoundedCornerShape(32.dp),
             ) {
 
-                // 배경 이미지
-                Image(
-                    painter = painterResource(id = R.drawable.bg_myvoice_card),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.FillBounds
-                )
-
-                // 내부 속성
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center,
                 ) {
 
-                    Box() {
-                        if (voice.customImageUrl.isNotEmpty()) {
-                            Image(
-                                painter = rememberAsyncImagePainter(model = voice.customImageUrl),
-                                contentDescription = "3D Avatar",
+                    // 배경 이미지
+                    Image(
+                        painter = painterResource(id = R.drawable.bg_myvoice_card),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.FillBounds
+                    )
+
+                    // 내부 속성
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+
+                        Box() {
+                            if (voice.customImageUrl.isNotEmpty()) {
+                                Image(
+                                    painter = rememberAsyncImagePainter(model = voice.customImageUrl),
+                                    contentDescription = "3D Avatar",
+                                    modifier = Modifier
+                                        .fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+
+                            } else {
+                                Image(
+                                    painter = painterResource(id = R.drawable.avatar_3d),
+                                    contentDescription = "3D Avatar",
+                                    modifier = Modifier
+                                        .fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+
+                            Box(
                                 modifier = Modifier
-                                    .fillMaxSize(),
-                                contentScale = ContentScale.Crop
+                                    .matchParentSize()
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color.Transparent,
+                                                Color.Black.copy(alpha = 0.6f)
+                                            ),
+                                            startY = 0f,
+                                            endY = Float.POSITIVE_INFINITY
+                                        )
+                                    )
                             )
 
-                        } else {
-                            Image(
-                                painter = painterResource(id = R.drawable.avatar_3d),
-                                contentDescription = "3D Avatar",
+                            Text(
+                                text = voice.voiceName,
+                                color = Color.White,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Light,
                                 modifier = Modifier
-                                    .fillMaxSize(),
-                                contentScale = ContentScale.Crop
+                                    .align(Alignment.BottomCenter)
+                                    .padding(16.dp)
                             )
                         }
+                    }
+                }
+            }
 
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .background(
-                                    brush = Brush.verticalGradient(
-                                        colors = listOf(
-                                            Color.Transparent,
-                                            Color.Black.copy(alpha = 0.6f)
-                                        ),
-                                        startY = 0f,
-                                        endY = Float.POSITIVE_INFINITY
-                                    )
-                                )
-                        )
+            // 카드 뒷면
+            Card(
+                Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        rotationY = rotation - 180f
+                        alpha = if (rotation >= 90f) pageAlpha else 0f
+                        cameraDistance = 12f * density // 카메라 거리 설정 추가
+                        // 회전 중에 약간 축소하여 짤림 방지
+                        scaleX =
+                            0.9f + (0.1f * (1f - ((rotation - 180f) / 90f).absoluteValue.coerceIn(
+                                0f,
+                                1f
+                            )))
+                        scaleY =
+                            0.9f + (0.1f * (1f - ((rotation - 180f) / 90f).absoluteValue.coerceIn(
+                                0f,
+                                1f
+                            )))
+                    }
+                    .clip(RoundedCornerShape(32.dp))
+                    .border(
+                        width = 1.dp,
+                        color = Color.White,
+                        shape = RoundedCornerShape(32.dp)
+                    ),
+                shape = RoundedCornerShape(32.dp),
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.bg_myvoice_card),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.FillBounds
+                    )
+
+                    // 뒷면 내용
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp)
+                    ) {
 
                         Text(
                             text = voice.voiceName,
                             color = Color.White,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Light,
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .padding(16.dp)
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold
                         )
-                    }
-                }
-            }
-        }
 
-        // 카드 뒷면
-        Card(
-            Modifier
-                .fillMaxSize()
-                .graphicsLayer {
-                    rotationY = rotation - 180f
-                    alpha = if (rotation >= 90f) pageAlpha else 0f
-                    cameraDistance = 12f * density // 카메라 거리 설정 추가
-                    // 회전 중에 약간 축소하여 짤림 방지
-                    scaleX = 0.9f + (0.1f * (1f - ((rotation - 180f) / 90f).absoluteValue.coerceIn(
-                        0f,
-                        1f
-                    )))
-                    scaleY = 0.9f + (0.1f * (1f - ((rotation - 180f) / 90f).absoluteValue.coerceIn(
-                        0f,
-                        1f
-                    )))
-                }
-                .clip(RoundedCornerShape(32.dp))
-                .border(
-                    width = 1.dp,
-                    color = Color.White,
-                    shape = RoundedCornerShape(32.dp)
-                ),
-            shape = RoundedCornerShape(32.dp),
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.bg_myvoice_card),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.FillBounds
-                )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Button(
+                            onClick = { onVoiceChange(voice.voiceId) },
+                            colors = ButtonDefaults.buttonColors(Color.Transparent),
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = Color.White
+                            ),
+                            shape = RoundedCornerShape(20.dp),
+                            elevation = ButtonDefaults.elevation(0.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
 
-                // 뒷면 내용
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(32.dp)
-                ) {
-
-                    Text(
-                        text = voice.voiceName,
-                        color = Color.White,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(
-                        onClick = {
-                            // 현재 선택 음성 변경
-                            Log.d("CelebVoiceScreen", "Activate 버튼 클릭: voiceId=${voice.voiceId}")
-                            onVoiceChange(voice.voiceId)
+                        ) {
+                            Text("변경")
                         }
-                    ) {
-                        Text("activate")
-                    }
 
+                    }
                 }
             }
         }
