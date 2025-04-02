@@ -22,8 +22,8 @@ data class MainState(
     ), // 해당 요일의 통화 리스트
 
     //Level Up 파트
-    val reportPercent: Int = 50,
-    val callPercent: Int = 120,
+    val reportPercent: Int = 0,
+    val callPercent: Int = 0,
 
     //오늘의 문장
     val sentenceOriginal: String = "With your talent and hard work, sky’s the limit!",
