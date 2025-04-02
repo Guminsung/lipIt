@@ -21,4 +21,7 @@ public class LoginResponseDto {
 
 	@Schema(description = "리프레시 토큰")
 	private String refreshToken;
+
+	@Schema(description = "FCM 토큰")
+	private String fcmToken;
 }

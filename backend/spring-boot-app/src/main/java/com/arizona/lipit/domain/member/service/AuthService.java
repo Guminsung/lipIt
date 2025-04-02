@@ -43,12 +43,19 @@ public class AuthService {
 		// Redis에 리프레시 토큰 저장 (만료 시간 설정)
 		redisTokenService.saveRefreshToken(member.getEmail(), refreshToken, jwtProvider.getRefreshTokenExpiration());
 
+		// FCM 토큰 저장
+		String fcmToken = request.getFcmToken();
+		if (fcmToken != null) {
+			member.setFcmToken(fcmToken);
+		}
+
 		return LoginResponseDto.builder()
 			.memberId(member.getMemberId())
 			.email(member.getEmail())
 			.name(member.getName())
 			.accessToken(accessToken)
 			.refreshToken(refreshToken)
+			.fcmToken(member.getFcmToken())
 			.build();
 	}
 

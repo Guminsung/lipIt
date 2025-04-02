@@ -17,4 +17,7 @@ public class LoginRequestDto {
 	@NotBlank(message = "{password.required}")
 	@Size(min = 6, message = "{password.min_length}")
 	private String password;
+
+	@Schema(description = "FCM 토큰")
+	private String fcmToken;
 }
