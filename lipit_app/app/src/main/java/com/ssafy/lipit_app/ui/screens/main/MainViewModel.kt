@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.lipit_app.data.model.request_dto.auth.LogoutRequest
 import com.ssafy.lipit_app.ui.screens.main.components.DailySentenceManager
+import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -16,6 +17,11 @@ class MainViewModel(private val context: Context) : ViewModel() {
     val state: StateFlow<MainState> = _state
 
     init {
+        loadDailySentence()
+
+        val userName = SharedPreferenceUtils.getUserName()
+        _state.value = _state.value.copy(userName = userName)
+
         loadDailySentence()
     }
 
@@ -84,7 +90,7 @@ class MainViewModel(private val context: Context) : ViewModel() {
                 com.ssafy.lipit_app.base.SecureDataStore.getInstance(context).clearUserInfo()
 
                 _state.value = _state.value.copy(isLogoutSuccess = true)
-            } else{
+            } else {
                 _state.value = _state.value.copy(isLogoutSuccess = true)
 
             }

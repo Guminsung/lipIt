@@ -70,4 +70,11 @@ object SharedPreferenceUtils {
         Log.d("MemberIdManager", "멤버 ID가 삭제되었습니다.")
     }
 
+    fun saveUserName(name: String) {
+        preferences?.edit()?.putString("USER_NAME", name)?.apply()
+    }
+
+    fun getUserName(): String {
+        return preferences?.getString("USER_NAME", "익명") ?: "익명"
+    }
 }
