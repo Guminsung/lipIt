@@ -72,10 +72,30 @@ class AuthRepository {
     suspend fun getMemberLevel(memberId: Long): Result<LevelResponse> {
         return try {
             val response = RetrofitUtil.authService.getMemberLevel(memberId)
-            handleResponse(response)
+            Log.d("UserLevel", "서버로 전송할 memberId: $memberId")
+
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!)
+            } else {
+                val code = response.code()
+                val errorBody = response.errorBody()?.string()
+                Log.e("UserLevel", "API 실패 - code: $code, errorBody: $errorBody")
+                throw Exception("서버 응답 실패 - code: $code")
+            }
+
         } catch (e: Exception) {
-            Log.e("AuthRepository", "예외 발생: ${e.message}", e)
             Result.failure(e)
         }
     }
+
+    // 다음 레벨까지 달성률 (Next Level) 조회
+//    suspend fun getNextLevelProgress(memberId: Long): Result<LevelResponse> {
+//        return try {
+//            val response = RetrofitUtil.authService.getMemberLevel(memberId)
+//            if(response.isSuccessful){
+//                val body =
+//            }
+//        }
+//    }
+
 }

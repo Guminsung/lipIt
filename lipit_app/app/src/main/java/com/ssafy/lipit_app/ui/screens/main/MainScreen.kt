@@ -1,9 +1,15 @@
 package com.ssafy.lipit_app.ui.screens.main
 
 import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,6 +33,9 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,30 +48,34 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.auth.components.MypagePopup
 import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceState
 import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallState
-import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.CallSchedule
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsIntent
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsScreen
-import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsState
 import com.ssafy.lipit_app.ui.screens.main.components.NextLevel
 import com.ssafy.lipit_app.ui.screens.main.components.ReportAndVoiceBtn
 import com.ssafy.lipit_app.ui.screens.main.components.TodaysSentence
 import com.ssafy.lipit_app.ui.screens.main.components.WeeklyCallsSection
+import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import kotlinx.coroutines.launch
 
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun MainScreen(
-    state: MainState,
-    onIntent: (MainIntent) -> Unit
+    onIntent: (MainIntent) -> Unit,
+    viewModel: MainViewModel,
+    onSuccess: () -> Unit
 ) {
+    val state by viewModel.state.collectAsState() // 고정된 값이 아닌 상태 관찰 -> 실시간 UI 반영
+    val context = LocalContext.current
+
     // ***** Bottom Sheet 관리 : show/hide 처리
     val bottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -91,7 +104,6 @@ fun MainScreen(
     }
 
     var backPressedTime by remember { mutableStateOf(0L) }
-    val context = LocalContext.current
     BackHandler(enabled = !bottomSheetState.isVisible) {
         val currentTime = System.currentTimeMillis()
         if (currentTime - backPressedTime < 2000) {
@@ -106,6 +118,48 @@ fun MainScreen(
     // ***** BottomSheet 분기를위한 필드
     val editVoiceState: EditVoiceState = EditVoiceState()
 
+
+    // 로그아웃 관련
+    LaunchedEffect(key1 = state.isLogoutSuccess) {
+        if (state.isLogoutSuccess) {
+            Log.d("auth", "MainScreen: LaunchedEffect onSuccess 호출")
+            onSuccess()
+            onIntent(MainIntent.OnLogoutHandled)
+        }
+    }
+
+    // 회원 등급 관련
+    LaunchedEffect(Unit) {
+        val memberId = SharedPreferenceUtils.getMemberId()
+        viewModel.fetchUserLevel(memberId)
+    }
+
+
+    // 브로드캐스트 수신기 등록
+    // 흐름: MyFirebaseMessageService에서 보낸 브로드 캐스트 수신 -> 뷰모델 상태 갱신
+    // -> state 변경되어 UI 자동 recomposition 됨
+    DisposableEffect(Unit) {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == "DAILY_SENTENCE_UPDATED") {
+                    viewModel.loadDailySentence()
+                }
+            }
+        }
+
+        val filter = IntentFilter("DAILY_SENTENCE_UPDATED")
+        context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
+
+        onDispose {
+            context.unregisterReceiver(receiver)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.loadDailySentence()
+    }
+
+    //val state by viewModel.state.collectAsState()
     // 1. (default: hide) BottomSheet 3가지 종류 : 일주일 스케줄, 수정, 보유 음성
     // 2. (Base) MainScreen
     ModalBottomSheetLayout(
@@ -151,9 +205,11 @@ fun MainScreen(
                                             onIntent(MainIntent.SelectSchedule(intent.schedule))
                                             onIntent(MainIntent.ShowRescheduleScreen(intent.schedule))
                                         }
+
                                         is WeeklyCallsIntent.OnChangeVoice -> {
                                             onIntent(MainIntent.ShowMyVoicesScreen)
                                         }
+
                                         else -> {}
                                     }
 
@@ -220,10 +276,11 @@ fun MainScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFFFDF8FF))
-                .padding(start = 20.dp, end = 20.dp, top = 40.dp)
-        ) {
-            UserInfoSection(state.userName)
-            TodaysSentence(state.sentenceOriginal, state.sentenceTranslated)
+                .padding(start = 20.dp, end = 20.dp, top = 40.dp),
+
+            ) {
+            UserInfoSection(state.userName, state, onIntent, state.level) // 상단의 유저 이름, 등급 부분
+            TodaysSentence(state.sentenceOriginal, state.sentenceTranslated) // 오늘의 문장
 
             WeeklyCallsSection(
                 selectedDay = selectedDay,
@@ -239,16 +296,19 @@ fun MainScreen(
             )
 
             Spacer(modifier = Modifier.height(12.dp))
+
+            // 리포트 & 마이 보이스로 넘어가는 버튼들
             ReportAndVoiceBtn(onIntent)
+
+            // 레벨업 파트
             NextLevel(
-                state.sentenceCnt,
-                state.wordCnt,
-                state.attendanceCnt,
-                state.attendanceTotal
+                reportPercentage = state.reportPercent,
+                callTimePercentage = state.callPercent
             )
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            // 전화 걸기 버튼
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
@@ -258,6 +318,7 @@ fun MainScreen(
         }
     }
 }
+
 
 
 // 전화 걸기 버튼
@@ -277,9 +338,21 @@ fun CallButton(onIntent: (MainIntent) -> Unit) {
 
 // 사용자 정보 (이름 & 등급)
 @Composable
-fun UserInfoSection(userName: String) {
+fun UserInfoSection(
+    userName: String,
+    state: MainState,
+    onIntent: (MainIntent) -> Unit,
+    level: Int
+) {
+    var showPopup by remember { mutableStateOf(false) } // 로그아웃 팝업 관련
+
     Row(
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            // 누르면 팝업으로 로그아웃 버튼 (추후 다른 버튼도 추가하던지..)
+            .clickable {
+                showPopup = true
+            }
     ) {
         //  사용자 이름
         Text(
@@ -296,40 +369,38 @@ fun UserInfoSection(userName: String) {
 
         // 사용자 등급
         Image(
-            painter = painterResource(id = R.drawable.user_level_2),
+            painter = painterResource(id = getLevelIcon(level)),
             contentDescription = "사용자 등급",
             modifier = Modifier.size(26.dp)
         )
+
+        // 로그아웃 팝업 관련
+        if (showPopup) {
+            MypagePopup(
+                onDismissRequest = { showPopup = false },
+                onConfirmation = {
+                    showPopup = false
+                    // 로그아웃 로직 처리
+                    onIntent(MainIntent.OnLogoutClicked)
+                },
+                dialogTitle = "로그아웃 하시겠습니까?",
+                dialogText = "로그아웃하고 앱에서 나가기.. "
+            )
+        }
     }
 }
 
-
-@Preview(showBackground = true)
+// 레벨 등급에 따른 아이콘 매핑
 @Composable
-fun MainScreenPreview() {
-    MainScreen(
-        state = MainState(
-            userName = "Sarah",
-            selectedDay = "월",
-            callItems = listOf(
-                CallItem(
-                    id = 1,
-                    name = "Harry Potter",
-                    topic = "자유주제",
-                    time = "08:00",
-                    imageUrl = "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png",
-                    "월"
-                )
-            ),
-            sentenceCnt = 50,
-            wordCnt = 10,
-            attendanceCnt = 20,
-            attendanceTotal = 20,
-            sentenceOriginal = "With your talent and hard work, sky’s the limit!",
-            sentenceTranslated = "너의 재능과 노력이라면, 한계란 없지!",
-        ),
-        onIntent = { }
-    )
+fun getLevelIcon(level: Int): Int {
+    return when (level) {
+        1 -> R.drawable.user_level_1
+        2 -> R.drawable.user_level_2
+        3 -> R.drawable.user_level_3
+        4 -> R.drawable.user_level_4
+        5 -> R.drawable.user_level_5
+        else -> R.drawable.user_level_1 // 기본값
+    }
 }
 
 

@@ -16,6 +16,7 @@ data class MainState(
     // 상단 user 정보
     val userName: String = "Sarah",
     val isLoading: Boolean = false,
+    val level: Int = 1,
 
     // Weekly Calls 파트
     val selectedDay: String = getTodayDay(),
@@ -31,14 +32,16 @@ data class MainState(
     ), // 해당 요일의 통화 리스트
 
     //Level Up 파트
-    val sentenceCnt: Int = 50,
-    val wordCnt: Int = 120,
-    val attendanceCnt: Int = 20,
-    val attendanceTotal: Int = 20,
+    val reportPercent: Int = 0,
+    val callPercent: Int = 0,
 
     //오늘의 문장
     val sentenceOriginal: String = "With your talent and hard work, sky’s the limit!",
     val sentenceTranslated: String = "너의 재능과 노력이라면, 한계란 없지!",
+
+    // 로그아웃 관련
+    var isLogoutClicked: Boolean = false,
+    var isLogoutSuccess: Boolean = false,
 
     // [Weekly Calls] 일주일 일정 확인
     val isSettingsSheetVisible: Boolean = false,

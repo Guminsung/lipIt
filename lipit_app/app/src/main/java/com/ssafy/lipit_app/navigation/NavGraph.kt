@@ -1,5 +1,7 @@
 package com.ssafy.lipit_app.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -32,11 +34,13 @@ import com.ssafy.lipit_app.ui.screens.main.MainIntent
 import com.ssafy.lipit_app.ui.screens.main.MainScreen
 import com.ssafy.lipit_app.ui.screens.main.MainState
 import com.ssafy.lipit_app.ui.screens.main.MainViewModel
+import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceIntent
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceScreen
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceViewModel
 import com.ssafy.lipit_app.ui.screens.report.ReportDetailScreen
 import com.ssafy.lipit_app.ui.screens.report.ReportScreen
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun NavGraph(
     navController: NavHostController = rememberNavController()
@@ -93,11 +97,21 @@ fun NavGraph(
 
 
         composable("main") {
-            val viewModel = viewModel<MainViewModel>()
+           // val viewModel = viewModel<MainViewModel>()
+            val viewModel: MainViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    @Suppress("UNCHECKED_CAST")
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return MainViewModel(context) as T
+                    }
+                }
+            )
+
             val state by viewModel.state.collectAsState()
+            val context = LocalContext.current.applicationContext
 
             MainScreen(
-                state = state,
+//                state = state,
                 onIntent = { intent ->
                     viewModel.onIntent(intent)
 
@@ -109,10 +123,13 @@ fun NavGraph(
                         else -> { /* 다른 Intent 유형은 ViewModel에서 처리 */
                         }
                     }
+                },viewModel,
+                onSuccess = {
+                    navController.navigate("auth_start") { // 처음 화면으로 돌아감
+                        popUpTo("main") { inclusive = true } // main 화면 제거
+                        launchSingleTop = true
+                    }
                 }
-                //onIntent = { viewModel.onIntent(it) },
-                //onNavigateToAddVoice = { navController.navigate("add_voice") }
-
             )
         }
 
@@ -121,7 +138,18 @@ fun NavGraph(
             val state by viewModel.state.collectAsState()
 
             MyVoiceScreen(
-                viewModel = viewModel
+                state = state,
+                onIntent = { intent ->
+                    when (intent) {
+                        is MyVoiceIntent.NavigateToAddVoice -> {
+                            navController.navigate("add_voice")
+                        }
+
+                        else -> {
+                            viewModel.onIntent(intent)
+                        }
+                    }
+                }
             )
         }
 
@@ -203,9 +231,7 @@ fun NavGraph(
                 "월"
             )
         ),
-        sentenceCnt = 90,
-        wordCnt = 50,
-        attendanceCnt = 20,
-        attendanceTotal = 20
+        reportPercent = 50,
+        callPercent = 120
     )
 }

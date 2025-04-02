@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -53,8 +52,6 @@ import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.CallSchedule
 import kotlinx.coroutines.selects.select
 
-//val isEditMode = ""
-
 @Composable
 fun EditCallScreen(
     schedule: CallSchedule,
@@ -74,16 +71,12 @@ fun EditCallScreen(
     var selectedIndex by remember { mutableStateOf(if (isFreeModeDefault) 0 else 1) }
     var selectedCategory by remember { mutableStateOf(if (isFreeModeDefault) "" else schedule.topicCategory) }
 
-    Log.d("TAG 시간내놔", "EditCallScreen: ${initialHour} , ${initialMinute}")
-
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(Color(0xFFFDF8FF))
             .padding(top = 44.dp, start = 20.dp, end = 20.dp),
     ) {
-
         // 제목
         Text(
             text = "Reschedule Call",
@@ -122,7 +115,8 @@ fun EditCallScreen(
         Spacer(modifier = Modifier.height(10.dp))
 
         // 자유주제-카테고리 선택 모달
-//        var selectedIndex by remember { mutableStateOf(0) }
+        var selectedIndex by remember { mutableStateOf(0) }
+
         CustomSegmentedButtons(
             selectedIndex = selectedIndex,
             onSelected = {
@@ -132,27 +126,6 @@ fun EditCallScreen(
                 }
             }
         )
-//        CustomSegmentedButtons(
-//            selectedIndex = selectedIndex,
-//            onSelected = { index ->
-//                selectedIndex = index // 업뎃
-//
-//                if (index == 1) { // 카테고리 선택
-//                    // 상태 변경
-//                    state.isFreeModeSelected = false
-//                    state.isCategoryModeSelected = true
-//
-//                    //todo: 선택 되면 카테고리 선택 활성화
-//
-//                } else { // 자유주제 선택
-//                    // 상태 변경
-//                    state.isFreeModeSelected = true
-//                    state.isCategoryModeSelected = false
-//
-//                    //todo: 카테고리 선택 비활성화
-//                }
-//            }
-//        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -179,6 +152,7 @@ fun EditCallScreen(
         )
 
         Spacer(modifier = Modifier.height(20.dp))
+
     }
 }
 
@@ -407,7 +381,7 @@ fun EditCallButtons(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        // 오른쪽 버튼
+        // 삭제하기
         Button(
             onClick = {
                 if (isEditMode) {
@@ -436,7 +410,6 @@ fun EditCallButtons(
             }
         )
     }
-
 
     Spacer(modifier = Modifier.height(20.dp))
 }
