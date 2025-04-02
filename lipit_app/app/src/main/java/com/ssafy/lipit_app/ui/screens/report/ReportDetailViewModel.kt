@@ -76,10 +76,10 @@ class ReportDetailViewModel(reportId: Long) : ViewModel() {
 
                 val result = reportRepository.getReportScript(reportId)
                 Log.d(TAG, "loadReportScript: $result")
-                result.onSuccess { scripts ->
+                result.onSuccess { data ->
                     _state.update { currentState ->
                         currentState.copy(
-                            reportScript = scripts.script,
+                            reportScript = data.script,
                             isLoading = false,
                             error = null
                         )
@@ -111,10 +111,11 @@ class ReportDetailViewModel(reportId: Long) : ViewModel() {
                 _state.update { it.copy(isLoading = true, error = null) }
 
                 val result = reportRepository.getNativeExpressions(reportId)
-                result.onSuccess { natives ->
+                Log.d(TAG, "loadNativeExpression: $result")
+                result.onSuccess { data ->
                     _state.update { currentState ->
                         currentState.copy(
-                            nativeExpression = natives,
+                            nativeExpression = data.nativeExpressions,
                             isLoading = false,
                             error = null
                         )
