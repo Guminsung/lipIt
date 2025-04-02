@@ -1,5 +1,7 @@
 package com.ssafy.lipit_app.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,6 +33,7 @@ import com.ssafy.lipit_app.ui.screens.main.MainViewModel
 import com.ssafy.lipit_app.ui.screens.report.ReportDetailScreen
 import com.ssafy.lipit_app.ui.screens.report.ReportScreen
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun NavGraph(
     navController: NavHostController = rememberNavController()
@@ -82,7 +85,7 @@ fun NavGraph(
             val state by viewModel.state.collectAsState()
 
             MainScreen(
-                state = state,
+//                state = state,
                 onIntent = { intent ->
                     viewModel.onIntent(intent)
 
@@ -94,10 +97,8 @@ fun NavGraph(
                         else -> { /* 다른 Intent 유형은 ViewModel에서 처리 */
                         }
                     }
-                }
-                //onIntent = { viewModel.onIntent(it) },
-                //onNavigateToAddVoice = { navController.navigate("add_voice") }
-
+                },
+                viewModel = MainViewModel()
             )
         }
 

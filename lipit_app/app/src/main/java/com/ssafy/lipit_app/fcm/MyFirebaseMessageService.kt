@@ -3,6 +3,7 @@ package com.ssafy.lipit_app.fcm
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
@@ -21,21 +22,35 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 
+        val intent = Intent("DAILY_SENTENCE_UPDATED")
+        sendBroadcast(intent)
+
         Log.d("FCM", "알림 도착: ${remoteMessage.data}")
 
         // 데이터 기반 알림 처리
         val type = remoteMessage.data["type"]
 
         when (type) {
-            "DAILY_SENTANCE" -> {
-                val original_daily_sentance = remoteMessage.data["original"] ?: ""
-                val translated_daily_sentance = remoteMessage.data["translated"] ?: ""
+            "DAILY_SENTENCE" -> {
+                val original_daily_sentance = remoteMessage.data["title"] ?: ""
+                val translated_daily_sentance = remoteMessage.data["body"] ?: ""
 
-                // 내부 SharedPreferences나 Room 등에 저장
+                // 내부 SharedPreferences에 저장
+                // 흐름: 새로운 문장 수신 -> 저장 -> 브로드 캐스트로 전송
                 DailySentenceManager.save(original_daily_sentance, translated_daily_sentance)
+                Log.d("FCM", "data 확인용 - type: $type, original: $original_daily_sentance, translated: $translated_daily_sentance")
+
+                // 실시간 UI 반영을 위한 브로드캐스트
+                val intent = Intent("DAILY_SENTENCE_UPDATED")
+                sendBroadcast(intent)
             }
 
             // 추후 다른 알림 구현 시 추가하기!
+//            CALL_REMINDER: 예약 전화 10분 전 알림
+//            CALL_START: 전화 알림
+//            MISSED_CALL: 부재중 알림
+//            REPORT_COMPLETE: 리포트 발행 알림
+//            DAILY_SENTENCE: 오늘의 문장 알림
         }
 
     }

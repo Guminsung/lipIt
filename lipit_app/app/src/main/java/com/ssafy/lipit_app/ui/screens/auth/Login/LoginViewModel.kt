@@ -61,13 +61,11 @@ class LoginViewModel : ViewModel() {
 
             if (result.isSuccess) {
                 // 토큰 저장
-                if (result.isSuccess) {
-                    val accessToken = result.getOrNull()?.accessToken
-                    TokenManager.saveAccessToken(accessToken ?: "")
-                    Log.d("tokenManager", TokenManager.getAccessToken().toString())
+                val accessToken = result.getOrNull()?.accessToken
+                TokenManager.saveAccessToken(accessToken ?: "")
+                Log.d("tokenManager", TokenManager.getAccessToken().toString())
 
-                    _state.value = _state.value.copy(isLoginSuccess = true)
-                }
+                _state.value = _state.value.copy(isLoginSuccess = true)
 
             } else {
                 val exception = result.exceptionOrNull()
