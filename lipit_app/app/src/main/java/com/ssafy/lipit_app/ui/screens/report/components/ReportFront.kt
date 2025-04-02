@@ -71,7 +71,6 @@ fun ReportFront(
                 Row(
                     verticalAlignment = Alignment.Bottom,
                     modifier = Modifier.clickable {
-                        // TODO: ReportDetail로 이동
                         onReportItemClick(report.reportId)
                     }
                 ) {
