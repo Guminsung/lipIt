@@ -5,13 +5,17 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.ssafy.lipit_app.base.TokenManager
+import com.ssafy.lipit_app.base.SecureDataStore
 import com.ssafy.lipit_app.ui.screens.auth.Login.LoginScreen
 import com.ssafy.lipit_app.ui.screens.auth.Login.LoginViewModel
 import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupScreen
@@ -30,6 +34,8 @@ import com.ssafy.lipit_app.ui.screens.main.MainIntent
 import com.ssafy.lipit_app.ui.screens.main.MainScreen
 import com.ssafy.lipit_app.ui.screens.main.MainState
 import com.ssafy.lipit_app.ui.screens.main.MainViewModel
+import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceScreen
+import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceViewModel
 import com.ssafy.lipit_app.ui.screens.report.ReportDetailScreen
 import com.ssafy.lipit_app.ui.screens.report.ReportScreen
 
@@ -38,13 +44,13 @@ import com.ssafy.lipit_app.ui.screens.report.ReportScreen
 fun NavGraph(
     navController: NavHostController = rememberNavController()
 ) {
-    val tokenManager = TokenManager
-
+    val context = LocalContext.current
+    val secureDataStore = SecureDataStore.getInstance(context)
+    val startDestination = if (secureDataStore.hasAccessTokenSync()) "main" else "auth_start"
     NavHost(
         navController = navController,
-
         // 이미 토큰이 있다면 -> 로그인을 한 적이 있다면 메인으로 바로 이동
-        startDestination = if (tokenManager.hasAccessToken()) "main" else "auth_start" // 첫 진입 화면
+        startDestination = startDestination // 첫 진입 화면
     ) {
 
         composable("auth_start") {
@@ -55,7 +61,16 @@ fun NavGraph(
         }
 
         composable("login") {
-            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<LoginViewModel>()
+//            val viewModel = viewModel<LoginViewModel>()
+            val context = LocalContext.current
+            val viewModel: LoginViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    @Suppress("UNCHECKED_CAST")
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return LoginViewModel(context) as T
+                    }
+                }
+            )
             val state by viewModel.state.collectAsState()
             LoginScreen(
                 state = state,
@@ -70,7 +85,7 @@ fun NavGraph(
         }
 
         composable("join") {
-            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<SignupViewModel>()
+            val viewModel = viewModel<SignupViewModel>()
             val state by viewModel.state.collectAsState()
             SignupScreen(
                 state = state,
@@ -81,7 +96,7 @@ fun NavGraph(
 
 
         composable("main") {
-            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<MainViewModel>()
+            val viewModel = viewModel<MainViewModel>()
             val state by viewModel.state.collectAsState()
 
             MainScreen(
@@ -102,18 +117,17 @@ fun NavGraph(
             )
         }
 
-//        composable("my_voices") {
-//            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<>()
-//            val state by viewModel.state.collectAsState()
-//
-//            WeeklyCallsScreen(
-//                state = state.weeklyState,
-//                onIntent = { viewModel.onIntent(it) }
-//            )
-//        }
+        composable("my_voices") {
+            val viewModel = viewModel<MyVoiceViewModel>()
+            val state by viewModel.state.collectAsState()
+
+            MyVoiceScreen(
+                viewModel = viewModel
+            )
+        }
 
         composable("editWeeklyCalls") {
-            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<WeeklyCallsViewModel>()
+            val viewModel = viewModel<WeeklyCallsViewModel>()
             val state by viewModel.state.collectAsState()
 
             WeeklyCallsScreen(
@@ -123,7 +137,7 @@ fun NavGraph(
         }
 
         composable("onVoiceCall") {
-            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<VoiceCallViewModel>()
+            val viewModel = viewModel<VoiceCallViewModel>()
             val state by viewModel.state.collectAsState()
 
             VoiceCallScreen(
@@ -133,7 +147,7 @@ fun NavGraph(
         }
 
         composable("onTextCall") {
-            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<TextCallViewModel>()
+            val viewModel = viewModel<TextCallViewModel>()
 
             TextCallScreen(
                 state = viewModel.state.collectAsState().value,
@@ -142,7 +156,7 @@ fun NavGraph(
         }
 
         composable("add_voice") {
-            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<AddVoiceViewModel>()
+            val viewModel = viewModel<AddVoiceViewModel>()
 
             AddVoiceScreen(
                 state = viewModel.state.collectAsState().value,

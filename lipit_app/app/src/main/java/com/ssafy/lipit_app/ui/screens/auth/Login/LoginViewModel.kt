@@ -1,18 +1,20 @@
 package com.ssafy.lipit_app.ui.screens.auth.Login
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssafy.lipit_app.base.TokenManager
+import com.ssafy.lipit_app.base.SecureDataStore
 import com.ssafy.lipit_app.data.model.request_dto.auth.LoginRequest
 import com.ssafy.lipit_app.domain.repository.AuthRepository
+import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import retrofit2.HttpException
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(private val context: Context) : ViewModel() {
     private val _state = MutableStateFlow(LoginState())
     val state: StateFlow<LoginState> = _state
 
@@ -52,6 +54,15 @@ class LoginViewModel : ViewModel() {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoginClicked = true)
 
+            // 입력 유효성 검사
+            if (_state.value.id.isEmpty() || _state.value.pw.isEmpty()) {
+                _state.value = _state.value.copy(
+                    errorMessage = "아이디와 비밀번호를 모두 입력해주세요.",
+                    isLoginClicked = false
+                )
+                return@launch
+            }
+
             val request = LoginRequest(
                 email = _state.value.id,
                 password = _state.value.pw
@@ -60,13 +71,26 @@ class LoginViewModel : ViewModel() {
             val result = authRepository.login(request)
 
             if (result.isSuccess) {
-                // 토큰 저장
-                val accessToken = result.getOrNull()?.accessToken
-                TokenManager.saveAccessToken(accessToken ?: "")
-                Log.d("tokenManager", TokenManager.getAccessToken().toString())
+                val loginData = result.getOrNull()
 
-                _state.value = _state.value.copy(isLoginSuccess = true)
+                loginData?.let { data ->
 
+                    Log.d(
+                        "LoginViewModel",
+                        "로그인 성공: ${data.email}, 토큰: ${data.accessToken.take(15)}..."
+                    )
+                    SecureDataStore.getInstance(context).saveUserInfo(data)
+                    SharedPreferenceUtils.saveMemberId(data.memberId)
+
+                    // 로그인 성공 상태로 업데이트
+                    _state.value = _state.value.copy(isLoginSuccess = true, isLoginClicked = false)
+                } ?: run {
+                    Log.e("LoginViewModel", "로그인 응답 데이터가 null입니다")
+                    _state.value = _state.value.copy(
+                        errorMessage = "로그인 데이터를 받지 못했습니다",
+                        isLoginClicked = false
+                    )
+                }
             } else {
                 val exception = result.exceptionOrNull()
                 val errorMsg = if (exception is HttpException) {
