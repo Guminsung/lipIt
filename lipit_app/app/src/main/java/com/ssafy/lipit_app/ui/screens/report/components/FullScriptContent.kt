@@ -33,36 +33,8 @@ fun FullScriptContent(
             .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // 메시지 데이터를 정의하거나 가져옵니다
-        val messages = listOf(
-            ReportScript(
-                content = "Hey! Long time no see! How have you been? Tell me something fun.",
-                contentKor = "오! 오랜만이야! 잘 지냈어? 재밌는 이야기 하나 해줘!",
-                isAI = true,
-                timestamp = "2025년 12월 20일"
-            ),
-            ReportScript(
-                content = "Hey! Yeah, it's been a while! I've been doing great. Oh, guess what? I finally went on that trip I told you about!",
-                contentKor = "",
-                isAI = false,
-                timestamp = "2025년 12월 20일"
-            ),
-            ReportScript(
-                content = "Wicked! Was it as exciting as a Quidditch match? Or did you run into any mischievous magical creatures?",
-                contentKor = "멋지다! 퀴디치 경기만큼 신났어? 아니면 장난꾸러기 마법 생물이라도 만났어?",
-                isAI = true,
-                timestamp = "2025년 12월 20일"
-            ),
-            ReportScript(
-                content = "Hey! Yeah, it's been a while!",
-                contentKor = "",
-                isAI = false,
-                timestamp = "2025년 12월 20일"
-            )
-        )
-
-        items(messages) { message ->
-            ChatBubble(reportScript = message)
+        items(reportScripts) { script ->
+            ChatBubble(reportScript = script)
         }
     }
 }

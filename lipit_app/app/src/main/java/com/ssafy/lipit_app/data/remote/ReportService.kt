@@ -5,6 +5,7 @@ import com.ssafy.lipit_app.data.model.request_dto.report.ReportScript
 import com.ssafy.lipit_app.data.model.request_dto.report.ReportSummary
 import com.ssafy.lipit_app.data.model.response_dto.BaseResponse
 import com.ssafy.lipit_app.data.model.response_dto.report.ReportListResponse
+import com.ssafy.lipit_app.data.model.response_dto.report.ScriptResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -28,7 +29,7 @@ interface ReportService {
     @GET("reports/{report_id}/script")
     suspend fun getReportScript(
         @Path("report_id") reportId: Long
-    ) : Response<BaseResponse<List<ReportScript>>>
+    ) : Response<BaseResponse<ScriptResponse>>
 
     // 리포트 원어민 표현 조회
     @GET("reports/{report_id}/expressions")
