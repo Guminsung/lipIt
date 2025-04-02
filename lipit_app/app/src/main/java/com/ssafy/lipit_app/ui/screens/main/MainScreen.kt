@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -34,10 +35,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.auth.components.MypagePopup
 import com.ssafy.lipit_app.ui.screens.main.components.NextLevel
 import com.ssafy.lipit_app.ui.screens.main.components.ReportAndVoiceBtn
 import com.ssafy.lipit_app.ui.screens.main.components.TodaysSentence
@@ -48,11 +49,22 @@ import com.ssafy.lipit_app.ui.screens.main.components.WeeklyCallsSection
 @Composable
 fun MainScreen(
     onIntent: (MainIntent) -> Unit,
-    viewModel: MainViewModel
+    viewModel: MainViewModel,
+    onSuccess: () -> Unit
 ) {
     val state by viewModel.state.collectAsState() // 고정된 값이 아닌 상태 관찰 -> 실시간 UI 반영
-
     val context = LocalContext.current
+
+    // 로그아웃 관련
+    LaunchedEffect(key1 = state.isLogoutSuccess) {
+        if (state.isLogoutSuccess) {
+            Log.d("auth", "MainScreen: LaunchedEffect onSuccess 호출")
+            onSuccess()
+            onIntent(MainIntent.OnLogoutHandled)
+        }
+    }
+
+
 
     // 브로드캐스트 수신기 등록
     // 흐름: MyFirebaseMessageService에서 보낸 브로드 캐스트 수신 -> 뷰모델 상태 갱신
@@ -88,7 +100,7 @@ fun MainScreen(
             .padding(start = 20.dp, end = 20.dp, top = 40.dp),
 
         ) {
-        UserInfoSection(state.userName) // 상단의 유저 이름, 등급 부분
+        UserInfoSection(state.userName, state, onIntent) // 상단의 유저 이름, 등급 부분
         TodaysSentence(state.sentenceOriginal, state.sentenceTranslated) // 오늘의 문장
 
         WeeklyCallsSection(
@@ -139,9 +151,16 @@ fun CallButton(onIntent: (MainIntent) -> Unit) {
 
 // 사용자 정보 (이름 & 등급)
 @Composable
-fun UserInfoSection(userName: String) {
+fun UserInfoSection(userName: String, state: MainState, onIntent: (MainIntent) -> Unit) {
+    var showPopup by remember { mutableStateOf(false) } // 로그아웃 팝업 관련
+
     Row(
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            // 누르면 팝업으로 로그아웃 버튼 (추후 다른 버튼도 추가하던지..)
+            .clickable {
+                showPopup = true
+            }
     ) {
         //  사용자 이름
         Text(
@@ -162,15 +181,29 @@ fun UserInfoSection(userName: String) {
             contentDescription = "사용자 등급",
             modifier = Modifier.size(26.dp)
         )
+
+        // 로그아웃 팝업 관련
+        if (showPopup) {
+            MypagePopup(
+                onDismissRequest = { showPopup = false },
+                onConfirmation = {
+                    showPopup = false
+                    // 로그아웃 로직 처리
+                    onIntent(MainIntent.OnLogoutClicked)
+                },
+                dialogTitle = "로그아웃 하시겠습니까?",
+                dialogText = "로그아웃하고 앱에서 나가기.. "
+            )
+        }
     }
 }
 
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
-@Preview(showBackground = true)
-@Composable
-fun MainScreenPreview() {
-    MainScreen(
+//@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+//@Preview(showBackground = true)
+//@Composable
+//fun MainScreenPreview() {
+//    MainScreen(
 //        state = MainState(
 //            userName = "Sarah",
 //            selectedDay = "월",
@@ -191,9 +224,10 @@ fun MainScreenPreview() {
 //            sentenceOriginal = "With your talent and hard work, sky’s the limit!",
 //            sentenceTranslated = "너의 재능과 노력이라면, 한계란 없지!",
 //        ),
-        onIntent = { },
-        viewModel = MainViewModel()
-    )
-}
+//        onIntent = { },
+//        viewModel = MainViewModel(context),
+//        onSuccess = {}
+//    )
+//}
 
 

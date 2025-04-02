@@ -1,7 +1,9 @@
 package com.ssafy.lipit_app
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -12,6 +14,7 @@ import com.ssafy.lipit_app.theme.LipItTheme
 
 
 class MainActivity : AppCompatActivity() {
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
