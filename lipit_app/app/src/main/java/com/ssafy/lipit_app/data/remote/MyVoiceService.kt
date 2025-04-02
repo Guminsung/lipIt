@@ -31,17 +31,17 @@ interface MyVoiceService {
 
 
     // 선택한 음성 조회
-    @GET("members/{memberId}/voice")
+    @GET("voices/members/{memberId}/voice")
     suspend fun getVoice(
-        @Query("memberId") memberId: Long
-    ): Response<BaseResponse<CustomResponse>>
+        @Path("memberId") memberId: Long
+    ): Response<BaseResponse<List<CustomResponse>>>
 
 
-    // 기본 음성 선택
-    @PATCH("members/{memberId}/voice")
-    suspend fun takeVoice(
+    // 기본 음성 변경
+    @PATCH("voices/members/{memberId}/voice")
+    suspend fun changeVoice(
         @Path("memberId") memberId: Long,
-        @Query("voiceId") voiceId: Long
+        @Body voiceId: Long
     ): Response<BaseResponse<VoiceTakeResponse>>
 
 

@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.my_voice.components
 
+import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -18,9 +19,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +44,7 @@ import androidx.compose.ui.util.lerp
 import coil.compose.rememberAsyncImagePainter
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.CelabResponse
+import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceViewModel
 import kotlin.math.absoluteValue
 
 @Composable
@@ -48,7 +52,8 @@ fun CelebVoiceScreen(
     pagerState: PagerState,
     page: Int,
     voice: CelabResponse,
-    onVoiceSelected: (String, String) -> Unit
+//    onVoiceSelected: (String, String) -> Unit,
+    onVoiceChange: (Long) -> Unit
 ) {
 
     // 카드가 뒤집혔는지 여부를 저장하는 상태
@@ -81,11 +86,6 @@ fun CelebVoiceScreen(
             .padding(horizontal = 16.dp, vertical = 24.dp)
             .clickable {
                 isFlipped = !isFlipped
-
-                // 카드 앞면이 보이는 상태에서 클릭 시 음성 선택
-                if (!isFlipped) {
-                    onVoiceSelected(voice.voiceName, voice.customImageUrl)
-                }
             },
         contentAlignment = Alignment.Center
     ) {
@@ -176,33 +176,6 @@ fun CelebVoiceScreen(
                                 .padding(16.dp)
                         )
                     }
-
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 32.dp)
-                    ) {
-//                        Text(
-//                            text = voice.voiceName,
-//                            color = Color.White,
-//                            fontSize = 28.sp,
-//                            fontWeight = FontWeight.Bold
-//                        )
-
-                        // 이미 선택된 음성이면 표시
-                        if (voice.activated) {
-                            Text(
-                                text = "현재 선택됨",
-                                color = Color(0xffA37BBD),
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(top = 8.dp)
-                            )
-                        }
-                    }
                 }
             }
         }
@@ -261,7 +234,15 @@ fun CelebVoiceScreen(
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
-
+                    Button(
+                        onClick = {
+                            // 현재 선택 음성 변경
+                            Log.d("CelebVoiceScreen", "Activate 버튼 클릭: voiceId=${voice.voiceId}")
+                            onVoiceChange(voice.voiceId)
+                        }
+                    ) {
+                        Text("activate")
+                    }
 
                 }
             }

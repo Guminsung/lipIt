@@ -43,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.CelabResponse
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.CustomResponse
@@ -112,29 +113,38 @@ fun MyVoiceScreen(
                 modifier = Modifier
                     .padding(12.dp)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground), // 프로필 이미지
-                    contentDescription = "Profile Image",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clip(CircleShape)
-                        .background(Color.Gray)
-                )
+
+                if (state.selectedVoiceUrl.isNotEmpty()) {
+                    AsyncImage(
+                        model = state.selectedVoiceUrl,
+                        contentDescription = "profile image",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(CircleShape)
+                            .background(Color.Gray)
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground), // 프로필 이미지
+                        contentDescription = "Profile Image",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(CircleShape)
+                            .background(Color.Gray)
+                    )
+
+                }
 
                 Spacer(modifier = Modifier.width(20.dp))
-
+                // 선택 음성 부분
                 Column {
                     Text(
-                        text = "Harry Potter",
+                        text = state.selectedVoiceName,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
+                        fontSize = 24.sp,
                         color = Color.Black
-                    )
-                    Text(
-                        text = "the United Kingdom",
-                        fontSize = 14.sp,
-                        color = Color.Gray
                     )
                 }
             }
@@ -178,8 +188,8 @@ fun MyVoiceScreen(
                             pagerState = pagerState,
                             page = page,
                             voice = state.myCelebrityVoiceList[page],
-                            onVoiceSelected = { voiceName, voiceUrl ->
-                                viewModel.onIntent(MyVoiceIntent.SelectVoice(voiceName, voiceUrl))
+                            onVoiceChange = { voiceId ->
+                                viewModel.onIntent(MyVoiceIntent.ChangeVoice(voiceId))
                             }
                         )
                     }
