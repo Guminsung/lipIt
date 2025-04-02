@@ -22,11 +22,13 @@ public interface VoiceMapper {
 	VoiceMapper INSTANCE = Mappers.getMapper(VoiceMapper.class);
 
 	// Voice → VoiceResponseDto 변환
+	@Mapping(source = "voiceId", target = "voiceId")
 	@Mapping(source = "voiceName", target = "voiceName")
 	@Mapping(source = "imageUrl", target = "customImageUrl")
 	VoiceResponseDto toVoiceResponseDto(Voice voice);
 
 	// MemberVoice → VoiceResponseDto 변환
+	@Mapping(source = "voice.voiceId", target = "voiceId")
 	@Mapping(source = "voice.voiceName", target = "voiceName")
 	@Mapping(source = "voice.imageUrl", target = "customImageUrl")
 	VoiceResponseDto toVoiceResponseDto(MemberVoice memberVoice);
@@ -35,11 +37,13 @@ public interface VoiceMapper {
 	List<VoiceResponseDto> toVoiceResponseDtoList(List<MemberVoice> memberVoices);
 
 	// MemberVoice → UserVoiceResponseDto 변환
+	@Mapping(source = "voice.voiceId", target = "voiceId")
 	@Mapping(source = "voice.voiceName", target = "voiceName")
 	@Mapping(source = "voice.imageUrl", target = "customImageUrl")
 	UserVoiceResponseDto toUserVoiceResponseDto(MemberVoice memberVoice);
 
 	// Voice → UserVoiceResponseDto 변환
+	@Mapping(source = "voiceId", target = "voiceId")
 	@Mapping(source = "voiceName", target = "voiceName")
 	@Mapping(source = "imageUrl", target = "customImageUrl")
 	UserVoiceResponseDto toUserVoiceResponseDto(Voice voice);
@@ -48,6 +52,7 @@ public interface VoiceMapper {
 	List<UserVoiceResponseDto> toUserVoiceResponseDtoList(List<MemberVoice> memberVoices);
 
 	// Voice + activated → CelebVoiceResponseDto 변환
+	@Mapping(source = "voice.voiceId", target = "voiceId")
 	@Mapping(source = "voice.voiceName", target = "voiceName")
 	@Mapping(source = "voice.imageUrl", target = "customImageUrl")
 	@Mapping(source = "activated", target = "activated")

@@ -11,6 +11,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class VoiceResponseDto {
+    @Schema(description = "음성 ID", example = "1")
+    private Long voiceId;
+    
     @Schema(description = "음성 이름", example = "내 녹음 음성")
     private String voiceName;
     
