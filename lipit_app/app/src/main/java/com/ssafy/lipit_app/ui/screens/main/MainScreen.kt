@@ -43,6 +43,7 @@ import com.ssafy.lipit_app.ui.screens.main.components.NextLevel
 import com.ssafy.lipit_app.ui.screens.main.components.ReportAndVoiceBtn
 import com.ssafy.lipit_app.ui.screens.main.components.TodaysSentence
 import com.ssafy.lipit_app.ui.screens.main.components.WeeklyCallsSection
+import com.ssafy.lipit_app.util.SharedPreferenceUtils
 
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -64,6 +65,11 @@ fun MainScreen(
         }
     }
 
+    // 회원 등급 관련
+    LaunchedEffect(Unit) {
+        val memberId = SharedPreferenceUtils.getMemberId()
+        viewModel.fetchUserLevel(memberId)
+    }
 
 
     // 브로드캐스트 수신기 등록
@@ -100,7 +106,7 @@ fun MainScreen(
             .padding(start = 20.dp, end = 20.dp, top = 40.dp),
 
         ) {
-        UserInfoSection(state.userName, state, onIntent) // 상단의 유저 이름, 등급 부분
+        UserInfoSection(state.userName, state, onIntent, state.level) // 상단의 유저 이름, 등급 부분
         TodaysSentence(state.sentenceOriginal, state.sentenceTranslated) // 오늘의 문장
 
         WeeklyCallsSection(
@@ -151,7 +157,7 @@ fun CallButton(onIntent: (MainIntent) -> Unit) {
 
 // 사용자 정보 (이름 & 등급)
 @Composable
-fun UserInfoSection(userName: String, state: MainState, onIntent: (MainIntent) -> Unit) {
+fun UserInfoSection(userName: String, state: MainState, onIntent: (MainIntent) -> Unit, level: Int) {
     var showPopup by remember { mutableStateOf(false) } // 로그아웃 팝업 관련
 
     Row(
@@ -177,7 +183,7 @@ fun UserInfoSection(userName: String, state: MainState, onIntent: (MainIntent) -
 
         // 사용자 등급
         Image(
-            painter = painterResource(id = R.drawable.user_level_2),
+            painter = painterResource(id = getLevelIcon(level)),
             contentDescription = "사용자 등급",
             modifier = Modifier.size(26.dp)
         )
@@ -197,6 +203,20 @@ fun UserInfoSection(userName: String, state: MainState, onIntent: (MainIntent) -
         }
     }
 }
+
+// 레벨 등급에 따른 아이콘 매핑
+@Composable
+fun getLevelIcon(level: Int): Int {
+    return when (level) {
+        1 -> R.drawable.user_level_1
+        2 -> R.drawable.user_level_2
+        3 -> R.drawable.user_level_3
+        4 -> R.drawable.user_level_4
+        5 -> R.drawable.user_level_5
+        else -> R.drawable.user_level_1 // 기본값
+    }
+}
+
 
 
 //@RequiresApi(Build.VERSION_CODES.TIRAMISU)

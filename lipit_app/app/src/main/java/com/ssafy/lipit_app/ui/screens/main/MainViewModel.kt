@@ -96,4 +96,22 @@ class MainViewModel(private val context: Context) : ViewModel() {
             }
         }
     }
+
+    fun fetchUserLevel(memberId: Long) {
+        viewModelScope.launch {
+            val result =
+                com.ssafy.lipit_app.domain.repository.AuthRepository().getMemberLevel(memberId)
+            result.onSuccess { levelData ->
+                Log.d("UserLevel", "등급 정보: $levelData")
+                _state.update {
+                    it.copy(
+                        level = levelData.level
+                    )
+                }
+            }.onFailure { e ->
+                Log.e("UserLevel", "회원 등급 조회 실패", e)
+
+            }
+        }
+    }
 }

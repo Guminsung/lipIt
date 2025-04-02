@@ -72,10 +72,20 @@ class AuthRepository {
     suspend fun getMemberLevel(memberId: Long): Result<LevelResponse> {
         return try {
             val response = RetrofitUtil.authService.getMemberLevel(memberId)
-            handleResponse(response)
+            if (response.isSuccessful) {
+                val body = response.body()?.data
+                if (body != null) {
+                    Result.success(body)
+                } else {
+                    Result.failure(Exception("등급 데이터가 비어있습니다"))
+                }
+            } else {
+                Result.failure(Exception("서버 응답 실패"))
+            }
         } catch (e: Exception) {
-            Log.e("AuthRepository", "예외 발생: ${e.message}", e)
             Result.failure(e)
         }
     }
+
+
 }

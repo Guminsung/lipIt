@@ -6,6 +6,7 @@ data class MainState(
     // 상단 user 정보
     val userName: String = "Sarah",
     val isLoading: Boolean = false,
+    val level: Int = 1,
 
     // Weekly Calls 파트
     val selectedDay: String = getTodayDay(),
