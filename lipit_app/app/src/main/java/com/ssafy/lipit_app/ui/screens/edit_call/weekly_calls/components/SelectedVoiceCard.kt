@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsIntent
+import com.ssafy.lipit_app.ui.screens.main.MainIntent
 
 @Composable
 fun SelectedVoiceCard(voiceName: String, voiceImageUrl: String, onIntent: (WeeklyCallsIntent) -> Unit) {

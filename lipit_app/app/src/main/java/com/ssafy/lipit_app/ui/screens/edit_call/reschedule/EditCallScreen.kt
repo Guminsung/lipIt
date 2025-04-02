@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.edit_call.reschedule
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
@@ -49,24 +50,40 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.CallSchedule
 import kotlinx.coroutines.selects.select
+
+//val isEditMode = ""
 
 @Composable
 fun EditCallScreen(
+    schedule: CallSchedule,
     state: EditCallState,
     onIntent: (EditCallIntent) -> Unit,
-    onBack: () -> Unit
-
+    onBack: () -> Unit,
+    onSuccess: () -> Unit
 ) {
-    BackHandler {
-        onBack()
-    }
+    BackHandler { onBack() }
+
+    val isEditMode = schedule.callScheduleId != -1L
+
+    val initialHour = schedule.scheduledTime.substringBefore(":").toIntOrNull() ?: 0
+    val initialMinute = schedule.scheduledTime.substringAfter(":").substringBefore(":").toIntOrNull() ?: 0
+
+    val isFreeModeDefault = schedule.topicCategory == "자유주제"
+    var selectedIndex by remember { mutableStateOf(if (isFreeModeDefault) 0 else 1) }
+    var selectedCategory by remember { mutableStateOf(if (isFreeModeDefault) "" else schedule.topicCategory) }
+
+    Log.d("TAG 시간내놔", "EditCallScreen: ${initialHour} , ${initialMinute}")
+
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(Color(0xFFFDF8FF))
             .padding(top = 44.dp, start = 20.dp, end = 20.dp),
     ) {
+
         // 제목
         Text(
             text = "Reschedule Call",
@@ -85,7 +102,7 @@ fun EditCallScreen(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
-            WheelTimePicker()
+            WheelTimePicker(hour = initialHour, minute = initialMinute)
         }
 
         Spacer(modifier = Modifier.height(30.dp))
@@ -105,48 +122,69 @@ fun EditCallScreen(
         Spacer(modifier = Modifier.height(10.dp))
 
         // 자유주제-카테고리 선택 모달
-        var selectedIndex by remember { mutableStateOf(0) }
-
+//        var selectedIndex by remember { mutableStateOf(0) }
         CustomSegmentedButtons(
             selectedIndex = selectedIndex,
-            onSelected = { index ->
-                selectedIndex = index // 업뎃
-
-                if (index == 1) { // 카테고리 선택
-                    // 상태 변경
-                    state.isFreeModeSelected = false
-                    state.isCategoryModeSelected = true
-
-                    //todo: 선택 되면 카테고리 선택 활성화
-
-                } else { // 자유주제 선택
-                    // 상태 변경
-                    state.isFreeModeSelected = true
-                    state.isCategoryModeSelected = false
-
-                    //todo: 카테고리 선택 비활성화
+            onSelected = {
+                selectedIndex = it
+                if (it == 0) {
+                    selectedCategory = ""
                 }
             }
         )
+//        CustomSegmentedButtons(
+//            selectedIndex = selectedIndex,
+//            onSelected = { index ->
+//                selectedIndex = index // 업뎃
+//
+//                if (index == 1) { // 카테고리 선택
+//                    // 상태 변경
+//                    state.isFreeModeSelected = false
+//                    state.isCategoryModeSelected = true
+//
+//                    //todo: 선택 되면 카테고리 선택 활성화
+//
+//                } else { // 자유주제 선택
+//                    // 상태 변경
+//                    state.isFreeModeSelected = true
+//                    state.isCategoryModeSelected = false
+//
+//                    //todo: 카테고리 선택 비활성화
+//                }
+//            }
+//        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // 카테고리 선택 드롭다운
-        CategoryDropDownMenu()
+//        CategoryDropDownMenu()
+        if (selectedIndex == 1) {
+            CategoryDropDownMenu(
+                selectedCategory = selectedCategory,
+                onCategorySelected = { selectedCategory = it }
+            )
+        }
 
         Spacer(modifier = Modifier.height(70.dp))
 
         //변경-삭제 버튼들
-        EditCallButtons()
+        EditCallButtons(
+            schedule = schedule,
+            isEditMode = isEditMode,
+            onIntent = { intent ->
+                onIntent(intent)
+                onSuccess() //  MainViewModel 갱신 트리거
+                onBack()    // 바텀시트 닫기까지 동시에 처리
+            }
+        )
 
         Spacer(modifier = Modifier.height(20.dp))
-
     }
 }
 
 
 @Composable
-fun CategoryDropDownMenu() {
+fun CategoryDropDownMenu(selectedCategory: String, onCategorySelected: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
 
     //  카테고리: 스포츠, 여행, 영화/책 , 음식, 게임(강추), 음악, 건강
@@ -161,171 +199,146 @@ fun CategoryDropDownMenu() {
             .background(Color(0xFFFDF8FF), shape = RoundedCornerShape(15.dp))
     ) {
         // 드롭다운을 여는 버튼
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(55.dp)
+//                .border(
+//                    width = 1.dp,
+//                    color = Color(0xFFE6E6E6),
+//                    shape = RoundedCornerShape(size = 15.dp)
+//                )
+//                .clickable { expanded = true },
+//            verticalAlignment = Alignment.CenterVertically,
+//            horizontalArrangement = Arrangement.SpaceBetween
+//        ) {
+//            Text(
+//                text = if(selectedOption == "") "카테고리 선택" else selectedOption,
+//                style = TextStyle(
+//                    fontSize = 16.sp,
+//                    lineHeight = 30.sp,
+//                    fontWeight = FontWeight(400),
+//                    color = Color(0xFF7D7D7D),
+//                ),
+//                modifier = Modifier
+//                    .padding(start = 18.dp)
+//            )
+//
+//            // 드롭다운 띄울 화살표 아이콘
+//            Box(
+//                modifier = Modifier
+//                    .padding(end = 18.dp)
+//            ) {
+//                Icon(
+//                    painterResource(id = R.drawable.edit_call_dropdown_icon),
+//                    contentDescription = "드롭다운",
+//                    modifier = Modifier
+//                        .width(14.dp)
+//                        .height(7.dp),
+//                    tint = Color(0xFFD3D3D3)
+//                )
+//            }
+//        }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(55.dp)
-                .border(
-                    width = 1.dp,
-                    color = Color(0xFFE6E6E6),
-                    shape = RoundedCornerShape(size = 15.dp)
-                )
+                .border(1.dp, Color(0xFFE6E6E6), RoundedCornerShape(15.dp))
                 .clickable { expanded = true },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = if(selectedOption == "") "카테고리 선택" else selectedOption,
-                style = TextStyle(
-                    fontSize = 16.sp,
-                    lineHeight = 30.sp,
-                    fontWeight = FontWeight(400),
-                    color = Color(0xFF7D7D7D),
-                ),
-                modifier = Modifier
-                    .padding(start = 18.dp)
+                text = if (selectedCategory.isEmpty()) "카테고리 선택" else selectedCategory,
+                style = TextStyle(fontSize = 16.sp, color = Color(0xFF7D7D7D)),
+                modifier = Modifier.padding(start = 18.dp)
             )
-
-            // 드롭다운 띄울 화살표 아이콘
-            Box(
-                modifier = Modifier
-                    .padding(end = 18.dp)
-            ) {
-                Icon(
-                    painterResource(id = R.drawable.edit_call_dropdown_icon),
-                    contentDescription = "드롭다운",
-                    modifier = Modifier
-                        .width(14.dp)
-                        .height(7.dp),
-                    tint = Color(0xFFD3D3D3)
-                )
-            }
+            Icon(
+                painter = painterResource(id = R.drawable.edit_call_dropdown_icon),
+                contentDescription = null,
+                modifier = Modifier.padding(end = 18.dp)
+            )
         }
 
         // 드롭다운 메뉴
+//        DropdownMenu(
+//            expanded = expanded,
+//            onDismissRequest = { expanded = false },
+//            modifier = Modifier
+//                .background(Color(0xFFFDF8FF))
+//                .clip(RoundedCornerShape(30.dp))
+//                .width(200.dp)
+//                .padding(10.dp)
+//
+//        ) {
+//            options.forEach { label ->
+//                val isSelected = selectedOption == label
+//
+//                DropdownMenuItem(
+//                    text = {
+//                        Text(
+//                            text = label,
+//                            style = TextStyle(
+//                                fontSize = 14.sp,
+//                                lineHeight = 25.sp,
+//                                fontWeight = FontWeight(400),
+//                                color = Color(0xFF222124),
+//                            )
+//                        )
+//
+//                    },
+//                    onClick = {
+//                        selectedOption = label
+//                        expanded = false
+//                    },
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .background(
+//                            if (isSelected) Color(0xFFF1F1F1) else Color.Transparent
+//                        )
+//                )
+//            }
+//        }
+
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier
-                .background(Color(0xFFFDF8FF))
-                .clip(RoundedCornerShape(30.dp))
-                .width(200.dp)
-                .padding(10.dp)
-
+            modifier = Modifier.background(Color(0xFFFDF8FF))
         ) {
             options.forEach { label ->
-                val isSelected = selectedOption == label
-
                 DropdownMenuItem(
                     text = {
-                        Text(
-                            text = label,
-                            style = TextStyle(
-                                fontSize = 14.sp,
-                                lineHeight = 25.sp,
-                                fontWeight = FontWeight(400),
-                                color = Color(0xFF222124),
-                            )
-                        )
-
+                        Text(text = label, style = TextStyle(fontSize = 14.sp, color = Color(0xFF222124)))
                     },
                     onClick = {
-                        selectedOption = label
+                        onCategorySelected(label)
                         expanded = false
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            if (isSelected) Color(0xFFF1F1F1) else Color.Transparent
-                        )
+                    }
                 )
             }
-        }
+        } //... DropdownMenu
+
     }
 }
 
 
 @Composable
-fun EditCallButtons() {
-    Row(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        // 변경하기
-        Button(
-            onClick = { /*TODO: 변경 기능*/ },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFDDD3E2),
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .height(48.dp),
-            shape = RoundedCornerShape(8.dp),
-            content = {
-                Text(
-                    text = "변경하기",
-                    style = TextStyle(
-                        fontSize = 17.sp,
-                        lineHeight = 15.sp,
-                        fontWeight = FontWeight(510),
-                        color = Color(0xFF68606E),
-                        textAlign = TextAlign.Center,
-                    )
-                )
-            }
-
-        )
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        // 삭제하기
-        Button(
-            onClick = { /*TODO: 삭제 기능*/ },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFA37BBD),
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .height(48.dp),
-            shape = RoundedCornerShape(8.dp),
-            content = {
-                Text(
-                    text = "삭제하기",
-                    style = TextStyle(
-                        fontSize = 17.sp,
-                        lineHeight = 15.sp,
-                        fontWeight = FontWeight(510),
-                        color = Color(0xFFFDF8FF),
-                        textAlign = TextAlign.Center,
-                    )
-                )
-            }
-
-        )
-    }
-
-    Spacer(modifier = Modifier.height(20.dp))
-}
-
-@Composable
-fun WheelTimePicker() {
+fun WheelTimePicker(hour: Int, minute: Int) {
     Row(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        WheelColumn(items = (1..24).map { it.toString().padStart(2, '0') })
-        WheelColumn(items = (0..59).map { it.toString().padStart(2, '0') })
-
+        WheelColumn((0..23).map { it.toString().padStart(2, '0') }, hour)
+        WheelColumn((0..59).map { it.toString().padStart(2, '0') }, minute)
     }
 }
 
 @Composable
-fun WheelColumn(items: List<String>) {
-    //todo: 선택된 중간 영역에 배경 추가
-    //todo: 선택된 시간 중앙에 위치 맞추기
+fun WheelColumn(items: List<String>, initialIndex: Int) {
+    val visibleStart = (initialIndex - 2).coerceIn(0, items.size - 5)
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = visibleStart)
 
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = 3)
     LazyColumn(
         state = listState,
         modifier = Modifier
@@ -334,19 +347,98 @@ fun WheelColumn(items: List<String>) {
         verticalArrangement = Arrangement.Center
     ) {
         items(items.size) { index ->
-            val item = items[index]
+            val isSelected = index == listState.firstVisibleItemIndex + 2
+
             Text(
-                text = item,
-                fontSize = if (index == listState.firstVisibleItemIndex + 2) 20.sp else 17.sp,
+                text = items[index],
+                fontSize = if (isSelected) 20.sp else 17.sp,
                 modifier = Modifier
                     .height(30.dp)
                     .wrapContentHeight(Alignment.CenterVertically)
                     .fillMaxWidth(),
                 textAlign = TextAlign.Center,
-                color = if (index == listState.firstVisibleItemIndex + 2) Color.Black else Color.Gray
+                color = if (isSelected) Color.Black else Color.Gray
             )
         }
     }
+}
+
+
+
+@Composable
+fun EditCallButtons(
+    schedule: CallSchedule,
+    isEditMode: Boolean,
+    onIntent: (EditCallIntent) -> Unit,
+//    onCancel: () -> Unit,
+//    onDelete: () -> Unit
+) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+
+        // 왼쪽 버튼
+        Button(
+            onClick = {
+                if (isEditMode) {
+//                    onIntent(EditCallIntent.UpdateSchedule(schedule))
+                } else {
+//                    onIntent(EditCallIntent.CreateSchedule(schedule))
+                }
+//                if (isEditMode) onDelete() else onCancel()
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isEditMode) Color(0xFFA37BBD) else Color(0xFFD7D8DA),
+            ),
+            modifier = Modifier
+                .weight(1f)
+                .height(48.dp),
+            shape = RoundedCornerShape(8.dp),
+            content = {
+                Text(
+                    text = if (isEditMode) "변경하기" else "취소",
+                    style = TextStyle(
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight(510),
+                        color = Color(0xFFFDF8FF).takeIf { isEditMode } ?: Color(0xFF6F6F6F),
+                        textAlign = TextAlign.Center,
+                    )
+                )
+            }
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // 오른쪽 버튼
+        Button(
+            onClick = {
+                if (isEditMode) {
+//                    onIntent(EditCallIntent.UpdateSchedule(schedule))
+                } else {
+//                    onIntent(EditCallIntent.CreateSchedule(schedule))
+                }
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFDDD3E2),
+            ),
+            modifier = Modifier
+                .weight(1f)
+                .height(48.dp),
+            shape = RoundedCornerShape(8.dp),
+            content = {
+                Text(
+                    text = if (isEditMode) "삭제하기" else "추가하기",
+                    style = TextStyle(
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight(510),
+                        color = Color(0xFF68606E),
+                        textAlign = TextAlign.Center,
+                    )
+                )
+            }
+        )
+    }
+
+
+    Spacer(modifier = Modifier.height(20.dp))
 }
 
 
@@ -424,7 +516,15 @@ fun EditCallsPreview() {
             selectedCategory = "스포츠"
         ),
         onIntent = {},
-        onBack = {}
+        onBack = {},
+        schedule = CallSchedule(
+            callScheduleId = -1L,
+            memberId = -1L,
+            scheduleDay = "MONDAY",
+            scheduledTime = "00:00:00",
+            topicCategory = "EMPTY",
+        ),
+        onSuccess = {}
     )
 
 }

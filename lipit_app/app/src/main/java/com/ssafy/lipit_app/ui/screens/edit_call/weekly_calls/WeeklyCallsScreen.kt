@@ -19,12 +19,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.components.SelectedVoiceCard
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.components.WeeklySchedule
+import com.ssafy.lipit_app.ui.screens.main.MainIntent
 
  // Main > Settings 누르면 보여지는 BottomSheet
 @Composable
 fun WeeklyCallsScreen(
     state: WeeklyCallsState,
-    onIntent: (WeeklyCallsIntent) -> Unit
+    onIntent: (WeeklyCallsIntent) -> Unit,
+    onMainIntent: (MainIntent) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -52,9 +54,11 @@ fun WeeklyCallsScreen(
         // 일주일 스케줄 일정
         WeeklySchedule(
             callSchedules = state.callSchedules,
-            onTapSchedule = {
-                // 바텀시트를 EditCallScreen 모드로 전환하는 콜백
-                onIntent(WeeklyCallsIntent.OnEditSchedule)
+            onTapSchedule = { schedule ->
+                onIntent(WeeklyCallsIntent.OnEditSchedule(schedule))
+            },
+            onDeleteSchedule = { scheduleId ->
+                onMainIntent(MainIntent.DeleteSchedule(scheduleId))
             }
         )
 
@@ -86,6 +90,7 @@ fun EditWeeklyCallsPreview() {
 
             callSchedules = callSchedules
         ),
-        onIntent = {}
+        onIntent = {},
+        onMainIntent = {}
     )
 }
