@@ -137,9 +137,11 @@ fun dailyCallSchedule(callItems: List<CallItem>) {
 
 @SuppressLint("DefaultLocale")
 fun formatTimeTo12Hour(time: String): String {
-    val (hourStr, minuteStr) = time.split(":")
-    val hour = hourStr.toInt()
-    val minute = minuteStr.toInt()
+    val parts = time.split(":")
+    if (parts.size < 2) return time // 잘못된 입력은 그대로 반환
+
+    val hour = parts[0].toIntOrNull() ?: return time
+    val minute = parts[1].toIntOrNull() ?: return time
 
     val isAM = hour < 12
     val displayHour = when {
@@ -152,3 +154,4 @@ fun formatTimeTo12Hour(time: String): String {
 
     return String.format("%d:%02d %s", displayHour, minute, amPm)
 }
+
