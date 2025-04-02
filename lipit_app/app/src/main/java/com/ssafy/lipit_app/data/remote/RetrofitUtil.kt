@@ -40,4 +40,8 @@ object RetrofitUtil {
         springRetrofit.create(MyVoiceService::class.java)
     }
 
+    val reportService: ReportService by lazy {
+        fastApiRetrofit.create(ReportService::class.java)
+    }
+
 }
