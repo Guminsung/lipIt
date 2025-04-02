@@ -21,10 +21,15 @@ class AuthInterceptor(private val context: Context) : Interceptor {
         Log.d("AuthInterceptor", "요청 URL: $url")
 
         // 로그인/회원가입 API 요청인 경우 `Authorization` 헤더를 추가하지 않음
-        if (url.contains("/auth")) {
+        if (
+            url.contains("/auth/login") ||
+            url.contains("/auth/signup") ||
+            url.contains("/auth/refresh")
+        ) {
             Log.d("AuthInterceptor", "인증이 필요하지 않은 요청: $url")
             return chain.proceed(originalRequest)
         }
+
 
         // 로그인 요청이 아닌 경우, 토큰을 가져와서 헤더에 추가
         var token: String? = null

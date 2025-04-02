@@ -29,6 +29,10 @@ data class MainState(
     //오늘의 문장
     val sentenceOriginal: String = "With your talent and hard work, sky’s the limit!",
     val sentenceTranslated: String = "너의 재능과 노력이라면, 한계란 없지!",
+
+    // 로그아웃 관련
+    var isLogoutClicked: Boolean = false,
+    var isLogoutSuccess: Boolean = false
 )
 
 // 오늘 요일 찾기

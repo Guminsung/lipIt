@@ -1,10 +1,10 @@
 package com.ssafy.lipit_app.base
 
 import android.app.Application
+import android.content.Context
 import android.util.Log
 import com.google.firebase.FirebaseApp
 import com.google.firebase.messaging.FirebaseMessaging
-import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.ssafy.lipit_app.ui.screens.main.components.DailySentenceManager
@@ -56,8 +56,8 @@ class ApplicationClass : Application() {
         client = OkHttpClient.Builder()
             .readTimeout(5000, TimeUnit.MILLISECONDS)
             .connectTimeout(5000, TimeUnit.MILLISECONDS)
-            .addInterceptor(AuthInterceptor(this))
             .addInterceptor(loggingInterceptor)
+            .addInterceptor(AuthInterceptor(applicationContext))
             .build()
     }
 }

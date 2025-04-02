@@ -96,8 +96,18 @@ fun NavGraph(
 
 
         composable("main") {
-            val viewModel = viewModel<MainViewModel>()
+           // val viewModel = viewModel<MainViewModel>()
+            val viewModel: MainViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    @Suppress("UNCHECKED_CAST")
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return MainViewModel(context) as T
+                    }
+                }
+            )
+
             val state by viewModel.state.collectAsState()
+            val context = LocalContext.current.applicationContext
 
             MainScreen(
 //                state = state,
@@ -112,8 +122,13 @@ fun NavGraph(
                         else -> { /* 다른 Intent 유형은 ViewModel에서 처리 */
                         }
                     }
-                },
-                viewModel = MainViewModel()
+                },viewModel,
+                onSuccess = {
+                    navController.navigate("auth_start") { // 처음 화면으로 돌아감
+                        popUpTo("main") { inclusive = true } // main 화면 제거
+                        launchSingleTop = true
+                    }
+                }
             )
         }
 
