@@ -21,10 +21,6 @@ class ApplicationClass : Application() {
 
         private lateinit var context: Context
 
-        fun getApplicationContext(): Context {
-            return context
-        }
-
     }
 
     override fun onCreate() {

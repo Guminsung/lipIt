@@ -38,7 +38,10 @@ import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceIntent
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceScreen
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceViewModel
 import com.ssafy.lipit_app.ui.screens.report.ReportDetailScreen
+import com.ssafy.lipit_app.ui.screens.report.ReportDetailViewModel
+import com.ssafy.lipit_app.ui.screens.report.ReportIntent
 import com.ssafy.lipit_app.ui.screens.report.ReportScreen
+import com.ssafy.lipit_app.ui.screens.report.ReportViewModel
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
@@ -62,8 +65,6 @@ fun NavGraph(
         }
 
         composable("login") {
-//            val viewModel = viewModel<LoginViewModel>()
-            val context = LocalContext.current
             val viewModel: LoginViewModel = viewModel(
                 factory = object : ViewModelProvider.Factory {
                     @Suppress("UNCHECKED_CAST")
@@ -97,7 +98,7 @@ fun NavGraph(
 
 
         composable("main") {
-           // val viewModel = viewModel<MainViewModel>()
+            // val viewModel = viewModel<MainViewModel>()
             val viewModel: MainViewModel = viewModel(
                 factory = object : ViewModelProvider.Factory {
                     @Suppress("UNCHECKED_CAST")
@@ -107,11 +108,7 @@ fun NavGraph(
                 }
             )
 
-            val state by viewModel.state.collectAsState()
-            val context = LocalContext.current.applicationContext
-
             MainScreen(
-//                state = state,
                 onIntent = { intent ->
                     viewModel.onIntent(intent)
 
@@ -123,7 +120,7 @@ fun NavGraph(
                         else -> { /* 다른 Intent 유형은 ViewModel에서 처리 */
                         }
                     }
-                },viewModel,
+                }, viewModel,
                 onSuccess = {
                     navController.navigate("auth_start") { // 처음 화면으로 돌아감
                         popUpTo("main") { inclusive = true } // main 화면 제거
@@ -195,11 +192,21 @@ fun NavGraph(
 
         // 레포트 관련 화면들
         composable("reports") {
+
+            val viewModel = viewModel<ReportViewModel>()
             ReportScreen(
-                onReportItemClick = { reportId ->
-                    navController.navigate("report_detail_screen/$reportId")
-                },
-                onBackClick = { navController.popBackStack() }
+                state = viewModel.state.collectAsState().value,
+                onIntent = { intent ->
+                    when (intent) {
+                        is ReportIntent.NavigateToReportDetail -> {
+                            val reportId = intent.reportId
+                            navController.navigate("report_detail_screen/$reportId")
+                        }
+                        else -> {
+                            viewModel.onIntent(intent)
+                        }
+                    }
+                }
             )
         }
 
@@ -207,10 +214,21 @@ fun NavGraph(
             route = "report_detail_screen/{reportId}",
             arguments = listOf(navArgument("reportId") { type = NavType.LongType })
         ) { backStackEntry ->
+
             val reportId = backStackEntry.arguments?.getLong("reportId") ?: -1L
+            val viewModel: ReportDetailViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    @Suppress("UNCHECKED_CAST")
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return ReportDetailViewModel(reportId) as T
+                    }
+                }
+            )
+
             ReportDetailScreen(
                 reportId = reportId,
-                onBackClick = { navController.popBackStack() }
+                state = viewModel.state.collectAsState().value,
+                onIntent = viewModel::onIntent
             )
         }
 
