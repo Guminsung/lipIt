@@ -1,6 +1,10 @@
 package com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,7 +41,7 @@ fun CallActionButtons(
     onIntent: (VoiceCallIntent) -> Unit
 ) {
     // 메뉴 버튼 펼침 여부
-    var isMenuExpanded by remember{ mutableStateOf(false) }
+    var isMenuExpanded by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
@@ -50,96 +54,116 @@ fun CallActionButtons(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Bottom
         ) {
-            // 메뉴 -> 번역 / 자막 버튼 나타내기 (애니메이션 올라오기)
-            AnimatedVisibility(visible = isMenuExpanded){
-                Column(
+            Box(
+                contentAlignment = Alignment.BottomCenter,
+                modifier = Modifier
+                    .width(75.dp)
+                    .height(200.dp)
+            ) {
+                // 메뉴 -> 번역 / 자막 버튼 나타내기 (애니메이션 올라오기)
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = isMenuExpanded,
+                    enter = slideInVertically(
+                        initialOffsetY = { it/100 },
+                        animationSpec = tween(durationMillis = 300)
+                    ) + fadeIn(),
+                    exit = slideOutVertically(
+                        targetOffsetY = { it / 100 },
+                        animationSpec = tween(durationMillis = 300)
+                    ) + fadeOut()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .height(200.dp)
+                            .fillMaxWidth()
+                            .padding(start = 5.dp, end = 5.dp)
+                            .background(
+                                color = Color(0x1AFDF8FF),
+                                shape = RoundedCornerShape(50.dp)
+                            ),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Spacer(modifier = Modifier.height(30.dp))
+
+                        // 자막 버튼
+                        val subtitleIcon =
+                            if (state.showSubtitle) R.drawable.oncall_on_subtitle_icon else R.drawable.oncall_off_subtitle_icon
+
+                        Icon(
+                            painterResource(id = subtitleIcon),
+                            contentDescription = "자막 켜기",
+                            modifier = Modifier
+                                .width(30.dp)
+                                .height(30.dp)
+
+                                //클릭하면 자막 켜기
+                                .clickable {
+                                    if (!state.showSubtitle) {
+                                        onIntent(VoiceCallIntent.SubtitleOn(true))
+                                    } else {
+                                        onIntent(VoiceCallIntent.SubtitleOff(false))
+                                    }
+                                },
+                            tint = Color(0xFFFDF8FF)
+                        )
+
+                        Spacer(modifier = Modifier.height(25.dp))
+
+                        // 번역 버튼
+                        val descriptionIcon =
+                            if (state.showTranslation) R.drawable.oncall_on_translate_icon else R.drawable.oncall_off_translate_icon
+
+                        Icon(
+                            painterResource(id = descriptionIcon),
+                            contentDescription = "번역 켜기",
+                            modifier = Modifier
+                                .width(30.dp)
+                                .height(30.dp)
+
+                                //클릭하면 번역 켜기
+                                .clickable(
+                                    enabled = state.showSubtitle, // 번역 꺼져있으면 클릭 비활성화
+                                    onClick = {
+                                        if (!state.showTranslation) {
+                                            onIntent(VoiceCallIntent.TranslationOn(true))
+                                        } else {
+                                            onIntent(VoiceCallIntent.TranslationOff(false))
+                                        }
+                                    }
+                                ),
+                            // 자막 켜져 있으면 밝게 출력하고, 꺼져있으면 비활(어둡게 처리)
+                            tint = if (state.showSubtitle) Color(0xFFFDF8FF) else Color(0x66FDF8FF)
+                        )
+                    }
+                }
+
+                // 메뉴
+                Box(
                     modifier = Modifier
                         .width(70.dp)
-                        .height(200.dp)
-                        .padding(start = 5.dp, end = 5.dp)
-                        .background(
-                            color = Color(0x1AFDF8FF),
-                            shape = RoundedCornerShape(50.dp)
-                        ),
-                    //.offset(y = (-75).dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .height(70.dp)
+                        .clip(CircleShape)
+                        .background(color = Color(0x1AFDF8FF))
+                        .clickable {
+                            // 자막 버튼 & 번역 버튼 출력
+                            isMenuExpanded = !isMenuExpanded
+                        },
+                    contentAlignment = Alignment.Center
                 ) {
-                    Spacer(modifier = Modifier.height(30.dp))
-
-                    // 자막 버튼
-                    val subtitleIcon = if(state.showSubtitle) R.drawable.oncall_on_subtitle_icon else R.drawable.oncall_off_subtitle_icon
-
                     Icon(
-                        painterResource(id = subtitleIcon),
-                        contentDescription = "자막 켜기",
-                        modifier = Modifier
-                            .width(30.dp)
-                            .height(30.dp)
-
-                            //클릭하면 자막 켜기
-                            .clickable {
-                                if (!state.showSubtitle) {
-                                    onIntent(VoiceCallIntent.SubtitleOn(true))
-                                } else {
-                                    onIntent(VoiceCallIntent.SubtitleOff(false))
-                                }
-                            },
+                        painterResource(id = R.drawable.oncall_menu_icon),
+                        contentDescription = "메뉴",
+                        Modifier
+                            .width(39.dp)
+                            .height(62.dp),
                         tint = Color(0xFFFDF8FF)
                     )
-
-                    Spacer(modifier = Modifier.height(25.dp))
-
-                    // 번역 버튼
-                    val descriptionIcon = if(state.showTranslation) R.drawable.oncall_on_translate_icon else R.drawable.oncall_off_translate_icon
-
-                    Icon(
-                        painterResource(id = descriptionIcon),
-                        contentDescription = "번역 켜기",
-                        modifier = Modifier
-                            .width(30.dp)
-                            .height(30.dp)
-                            
-                            //클릭하면 번역 켜기
-                            .clickable (
-                                enabled = state.showSubtitle, // 번역 꺼져있으면 클릭 비활성화
-                                onClick = {
-                                    if (!state.showTranslation) {
-                                        onIntent(VoiceCallIntent.TranslationOn(true))
-                                    } else {
-                                        onIntent(VoiceCallIntent.TranslationOff(false))
-                                    }
-                                }
-                            ),
-                        // 자막 켜져 있으면 밝게 출력하고, 꺼져있으면 비활(어둡게 처리)
-                        tint = if(state.showSubtitle) Color(0xFFFDF8FF) else Color(0x66FDF8FF)
-                    )
                 }
-            }
 
-            // 메뉴
-            Box(
-                modifier = Modifier
-                    .width(70.dp)
-                    .height(70.dp)
-                    .clip(CircleShape)
-                    .background(color = Color(0x1AFDF8FF))
-                    .clickable {
-                        // 자막 버튼 & 번역 버튼 출력
-                        isMenuExpanded = !isMenuExpanded
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painterResource(id = R.drawable.oncall_menu_icon),
-                    contentDescription = "메뉴",
-                    Modifier
-                        .width(39.dp)
-                        .height(62.dp),
-                    tint = Color(0xFFFDF8FF)
-                )
             }
 
         }
+
 
         // 통화 끊기
         Box(
