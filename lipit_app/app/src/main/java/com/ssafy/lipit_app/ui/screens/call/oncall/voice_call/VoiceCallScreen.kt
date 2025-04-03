@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.call.oncall.voice_call
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -12,21 +13,28 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.data.model.ChatMessage
 import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.CallActionButtons
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.Subtitle.CallWithSubtitleAndTranslate
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.Subtitle.CallWithSubtitleOriginalOnly
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.Subtitle.CallWithoutSubtitle
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.VoiceCallHeader
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.VoiceRecognizerHelper
+import com.ssafy.lipit_app.util.SharedPreferenceUtils
 
 @Composable
 fun VoiceCallScreen(
@@ -35,9 +43,62 @@ fun VoiceCallScreen(
     viewModel: VoiceCallViewModel,
     navController: NavController
 ) {
+    val context = LocalContext.current
+    val textState = remember { mutableStateOf("") }
+    val chatMessages = remember { mutableStateListOf<ChatMessage>() }
+
+    // 멤버 ID 가져오기
+    val memberId: Long by lazy {
+        SharedPreferenceUtils.getMemberId()
+    }
+
+    val recognizer = remember {
+        VoiceRecognizerHelper(context) { result ->
+            Log.d("VoiceCallScreen", "🙋 User: $result")
+
+            viewModel.sendUserSpeech(result)
+        }
+    }
 
     LaunchedEffect(Unit) {
+        // ExoPlayer 먼저 초기화
+        viewModel.initializePlayer(context)
+
+        // WebSocket 연결 시작됨 → ViewModel의 init {}에서 자동으로 시작됨
+
+        // 대화 시작 정보 저장 (연결되면 내부에서 자동 전송됨)
+        //todo: memberId & topic api 연동
+        viewModel.sendStartCall(memberId = 6, topic = null)
+
+        // STT 바로 시작
+        recognizer.startListening()
+
+        // 타이머 시작
         viewModel.startCountdown()
+
+        // 대화 로그 초기화
+        chatMessages.clear()
+    }
+
+
+    LaunchedEffect(viewModel.aiMessage) {
+        if (viewModel.aiMessage.isNotBlank()) {
+            Log.d("VoiceCallScreen", "🤖 AI: ${viewModel.aiMessage}")
+            chatMessages.add(ChatMessage("ai", viewModel.aiMessage))
+            viewModel.clearAiMessage()
+        }
+    }
+
+
+
+    // 메시지 수신 처리
+    LaunchedEffect(viewModel.aiMessage) {
+        if (viewModel.aiMessage.isNotBlank()) {
+            chatMessages.add(
+                ChatMessage("ai", viewModel.aiMessage)
+            )
+            viewModel.clearAiMessage()
+        }
     }
 
     LaunchedEffect(state.isFinished) {
@@ -106,7 +167,7 @@ fun VoiceCallScreen(
                     .fillMaxSize(),
                 contentAlignment = Alignment.BottomCenter
             ) {
-                CallActionButtons(state, onIntent)
+                CallActionButtons(state, onIntent, navController)
             }
         }
 

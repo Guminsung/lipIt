@@ -25,7 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ssafy.lipit_app.data.model.ChatMessage
-import com.ssafy.lipit_app.ui.TTS.TTSViewModel
+import com.ssafy.lipit_app.ui.screens.call.oncall.TTSViewModel
 
 @Composable
 fun TTSScreen(modifier: Modifier = Modifier, viewModel: TTSViewModel = viewModel()) {

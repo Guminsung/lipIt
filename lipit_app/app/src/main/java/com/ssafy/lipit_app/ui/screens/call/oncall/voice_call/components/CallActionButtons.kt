@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components
 
+import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -28,20 +29,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallIntent
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallState
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
 
 // 하단 버튼 모음
 @Composable
 fun CallActionButtons(
     state: VoiceCallState,
-    onIntent: (VoiceCallIntent) -> Unit
+    onIntent: (VoiceCallIntent) -> Unit,
+    navController: NavController
 ) {
     // 메뉴 버튼 펼침 여부
     var isMenuExpanded by remember { mutableStateOf(false) }
+    val viewModel = viewModel<VoiceCallViewModel>()
+    val context = LocalContext.current
+    var isListening by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
@@ -64,7 +73,7 @@ fun CallActionButtons(
                 androidx.compose.animation.AnimatedVisibility(
                     visible = isMenuExpanded,
                     enter = slideInVertically(
-                        initialOffsetY = { it/100 },
+                        initialOffsetY = { it / 100 },
                         animationSpec = tween(durationMillis = 300)
                     ) + fadeIn(),
                     exit = slideOutVertically(
@@ -173,7 +182,12 @@ fun CallActionButtons(
                 .clip(CircleShape)
                 .background(color = Color(0xFFFE3B31))
                 .clickable {
-                    // todo: 전화 끊기
+                    // 전화 끊기
+                    viewModel.sendEndCall() // ← 통화 종료 요청
+                    navController.navigate("main") {
+                        popUpTo("call_screen") { inclusive = true }
+                    }
+
                 },
             contentAlignment = Alignment.Center
         ) {
@@ -187,6 +201,14 @@ fun CallActionButtons(
             )
         }
 
+        val recognizer = remember {
+            VoiceRecognizerHelper(context) { result ->
+                Log.d("VoiceCallScreen", "🙋 User: $result")
+
+                viewModel.sendUserSpeech(result)
+            }
+        }
+
         // 음성 보내기
         Box(
             modifier = Modifier
@@ -195,7 +217,9 @@ fun CallActionButtons(
                 .clip(CircleShape)
                 .background(color = Color(0x1AFDF8FF))
                 .clickable {
-                    // todo: 음성 보내기 기능 구현 필요
+                    // STT + websocket음성 보내기 기능 구현
+                    isListening = true
+                    recognizer.startListening()
 
                 },
             contentAlignment = Alignment.Center
