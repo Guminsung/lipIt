@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -42,12 +43,15 @@ import com.ssafy.lipit_app.ui.screens.report.ReportDetailViewModel
 import com.ssafy.lipit_app.ui.screens.report.ReportIntent
 import com.ssafy.lipit_app.ui.screens.report.ReportScreen
 import com.ssafy.lipit_app.ui.screens.report.ReportViewModel
+import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun NavGraph(
     navController: NavHostController = rememberNavController()
 ) {
+
+
     val context = LocalContext.current
     val secureDataStore = SecureDataStore.getInstance(context)
     val startDestination = if (secureDataStore.hasAccessTokenSync()) "main" else "auth_start"
@@ -110,7 +114,9 @@ fun NavGraph(
 
             MainScreen(
                 onIntent = { intent ->
-                    viewModel.onIntent(intent)
+                    viewModel.viewModelScope.launch {
+                        viewModel.onIntent(intent)
+                    }
 
                     // Intent 유형에 따라 네비게이션 처리
                     when (intent) {
@@ -202,6 +208,7 @@ fun NavGraph(
                             val reportId = intent.reportId
                             navController.navigate("report_detail_screen/$reportId")
                         }
+
                         else -> {
                             viewModel.onIntent(intent)
                         }

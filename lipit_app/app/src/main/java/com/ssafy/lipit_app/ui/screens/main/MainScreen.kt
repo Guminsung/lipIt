@@ -1,10 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.main
 
 import android.app.Activity
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
@@ -24,26 +20,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -63,7 +54,6 @@ import com.ssafy.lipit_app.ui.screens.main.components.ReportAndVoiceBtn
 import com.ssafy.lipit_app.ui.screens.main.components.TodaysSentence
 import com.ssafy.lipit_app.ui.screens.main.components.WeeklyCallsSection
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
-import kotlinx.coroutines.launch
 
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -88,7 +78,6 @@ fun MainScreen(
             bottomSheetState.hide()
         }
     }
-
     LaunchedEffect(bottomSheetState.isVisible) {
         if (!bottomSheetState.isVisible) { // && state.isSettingsSheetVisible
             onIntent(MainIntent.OnCloseSettingsSheet)
@@ -96,6 +85,13 @@ fun MainScreen(
         }
 
     }
+
+    LaunchedEffect(Unit) {
+        val memberId = SharedPreferenceUtils.getMemberId()
+        viewModel.fetchUserLevel(memberId)
+        viewModel.fetchWeeklySchedule(memberId)
+    }
+
 
     // ***** 뒤로가기 핸들링
     // BottomSheet 가 있으면 닫기 / 아무것도 없을 경우 두번 빠르게 눌러 앱 종료
@@ -130,36 +126,13 @@ fun MainScreen(
         }
     }
 
-    // 회원 등급 관련
+    // 회원 등급 및 weekly call 스케줄 관련
     LaunchedEffect(Unit) {
         val memberId = SharedPreferenceUtils.getMemberId()
         viewModel.fetchUserLevel(memberId)
+        //viewModel.fetchWeeklySchedule(memberId)
     }
 
-
-    // 브로드캐스트 수신기 등록
-    // 흐름: MyFirebaseMessageService에서 보낸 브로드 캐스트 수신 -> 뷰모델 상태 갱신
-    // -> state 변경되어 UI 자동 recomposition 됨
-    DisposableEffect(Unit) {
-        val receiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                if (intent?.action == "DAILY_SENTENCE_UPDATED") {
-                    viewModel.loadDailySentence()
-                }
-            }
-        }
-
-        val filter = IntentFilter("DAILY_SENTENCE_UPDATED")
-        context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
-
-        onDispose {
-            context.unregisterReceiver(receiver)
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.loadDailySentence()
-    }
 
     //val state by viewModel.state.collectAsState()
     // 1. (default: hide) BottomSheet 3가지 종류 : 일주일 스케줄, 수정, 보유 음성
@@ -203,12 +176,14 @@ fun MainScreen(
                                         is WeeklyCallsIntent.OnChangeVoice -> {
                                             onIntent(MainIntent.ShowMyVoicesScreen)
                                         }
+
                                         else -> {}
                                     }
                                 },
                                 onMainIntent = onIntent
                             )
-                        } // ...  BottomSheetContent.WEEKLY_CALLS()
+                        }
+
                         BottomSheetContent.RESCHEDULE_CALL -> {
                             val schedule = state.selectedSchedule
                             EditCallScreen(
@@ -259,11 +234,20 @@ fun MainScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFFFDF8FF))
+                .padding(start = 20.dp, end = 20.dp, top = 40.dp)
+        ) {
+            var selectedDay by remember { mutableStateOf(state.selectedDay) }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFFDF8FF))
                 .padding(start = 20.dp, end = 20.dp, top = 40.dp),
 
             ) {
             UserInfoSection(state.userName, state, onIntent, state.level) // 상단의 유저 이름, 등급 부분
-            TodaysSentence(state.sentenceOriginal, state.sentenceTranslated) // 오늘의 문장
+            TodaysSentence(viewModel, context) // 오늘의 문장
 
             WeeklyCallsSection(
                 selectedDay = selectedDay,
@@ -301,7 +285,6 @@ fun MainScreen(
         }
     }
 }
-
 
 
 // 전화 걸기 버튼
@@ -372,6 +355,8 @@ fun UserInfoSection(
         }
     }
 }
+
+
 
 // 레벨 등급에 따른 아이콘 매핑
 @Composable

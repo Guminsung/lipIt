@@ -1,11 +1,7 @@
 package com.ssafy.lipit_app.data.remote
 
-import android.util.Log
-import com.google.gson.GsonBuilder
 import com.ssafy.lipit_app.BuildConfig
 import com.ssafy.lipit_app.base.ApplicationClass
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 

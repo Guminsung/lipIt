@@ -10,6 +10,7 @@ object DailySentenceManager {
     private const val ORIGINAL_KEY = "original_daily_sentance"
     private const val TRANSLATED_KEY = "translated_daily_sentance"
 
+
     private lateinit var sharedPreferences: SharedPreferences
 
     fun init(context: Context) {
