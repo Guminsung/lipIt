@@ -51,7 +51,7 @@ fun LevelUpDialog(onDismissRequest: () -> Unit) {
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
-                        text = "레벨 업은 아래 두 항목의 달성률에 따라 결정돼요.",
+                        text = "레벨은 아래 두 항목의 달성률에 따라 결정돼요.",
                         style = TextStyle(
                             fontSize = 12.sp,
                             fontWeight = FontWeight(400),
@@ -59,7 +59,7 @@ fun LevelUpDialog(onDismissRequest: () -> Unit) {
 
                             )
                     )
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(15.dp))
 
                     // 테두리 박스 영역 (퍼센트 종류별 설명 부분)
                     Column(
@@ -90,7 +90,7 @@ fun LevelUpDialog(onDismissRequest: () -> Unit) {
                             )
                         )
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
                             text = "📞 Call Time",
@@ -110,7 +110,7 @@ fun LevelUpDialog(onDismissRequest: () -> Unit) {
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(15.dp))
 
                     // 하단 텍스트 영역
                     Text(

@@ -5,14 +5,19 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.lipit_app.data.model.request_dto.auth.LogoutRequest
+import com.ssafy.lipit_app.domain.repository.ScheduleRepository
 import com.ssafy.lipit_app.ui.screens.main.components.DailySentenceManager
+import com.ssafy.lipit_app.ui.screens.main.components.dayFullToShort
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class MainViewModel(private val context: Context) : ViewModel() {
+class MainViewModel(
+    private val context: Context,
+    private val scheduleRepository: ScheduleRepository
+) : ViewModel() {
     private val _state = MutableStateFlow(MainState())
     val state: StateFlow<MainState> = _state
 
@@ -102,8 +107,11 @@ class MainViewModel(private val context: Context) : ViewModel() {
         viewModelScope.launch {
             val result =
                 com.ssafy.lipit_app.domain.repository.AuthRepository().getMemberLevel(memberId)
-            result.onSuccess { levelData->
-                Log.d("UserLevel", "등급 정보: ${levelData.level}, 전화 누적 시간 퍼센트: ${levelData.totalCallDurationPercentage}, 리포트 개수 퍼센트: ${levelData.totalReportCountPercentage}")
+            result.onSuccess { levelData ->
+                Log.d(
+                    "UserLevel",
+                    "등급 정보: ${levelData.level}, 전화 누적 시간 퍼센트: ${levelData.totalCallDurationPercentage}, 리포트 개수 퍼센트: ${levelData.totalReportCountPercentage}"
+                )
                 _state.update {
                     it.copy(
                         level = levelData.level,
@@ -114,6 +122,31 @@ class MainViewModel(private val context: Context) : ViewModel() {
             }.onFailure { e ->
                 Log.e("UserLevel", "회원 등급 조회 실패", e)
 
+            }
+        }
+    }
+
+    // 사용자의 일주일 스케줄 조회하기
+    fun fetchWeeklySchedule(memberId: Long) {
+        viewModelScope.launch {
+            val result = scheduleRepository.getAllSchedules(memberId)
+
+            result.onSuccess { schedules ->
+                val callItems = schedules.map { schedule ->
+                    CallItem(
+                        id = schedule.callScheduleId,
+                        name = "SSAFY",  // TODO: 선택된 음성 api 추가 연결 필요
+                        topic = schedule.topicCategory,
+                        time = schedule.scheduledTime,
+                        imageUrl = "url",  //todo: 추가 음성 관련 api 연결 필요
+                        scheduleDay = dayFullToShort(schedule.scheduledDay)
+                    )
+                }
+
+                _state.update { it.copy(callItems = callItems) }
+
+            }.onFailure { e ->
+                Log.e("schedule", "스케줄 불러오기 실패", e)
             }
         }
     }

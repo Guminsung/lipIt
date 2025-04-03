@@ -3,6 +3,7 @@ package com.ssafy.lipit_app.ui.screens.main.components
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -76,6 +77,23 @@ fun WeeklyCallsSection(
                 )
                 .padding(top = 10.dp, start = 12.dp, end = 12.dp, bottom = 12.dp)
         ) {
+
+            val hasSchedule = callItems.any {
+                it.scheduleDay == selectedDay
+            }
+
+            val filteredItems = callItems.filter {
+                it.scheduleDay == selectedDay
+            }
+
+            callItems.forEach {
+                Log.d(
+                    "schedule",
+                    "callItem.scheduleDay: ${it.scheduleDay}, selectedDay: $selectedDay"
+                )
+            }
+
+
             // 요일 선택 커스텀 탭
             DaySelector(
                 onDaySelected = { day ->
@@ -88,9 +106,38 @@ fun WeeklyCallsSection(
             Spacer(modifier = Modifier.height(5.dp))
 
             // 스케줄 카드뷰
-            dailyCallSchedule(callItems)
+            if (hasSchedule) {
+                dailyCallSchedule(filteredItems)
+            } else {
+                Box(
+                    modifier = Modifier
+                        .height(70.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "스케줄이 없어요! 😶",
+                        modifier = Modifier.padding(16.dp),
+                        style = TextStyle(fontSize = 14.sp, color = Color.Gray)
+                    )
+                }
+
+            }
 
         }
 
+    }
+}
+
+// api에서 제공하는 형식이랑 맞지 않아 추가함
+fun dayFullToShort(day: String): String {
+    return when (day.uppercase()) {
+        "MONDAY" -> "Mon"
+        "TUESDAY" -> "Tue"
+        "WEDNESDAY" -> "Wed"
+        "THURSDAY" -> "Thu"
+        "FRIDAY" -> "Fri"
+        "SATURDAY" -> "Sat"
+        "SUNDAY" -> "Sun"
+        else -> ""
     }
 }

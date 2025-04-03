@@ -52,7 +52,7 @@ fun getTodayDay(): String {
 }
 
 data class CallItem(
-    val id: Int,
+    val id: Long,
     val name: String,
     val topic: String,
     val time: String,

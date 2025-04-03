@@ -65,12 +65,14 @@ fun MainScreen(
         }
     }
 
-    // 회원 등급 관련
+    // 회원 등급 및 weekly call 스케줄 관련
     LaunchedEffect(Unit) {
         val memberId = SharedPreferenceUtils.getMemberId()
         viewModel.fetchUserLevel(memberId)
+        viewModel.fetchWeeklySchedule(memberId)
     }
 
+    
 
     // 브로드캐스트 수신기 등록
     // 흐름: MyFirebaseMessageService에서 보낸 브로드 캐스트 수신 -> 뷰모델 상태 갱신
