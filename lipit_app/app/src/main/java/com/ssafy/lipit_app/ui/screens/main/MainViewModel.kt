@@ -39,7 +39,6 @@ class MainViewModel(
         val userName = SharedPreferenceUtils.getUserName()
         _state.value = _state.value.copy(userName = userName)
 
-        loadDailySentence()
         loadInitialData()
     }
 
@@ -113,6 +112,8 @@ class MainViewModel(
         val sentenceTranslated = DailySentenceManager.getTranslated().ifBlank {
             "너의 재능과 노력이라면, 한계란 없지!"
         }
+
+        Log.d("FCM", "getOriginal: ${DailySentenceManager.getOriginal()}")
 
         _state.value = _state.value.copy(
             sentenceOriginal = sentenceOriginal,

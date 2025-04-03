@@ -1,10 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.main
 
 import android.app.Activity
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
@@ -31,7 +27,6 @@ import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -135,31 +130,6 @@ fun MainScreen(
         val memberId = SharedPreferenceUtils.getMemberId()
         viewModel.fetchUserLevel(memberId)
         //viewModel.fetchWeeklySchedule(memberId)
-    }
-
-
-    // 브로드캐스트 수신기 등록
-    // 흐름: MyFirebaseMessageService에서 보낸 브로드 캐스트 수신 -> 뷰모델 상태 갱신
-    // -> state 변경되어 UI 자동 recomposition 됨
-    DisposableEffect(Unit) {
-        val receiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                if (intent?.action == "DAILY_SENTENCE_UPDATED") {
-                    viewModel.loadDailySentence()
-                }
-            }
-        }
-
-        val filter = IntentFilter("DAILY_SENTENCE_UPDATED")
-        context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
-
-        onDispose {
-            context.unregisterReceiver(receiver)
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.loadDailySentence()
     }
 
 
@@ -285,7 +255,7 @@ fun MainScreen(
 
             ) {
             UserInfoSection(state.userName, state, onIntent, state.level) // 상단의 유저 이름, 등급 부분
-            TodaysSentence(state.sentenceOriginal, state.sentenceTranslated) // 오늘의 문장
+            TodaysSentence(viewModel, context) // 오늘의 문장
 
             WeeklyCallsSection(
                 selectedDay = selectedDay,

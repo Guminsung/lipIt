@@ -7,8 +7,11 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.ssafy.lipit_app.ui.screens.auth.Login.LoginState
 import com.ssafy.lipit_app.ui.screens.main.components.DailySentenceManager
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
@@ -72,9 +75,15 @@ fun fetchFcmToken() {
             if (task.isSuccessful) {
                 val token = task.result
                 Log.d("FCM", "디바이스 토큰: $token")
-                // 👉 서버에 이 토큰 보내기 or SharedPreferences에 저장하기
+                val _state = MutableStateFlow(LoginState())
+                val state: StateFlow<LoginState> = _state
+
+                _state.value.fcmToken = token //state에 저장해둠
+
             } else {
                 Log.e("FCM", "FCM 토큰 가져오기 실패", task.exception)
             }
         }
 }
+
+
