@@ -24,6 +24,7 @@ import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupViewModel
 import com.ssafy.lipit_app.ui.screens.auth.components.AuthStartScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallViewModel
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallIntent
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
 import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceScreen
@@ -134,6 +135,24 @@ fun NavGraph(
                     }
                 }
             )
+        }
+
+        composable("call_screen") { // 전화 걸기
+            val viewModel = viewModel<VoiceCallViewModel>() // 보이스가 기본 모드
+            val state by viewModel.state.collectAsState()
+
+            VoiceCallScreen(
+                state = state,
+                onIntent = { intent ->
+                    when (intent) {
+                        is VoiceCallIntent.SubtitleOff -> TODO()
+                        is VoiceCallIntent.SubtitleOn -> TODO()
+                        is VoiceCallIntent.TranslationOff -> TODO()
+                        is VoiceCallIntent.TranslationOn -> TODO()
+                    }
+                }
+            )
+
         }
 
         composable("my_voices") {
