@@ -45,51 +45,6 @@ class MainViewModel(
         loadInitialData()
     }
 
-    // [Weekly Calls: BottomSheet] 요일별 스케쥴 리스트
-//    fun getWeeklyCallsSchedule() {
-//        val memberId = SharedPreferenceUtils.getMemberId()
-//
-//        viewModelScope.launch {
-//            try {
-//                val response = scheduleRepository.getWeeklyCallsSchedule(memberId = memberId)
-//
-//                response.onSuccess { scheduleList ->
-//                    // 1. ScheduleResponse → CallSchedule로 변환
-//                    val convertedSchedules = scheduleList.map { schedule ->
-//                        CallSchedule(
-//                            callScheduleId = schedule.callScheduleId,
-//                            memberId = memberId,
-//                            scheduleDay = schedule.scheduledDay,
-//                            scheduledTime = schedule.scheduledTime,
-//                            topicCategory = TopicCategory.fromEnglish(schedule.topicCategory)?.koreanName
-//                                ?: "기타"
-//                        )
-//                    }
-//
-//                    // 2. 요일 정렬 유틸 적용
-//                    val sortedSchedules = sortSchedulesByDay(convertedSchedules)
-//
-//                    // 3. 상태 업데이트
-//                    _state.update {
-//                        it.copy(
-//                            isSettingsSheetVisible = true,
-//                            weeklyCallsState = WeeklyCallsState(
-//                                VoiceName = "Harry Potter2", // TODO: 서버 연동 시 교체
-//                                VoiceImageUrl = "...",
-//                                callSchedules = sortedSchedules
-//                            )
-//                        )
-//                    }
-//                }.onFailure {
-//                    println("스케줄 조회 실패: ${it.message}")
-//                }
-//
-//            } catch (e: Exception) {
-//                println("예외 발생: ${e.message}")
-//            }
-//        }
-//    }
-
     fun loadDailySentence() {
         val sentenceOriginal = DailySentenceManager.getOriginal().ifBlank {
             "With your talent and hard work, sky’s the limit!"
@@ -135,7 +90,9 @@ class MainViewModel(
 
             // BottomSheet: 상태관리
             is MainIntent.OnSettingsClicked -> {
-                scheduleRepository.getWeeklyCallsSchedule(memberId)
+                Log.d("TAG", "onIntent: 바텀 상태관리이벤트 ${memberId}")
+//                scheduleRepository.getWeeklyCallsSchedule(memberId)
+                getWeeklyCallsSchedule()
             }
 
             is MainIntent.OnCloseSettingsSheet -> {
@@ -240,6 +197,7 @@ class MainViewModel(
 
     // 사용자의 일주일 스케줄 조회하기 - Main 화면
     fun fetchWeeklySchedule(memberId: Long) {
+        Log.d("TAG", "fetchWeeklySchedule: 사용자 일주일스케줄 조회")
         viewModelScope.launch {
             val result = scheduleRepository.getWeeklyCallsSchedule(memberId)
 
@@ -298,6 +256,7 @@ class MainViewModel(
 
     // [Weekly Calls: BottomSheet] 요일별 스케쥴 리스트
     fun getWeeklyCallsSchedule() {
+        Log.d("TAG", "getWeeklyCallsSchedule: 이벤트 발생")
         val memberId = SharedPreferenceUtils.getMemberId()
 
         viewModelScope.launch {
