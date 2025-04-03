@@ -20,15 +20,18 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         ApplicationClass.init(applicationContext)
 
-        setContent{ //compose ui 액티비티에 표시
-            LipItTheme{ //공통 테마
+        setContent { //compose ui 액티비티에 표시
+            LipItTheme { //공통 테마
                 Surface( //기본적 배경 & ui를 담는 영역
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
-                ){
+                ) {
                     NavGraph() //compose 화면 전환 진입점
                 }
             }
         }
+
+
     }
+
 }

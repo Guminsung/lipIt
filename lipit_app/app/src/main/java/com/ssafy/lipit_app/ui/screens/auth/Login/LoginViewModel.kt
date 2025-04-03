@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.messaging.FirebaseMessaging
 import com.ssafy.lipit_app.base.SecureDataStore
 import com.ssafy.lipit_app.data.model.request_dto.auth.LoginRequest
 import com.ssafy.lipit_app.domain.repository.AuthRepository
@@ -19,6 +20,24 @@ class LoginViewModel(private val context: Context) : ViewModel() {
     val state: StateFlow<LoginState> = _state
 
     private val authRepository by lazy { AuthRepository() }
+
+    init {
+        loadFcmToken()
+    }
+
+    private fun loadFcmToken() {
+        FirebaseMessaging.getInstance().token
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val token = task.result
+                    Log.d("FCM", "디바이스 토큰: $token")
+                    _state.value = _state.value.copy(fcmToken = token)
+                } else {
+                    Log.e("FCM", "토큰 가져오기 실패", task.exception)
+                }
+            }
+    }
+
 
     fun onIntent(intent: LoginIntent) {
         when (intent) {
@@ -65,8 +84,10 @@ class LoginViewModel(private val context: Context) : ViewModel() {
 
             val request = LoginRequest(
                 email = _state.value.id,
-                password = _state.value.pw
+                password = _state.value.pw,
+                fcmToken = _state.value.fcmToken
             )
+
 
             val result = authRepository.login(request)
 
@@ -81,7 +102,7 @@ class LoginViewModel(private val context: Context) : ViewModel() {
 
                     Log.d(
                         "LoginViewModel",
-                        "로그인 성공: ${data.email}, 토큰: ${data.accessToken.take(15)}..."
+                        "로그인 성공: ${data.email}, 토큰: ${data.accessToken.take(15)}, fcm 디바이스 토큰: ${data.fcmToken}"
                     )
                     SecureDataStore.getInstance(context).saveUserInfo(data)
                     SharedPreferenceUtils.saveMemberId(data.memberId)
@@ -136,5 +157,8 @@ class LoginViewModel(private val context: Context) : ViewModel() {
         } catch (e: Exception) {
             "에러 메시지를 파싱하는 데 실패했어요."
         }
+
     }
+
+
 }
