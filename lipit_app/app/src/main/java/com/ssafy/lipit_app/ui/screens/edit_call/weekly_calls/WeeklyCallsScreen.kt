@@ -44,7 +44,6 @@ fun WeeklyCallsScreen(
                 lineHeight = 30.sp,
                 fontWeight = FontWeight(700),
                 color = Color(0xFF222124),
-
                 )
         )
 
@@ -66,28 +65,24 @@ fun WeeklyCallsScreen(
 }
 
 
-
-
 @Preview(showBackground = true)
 @Composable
 fun EditWeeklyCallsPreview() {
     // 테스트용 스케줄 정보
     val callSchedules: List<CallSchedule> = listOf(
-//        CallSchedule(callScheduleId = 1, memberId = 1, scheduleDay = "월", scheduledTime = "08:00:00", topicCategory = "자유주제"),
-//        CallSchedule(callScheduleId = 2, memberId = 1, scheduleDay = "화", scheduledTime = "09:30:00", topicCategory = "자유주제"),
-//        CallSchedule(callScheduleId = 3, memberId = 1, scheduleDay = "수", scheduledTime = "10:00:00", topicCategory = "자유주제"),
-//        CallSchedule(callScheduleId = 4, memberId = 1, scheduleDay = "목", scheduledTime = "14:00:00", topicCategory = "여행"),
-//        CallSchedule(callScheduleId = 5, memberId = 1, scheduleDay = "금", scheduledTime = "16:30:00", topicCategory = "음식"),
-//        CallSchedule(callScheduleId = 6, memberId = 1, scheduleDay = "토", scheduledTime = "11:00:00", topicCategory = "취미"),
-//        CallSchedule(callScheduleId = 7, memberId = 1, scheduleDay = "일", scheduledTime = "13:00:00", topicCategory = "문화")
+        CallSchedule(callScheduleId = 1, memberId = 1, scheduleDay = "월", scheduledTime = "08:00:00", topicCategory = "자유주제"),
+        CallSchedule(callScheduleId = 2, memberId = 1, scheduleDay = "화", scheduledTime = "09:30:00", topicCategory = "자유주제"),
+        CallSchedule(callScheduleId = 3, memberId = 1, scheduleDay = "수", scheduledTime = "10:00:00", topicCategory = "자유주제"),
+        CallSchedule(callScheduleId = 4, memberId = 1, scheduleDay = "목", scheduledTime = "14:00:00", topicCategory = "여행"),
+        CallSchedule(callScheduleId = 5, memberId = 1, scheduleDay = "금", scheduledTime = "16:30:00", topicCategory = "음식"),
+        CallSchedule(callScheduleId = 6, memberId = 1, scheduleDay = "토", scheduledTime = "11:00:00", topicCategory = "취미"),
+        CallSchedule(callScheduleId = 7, memberId = 1, scheduleDay = "일", scheduledTime = "13:00:00", topicCategory = "문화")
     )
-
 
     WeeklyCallsScreen(
         state = WeeklyCallsState(
             VoiceName = "Harry Potter",
             VoiceImageUrl = "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png",
-
             callSchedules = callSchedules
         ),
         onIntent = {},

@@ -30,10 +30,4 @@ sealed class MainIntent {
 
     // 스케줄 삭제 후, 리스트 갱신 이벤트를 받기 위해 정의
     data class DeleteSchedule(val scheduleId: Long) : MainIntent()
-
-    // 스케줄 추가 혹은 삭제 했을 때 이벤트 받기 위해 정의
-//    object ScheduleChanged : MainIntent()
-
-    // 실제 알람을 설정하기 위한 작업 (AlarmMAnager)
-//    data class UpdateScheduleAlarm(val schedule: CallSchedule, val isDelete: Boolean = false) : MainIntent()
 }

@@ -93,9 +93,6 @@ fun MainScreen(
         if (!bottomSheetState.isVisible) { // && state.isSettingsSheetVisible
             onIntent(MainIntent.OnCloseSettingsSheet)
             onIntent(MainIntent.ResetBottomSheetContent)
-
-            // 주간일정 데이터 새로 고침
-//            onIntent(MainIntent.ScheduleChanged)
         }
 
     }
@@ -203,7 +200,6 @@ fun MainScreen(
                                             onIntent(MainIntent.SelectSchedule(intent.schedule))
                                             onIntent(MainIntent.ShowRescheduleScreen(intent.schedule))
                                         }
-
                                         is WeeklyCallsIntent.OnChangeVoice -> {
                                             onIntent(MainIntent.ShowMyVoicesScreen)
                                         }
@@ -212,21 +208,11 @@ fun MainScreen(
                                 },
                                 onMainIntent = onIntent
                             )
-                        }
-
+                        } // ...  BottomSheetContent.WEEKLY_CALLS()
                         BottomSheetContent.RESCHEDULE_CALL -> {
                             val schedule = state.selectedSchedule
                             EditCallScreen(
-                                // 수정필요 : schedule 값이 일정이 아니라 선택된 보이스 정보
                                 schedule = schedule!!,
-                                state = EditCallState(
-                                    isFreeModeSelected = false,
-                                    isCategoryModeSelected = false,
-                                    callScheduleId = schedule!!.callScheduleId,
-                                    scheduledDay = "SUNDAY",
-                                    scheduledTime = schedule.scheduledTime,
-                                    selectedCategory = schedule.topicCategory ?: "자유주제3",
-                                ),
                                 onBack = {
                                     onIntent(MainIntent.ShowWeeklyCallsScreen)
                                 },
@@ -234,15 +220,14 @@ fun MainScreen(
                                     // 알람 수정, 삭제 작업이 성공적으로 완료되면 이쪽으로 onSuccess 응답이 온다.
                                     Log.d("MainScreen", "Plan ${if (isEditMode) "수정" else "추가"} OK: $updatedSchedule")
 
-                                    // 바텀시트 닫기
+                                    // 바텀시트 닫고 다시 열기 (데이터 내용 갱신)
                                     onIntent(MainIntent.OnCloseSettingsSheet)
                                     android.os.Handler().postDelayed({
                                         onIntent(MainIntent.OnSettingsClicked)
                                     }, 300) // 300ms 지연
                                 }
                             )
-                        }
-
+                        } // ... BottomSheetContent.RESCHEDULE_CALL
                         BottomSheetContent.MY_VOICES -> {
                             EditVoiceScreen(
                                 state = EditVoiceState(
@@ -262,7 +247,7 @@ fun MainScreen(
 //                                    onIntent(MainIntent.OnAddVoiceClicked)
                                 }
                             )
-                        }
+                        } // ...BottomSheetContent.MY_VOICE
                     }
                 }
             }

@@ -58,7 +58,7 @@ import kotlinx.coroutines.selects.select
 @Composable
 fun EditCallScreen(
     schedule: CallSchedule,
-    state: EditCallState,
+//    state: EditCallState,
     onBack: () -> Unit,
     onSuccess: (CallSchedule, Boolean) -> Unit
 ) {
@@ -67,7 +67,7 @@ fun EditCallScreen(
 
     // ViewModel
     val viewModel: EditCallViewModel = viewModel()
-    val state by viewModel.state.collectAsState()
+//    val state by viewModel.state.collectAsState()
 
     //  schedule 초기값 추출
     val initialHour = schedule.scheduledTime.substringBefore(":").toIntOrNull() ?: 0
@@ -488,11 +488,11 @@ fun CustomSegmentedButtons(
 @Composable
 fun EditCallsPreview() {
     EditCallScreen(
-        state = EditCallState(
-            isFreeModeSelected = false,
-            isCategoryModeSelected = true,
-            selectedCategory = "스포츠"
-        ),
+//        state = EditCallState(
+//            isFreeModeSelected = false,
+//            isCategoryModeSelected = true,
+//            selectedCategory = "스포츠"
+//        ),
 //        onIntent = {},
         onBack = {},
         schedule = CallSchedule(

@@ -45,7 +45,6 @@ data class MainState(
 
     // [Weekly Calls] 일주일 일정 확인
     val isSettingsSheetVisible: Boolean = false,
-    //    val weeklyCallsState: WeeklyCallsState = WeeklyCallsState()
     val bottomSheetContent: BottomSheetContent = BottomSheetContent.WEEKLY_CALLS,
     val weeklyCallsState: WeeklyCallsState = WeeklyCallsState(),
 
