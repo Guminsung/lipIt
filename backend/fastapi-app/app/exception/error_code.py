@@ -63,3 +63,8 @@ class Error:
     # Voice
     VOICE_NOT_FOUND = ErrorCode("VOICE-001", "해당 음성을 찾을 수 없습니다.")
     VOICE_AUDIO_URL_NOT_FOUND = ErrorCode("VOICE-002", "해당 음성의 URL이 없습니다.")
+
+    # S3
+    S3_PRESIGNED_ERROR = ErrorCode(
+        "S3-001", "S3 Presigned URL 발급 중 오류가 발생했습니다."
+    )

@@ -3,7 +3,7 @@ from app.core.config import GOOGLE_APPLICATION_CREDENTIALS
 from app.util.datetime_utils import now_kst
 from google.oauth2 import service_account
 from google.cloud import texttospeech
-from app.crud.audio import upload_bytes_to_s3
+from app.service.s3 import upload_bytes_to_s3
 
 
 async def tts_node(state: dict) -> dict:
