@@ -2,6 +2,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- 기본 포그라운드 서비스 권한 -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+
+    <!-- Android 14 이상에서는 특정 유형의 포그라운드 서비스 권한 필요 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+
+    <queries>
+        <intent>
+            <action android:name="android.telecom.ConnectionService" />
+        </intent>
+    </queries>
+
     <application
         android:name=".base.ApplicationClass"
         android:allowBackup="true"
@@ -13,10 +28,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Lipit_app"
         tools:targetApi="31">
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize">
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -31,6 +47,15 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
+        <receiver
+            android:name=".ui.screens.call.alarm.CallActionReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.ssafy.lipit_app.ACTION_ACCEPT_CALL" />
+                <action android:name="com.ssafy.lipit_app.ACTION_DECLINE_CALL" />
+            </intent-filter>
+        </receiver>
 
     </application>
 
