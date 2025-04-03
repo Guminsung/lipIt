@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -26,8 +27,13 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.VoiceCal
 @Composable
 fun VoiceCallScreen(
     state: VoiceCallState,
-    onIntent: (VoiceCallIntent) -> Unit
+    onIntent: (VoiceCallIntent) -> Unit,
+    viewModel: VoiceCallViewModel
 ) {
+
+    LaunchedEffect(Unit) {
+        viewModel.startCountdown()
+    }
 
     Box(
         modifier = Modifier
@@ -58,7 +64,7 @@ fun VoiceCallScreen(
                 ModeChangeButton(state.currentMode)
 
                 // 통화 정보 (상대방 정보)
-                VoiceCallHeader(state.voiceName, state.leftTime)
+                VoiceCallHeader(state.voiceName, state.leftTime, viewModel)
 
                 Spacer(modifier = Modifier.height(28.dp))
 
@@ -110,6 +116,7 @@ fun VoiceCallScreenPreview() {
             showSubtitle = true,
             showTranslation = true
         ),
-        onIntent = {}
+        onIntent = {},
+        viewModel = VoiceCallViewModel()
     )
 }

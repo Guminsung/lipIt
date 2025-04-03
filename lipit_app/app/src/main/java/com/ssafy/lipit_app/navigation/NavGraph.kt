@@ -145,12 +145,14 @@ fun NavGraph(
                 state = state,
                 onIntent = { intent ->
                     when (intent) {
+                        is VoiceCallIntent.timerIsOver -> navController.navigate("main")
                         is VoiceCallIntent.SubtitleOff -> TODO()
                         is VoiceCallIntent.SubtitleOn -> TODO()
                         is VoiceCallIntent.TranslationOff -> TODO()
                         is VoiceCallIntent.TranslationOn -> TODO()
                     }
-                }
+                },
+                viewModel
             )
 
         }
@@ -192,7 +194,8 @@ fun NavGraph(
 
             VoiceCallScreen(
                 state = state,
-                onIntent = { viewModel.onIntent(it) }
+                onIntent = { viewModel.onIntent(it) },
+                viewModel
             )
         }
 
