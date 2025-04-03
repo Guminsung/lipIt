@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.lipit_app.data.model.request_dto.auth.LogoutRequest
 import com.ssafy.lipit_app.data.model.response_dto.schedule.TopicCategory
+import com.ssafy.lipit_app.domain.repository.MyVoiceRepository
 import com.ssafy.lipit_app.domain.repository.ScheduleRepository
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.CallSchedule
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsState
@@ -26,6 +27,12 @@ class MainViewModel(
     val state: StateFlow<MainState> = _state
 
     private val scheduleRepository by lazy { ScheduleRepository() }
+    private val voiceRepository by lazy { MyVoiceRepository() }
+
+    // 멤버 ID 가져오기
+    private val memberId: Long by lazy {
+        SharedPreferenceUtils.getMemberId()
+    }
 
     init {
         loadDailySentence()
@@ -33,6 +40,70 @@ class MainViewModel(
         _state.value = _state.value.copy(userName = userName)
 
         loadDailySentence()
+        loadInitialData()
+    }
+
+    // [Weekly Calls: BottomSheet] 요일별 스케쥴 리스트
+    fun getWeeklyCallsSchedule() {
+        val memberId = SharedPreferenceUtils.getMemberId()
+
+        viewModelScope.launch {
+            try {
+                val response = scheduleRepository.getWeeklyCallsSchedule(memberId = memberId)
+
+                response.onSuccess { scheduleList ->
+                    // 1. ScheduleResponse → CallSchedule로 변환
+                    val convertedSchedules = scheduleList.map { schedule ->
+                        CallSchedule(
+                            callScheduleId = schedule.callScheduleId,
+                            memberId = memberId,
+                            scheduleDay = schedule.scheduledDay,
+                            scheduledTime = schedule.scheduledTime,
+                            topicCategory = TopicCategory.fromEnglish(schedule.topicCategory)?.koreanName
+                                ?: "기타"
+                        )
+                    }
+
+                    // 2. 요일 정렬 유틸 적용
+                    val sortedSchedules = sortSchedulesByDay(convertedSchedules)
+
+                    // 3. 상태 업데이트
+                    _state.update {
+                        it.copy(
+                            isSettingsSheetVisible = true,
+                            weeklyCallsState = WeeklyCallsState(
+                                VoiceName = "Harry Potter2", // TODO: 서버 연동 시 교체
+                                VoiceImageUrl = "...",
+                                callSchedules = sortedSchedules
+                            )
+                        )
+                    }
+                }.onFailure {
+                    println("스케줄 조회 실패: ${it.message}")
+                }
+
+            } catch (e: Exception) {
+                println("예외 발생: ${e.message}")
+            }
+        }
+    }
+
+    fun deleteScheduleAndReload(scheduleId: Long) {
+//        val memberId = SharedPreferenceUtils.getMemberId()
+        val memberId = 1L
+
+        viewModelScope.launch {
+            val result = scheduleRepository.deleteSchedule(
+                callScheduleId = scheduleId.toLong(),
+                memberId = memberId
+            )
+
+            if (result.isSuccess) {
+                getWeeklyCallsSchedule() // 삭제 후 다시 조회
+            } else {
+                Log.e("MainViewModel", "삭제 실패: ${result.exceptionOrNull()?.message}")
+            }
+        }
     }
 
     fun loadDailySentence() {
@@ -49,7 +120,7 @@ class MainViewModel(
         )
     }
 
-    fun onIntent(intent: MainIntent) {
+    suspend fun onIntent(intent: MainIntent) {
         when (intent) {
             is MainIntent.OnDaySelected -> {
                 _state.update {
@@ -78,11 +149,13 @@ class MainViewModel(
 
             // BottomSheet: 상태관리
             is MainIntent.OnSettingsClicked -> {
-                getWeeklyCallsSchedule()
+                scheduleRepository.getWeeklyCallsSchedule(memberId)
             }
+
             is MainIntent.OnCloseSettingsSheet -> {
                 _state.update { it.copy(isSettingsSheetVisible = false) }
             }
+
             is MainIntent.ResetBottomSheetContent -> {
                 _state.update {
                     it.copy(bottomSheetContent = BottomSheetContent.WEEKLY_CALLS)
@@ -99,6 +172,7 @@ class MainViewModel(
                     it.copy(selectedSchedule = intent.schedule)
                 }
             }
+
             is MainIntent.ShowRescheduleScreen -> {
                 _state.update {
                     it.copy(
@@ -107,6 +181,7 @@ class MainViewModel(
                     )
                 }
             }
+
             is MainIntent.ShowMyVoicesScreen -> {
                 _state.update { it.copy(bottomSheetContent = BottomSheetContent.MY_VOICES) }
 
@@ -175,19 +250,25 @@ class MainViewModel(
         }
     }
 
+//    val callItem_name = ""
+//    val imageUrl = ""
+
     // 사용자의 일주일 스케줄 조회하기 - Main 화면
     fun fetchWeeklySchedule(memberId: Long) {
         viewModelScope.launch {
             val result = scheduleRepository.getWeeklyCallsSchedule(memberId)
 
             result.onSuccess { schedules ->
+                val currentState = _state.value
+
                 val callItems = schedules.map { schedule ->
                     CallItem(
                         id = schedule.callScheduleId,
-                        name = "SSAFY",  // TODO: 선택된 음성 api 추가 연결 필요
-                        topic = TopicCategory.fromEnglish(schedule.topicCategory)?.koreanName ?: "기타",
+                        name = currentState.callItem_name,
+                        topic = TopicCategory.fromEnglish(schedule.topicCategory)?.koreanName
+                            ?: "기타",
                         time = schedule.scheduledTime,
-                        imageUrl = "url",  //todo: 추가 음성 관련 api 연결 필요
+                        imageUrl = currentState.imageUrl,
                         scheduleDay = dayFullToShort(schedule.scheduledDay)
                     )
                 }
@@ -200,66 +281,34 @@ class MainViewModel(
         }
     }
 
-
-    // [Weekly Calls: BottomSheet] 요일별 스케쥴 리스트
-    fun getWeeklyCallsSchedule() {
-        val memberId = SharedPreferenceUtils.getMemberId()
-
+    // Weekly calls - 현재 선택된 Voice 받아오기
+    private fun loadInitialData() {
+        Log.d("schedule", "로그 호출")
         viewModelScope.launch {
             try {
-                val response = scheduleRepository.getWeeklyCallsSchedule(memberId = memberId)
+                _state.update { it.copy(isLoading = true) }
 
-                response.onSuccess { scheduleList ->
-                    // 1. ScheduleResponse → CallSchedule로 변환
-                    val convertedSchedules = scheduleList.map { schedule ->
-                        CallSchedule(
-                            callScheduleId = schedule.callScheduleId,
-                            memberId = memberId,
-                            scheduleDay = schedule.scheduledDay,
-                            scheduledTime = schedule.scheduledTime,
-                            topicCategory = TopicCategory.fromEnglish(schedule.topicCategory)?.koreanName ?: "기타"
+                // 1. 현재 선택된 음성 정보 가져오기
+                val selectedVoiceResult = voiceRepository.getVoice(memberId)
+                Log.d("MyVoiceViewModel", "API 응답: $selectedVoiceResult")
+
+                selectedVoiceResult.onSuccess { voice ->
+                    // 2. 선택된 음성 정보 저장
+                    _state.update { currentState ->
+                        currentState.copy(
+                            callItem_name = voice[0].voiceName,
+                            imageUrl = voice[0].customImageUrl
                         )
                     }
-
-                    // 2. 요일 정렬 유틸 적용
-                    val sortedSchedules = sortSchedulesByDay(convertedSchedules)
-
-                    // 3. 상태 업데이트
-                    _state.update {
-                        it.copy(
-                            isSettingsSheetVisible = true,
-                            weeklyCallsState = WeeklyCallsState(
-                                VoiceName = "Harry Potter2", // TODO: 서버 연동 시 교체
-                                VoiceImageUrl = "...",
-                                callSchedules = sortedSchedules
-                            )
-                        )
-                    }
-                }.onFailure {
-                    println("스케줄 조회 실패: ${it.message}")
                 }
-
             } catch (e: Exception) {
                 println("예외 발생: ${e.message}")
             }
         }
-    }
 
-    private fun deleteScheduleAndReload(scheduleId: Long) {
-//        val memberId = SharedPreferenceUtils.getMemberId()
-        val memberId = 1L
 
-        viewModelScope.launch {
-            val result = scheduleRepository.deleteSchedule(
-                callScheduleId = scheduleId.toLong(),
-                memberId = memberId
-            )
 
-            if (result.isSuccess) {
-                getWeeklyCallsSchedule() // 삭제 후 다시 조회
-            } else {
-                Log.e("MainViewModel", "삭제 실패: ${result.exceptionOrNull()?.message}")
-            }
-        }
+
+
     }
 }

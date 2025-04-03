@@ -394,6 +394,8 @@ fun UserInfoSection(
     }
 }
 
+
+
 // 레벨 등급에 따른 아이콘 매핑
 @Composable
 fun getLevelIcon(level: Int): Int {
