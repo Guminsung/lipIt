@@ -116,14 +116,10 @@ class EditCallViewModel : ViewModel(){
      * TODO AlarmManager : Add, Update == Set
      * AlarmManager 수정/추가 작업 진행할 부분
      *
-     *
      */
-
     private fun setScheduleAlarm(schedule: CallSchedule) {
-        // isDelete : 삭제여부 (true) 로 들어오면 삭제 이벤트
         // schedule : 스케쥴 내역 (요일, 시간, 카테고리) => 해당 데이터를 기반으로 알람 설정 진행
         Log.d("TAG", "updateSchedule: Step 3 Here Alarm Setting")
-
 
         Log.d("Alarm", "Alarm _---------- 알람 정보 업데이트: $schedule")
     }
