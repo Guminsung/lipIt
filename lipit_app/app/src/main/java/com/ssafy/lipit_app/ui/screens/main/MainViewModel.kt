@@ -58,8 +58,12 @@ class MainViewModel(
                             memberId = memberId,
                             scheduleDay = schedule.scheduledDay,
                             scheduledTime = schedule.scheduledTime,
-                            topicCategory = TopicCategory.fromEnglish(schedule.topicCategory)?.koreanName
-                                ?: "기타"
+                            topicCategory = schedule.topicCategory?.let {
+                                TopicCategory.fromEnglish(
+                                    it
+                                )?.koreanName
+                            } ?: "기타"
+
                         )
                     }
 
@@ -266,8 +270,10 @@ class MainViewModel(
                     CallItem(
                         id = schedule.callScheduleId,
                         name = currentState.callItem_name,
-                        topic = TopicCategory.fromEnglish(schedule.topicCategory)?.koreanName
-                            ?: "기타",
+                        topic = schedule.topicCategory?.let {
+                            TopicCategory.fromEnglish(it)?.koreanName
+                        } ?: "기타",
+
                         time = schedule.scheduledTime,
                         imageUrl = currentState.imageUrl,
                         scheduleDay = dayFullToShort(schedule.scheduledDay)
@@ -306,9 +312,6 @@ class MainViewModel(
                 println("예외 발생: ${e.message}")
             }
         }
-
-
-
 
 
     }
