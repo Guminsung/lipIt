@@ -1,11 +1,7 @@
 package com.ssafy.lipit_app.data.remote
 
-import android.util.Log
-import com.google.gson.GsonBuilder
 import com.ssafy.lipit_app.BuildConfig
 import com.ssafy.lipit_app.base.ApplicationClass
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -35,5 +31,10 @@ object RetrofitUtil {
     val myVoiceService: MyVoiceService by lazy {
         springRetrofit.create(MyVoiceService::class.java)
     }
+
+    val scheduleService: ScheduleService by lazy {
+        springRetrofit.create(ScheduleService::class.java)
+    }
+
 
 }

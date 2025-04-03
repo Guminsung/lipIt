@@ -16,6 +16,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.ssafy.lipit_app.base.SecureDataStore
+import com.ssafy.lipit_app.data.remote.RetrofitUtil
+import com.ssafy.lipit_app.domain.repository.ScheduleRepository
 import com.ssafy.lipit_app.ui.screens.auth.Login.LoginScreen
 import com.ssafy.lipit_app.ui.screens.auth.Login.LoginViewModel
 import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupScreen
@@ -44,6 +46,8 @@ import com.ssafy.lipit_app.ui.screens.report.ReportScreen
 fun NavGraph(
     navController: NavHostController = rememberNavController()
 ) {
+
+
     val context = LocalContext.current
     val secureDataStore = SecureDataStore.getInstance(context)
     val startDestination = if (secureDataStore.hasAccessTokenSync()) "main" else "auth_start"
@@ -96,12 +100,13 @@ fun NavGraph(
 
 
         composable("main") {
-           // val viewModel = viewModel<MainViewModel>()
+            // val viewModel = viewModel<MainViewModel>()
             val viewModel: MainViewModel = viewModel(
                 factory = object : ViewModelProvider.Factory {
                     @Suppress("UNCHECKED_CAST")
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return MainViewModel(context) as T
+                        val scheduleRepository = ScheduleRepository(context, RetrofitUtil.scheduleService)
+                        return MainViewModel(context, scheduleRepository) as T
                     }
                 }
             )
@@ -122,7 +127,7 @@ fun NavGraph(
                         else -> { /* 다른 Intent 유형은 ViewModel에서 처리 */
                         }
                     }
-                },viewModel,
+                }, viewModel,
                 onSuccess = {
                     navController.navigate("auth_start") { // 처음 화면으로 돌아감
                         popUpTo("main") { inclusive = true } // main 화면 제거

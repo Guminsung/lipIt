@@ -44,15 +44,6 @@ fun dailyCallSchedule(callItems: List<CallItem>) {
             .background(color = Color(0xFFFFFFFF), shape = RoundedCornerShape(size = 15.dp)),
         contentAlignment = Alignment.Center
     ) {
-        // 배경 박스
-//        Image(
-//            painter = painterResource(id = R.drawable.main_weekly_calls_background),
-//            contentDescription = "요일별 Calls 스케줄 카드",
-//            contentScale = ContentScale.FillWidth,
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(100.dp)
-//        )
 
         // 내용
         Row(
@@ -117,7 +108,9 @@ fun dailyCallSchedule(callItems: List<CallItem>) {
             Box(
                 modifier = Modifier
                     .align(Alignment.Bottom)
-                    .padding(bottom = 12.dp)
+                    .padding(bottom = 12.dp, end = 20.dp)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.BottomEnd
             ) {
                 Text(
                     text = formatTimeTo12Hour(callItems[0].time),
