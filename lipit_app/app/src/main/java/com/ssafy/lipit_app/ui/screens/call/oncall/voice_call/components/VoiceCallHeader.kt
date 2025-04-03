@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,10 +17,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
 
 // 대화하는 AI 정보 (이름, 남은 시간)
 @Composable
-fun VoiceCallHeader(voiceName: String, leftTime: String) {
+fun VoiceCallHeader(voiceName: String, leftTime: String, viewModel: VoiceCallViewModel) {
+    val state by viewModel.state.collectAsState()
+
     Column(
         modifier = Modifier
             .padding(top = 45.dp)
@@ -41,12 +46,11 @@ fun VoiceCallHeader(voiceName: String, leftTime: String) {
 
         // 남은 통화 시간
         Text(
-            text = leftTime,
+            text = state.leftTime,
             style = TextStyle(
                 fontSize = 20.sp,
                 lineHeight = 15.sp,
                 fontWeight = FontWeight(400),
-                //fontFamily = FontFamily(Font(R.font.sf_pro)),
                 color = Color(0xFFFDF8FF),
                 textAlign = TextAlign.Center,
             )
