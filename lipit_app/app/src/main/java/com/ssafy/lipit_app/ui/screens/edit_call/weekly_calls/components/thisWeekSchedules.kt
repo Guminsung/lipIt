@@ -116,7 +116,7 @@ fun thisWeekSchedules(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = schedule.topicCategory,
+                            text = schedule.topicCategory ?: "자유주제",
                             style = androidx.compose.ui.text.TextStyle(
                                 fontSize = 12.sp,
                                 lineHeight = 15.sp,

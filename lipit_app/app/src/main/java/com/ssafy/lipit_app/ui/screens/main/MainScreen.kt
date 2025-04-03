@@ -81,18 +81,23 @@ fun MainScreen(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
-    androidx.compose.runtime.LaunchedEffect(state.isSettingsSheetVisible) {
+    LaunchedEffect(state.isSettingsSheetVisible) {
         if (state.isSettingsSheetVisible) {
             bottomSheetState.show()
         } else {
             bottomSheetState.hide()
         }
     }
-    androidx.compose.runtime.LaunchedEffect(bottomSheetState.isVisible) {
+
+    LaunchedEffect(bottomSheetState.isVisible) {
         if (!bottomSheetState.isVisible) { // && state.isSettingsSheetVisible
             onIntent(MainIntent.OnCloseSettingsSheet)
             onIntent(MainIntent.ResetBottomSheetContent)
+
+            // 주간일정 데이터 새로 고침
+//            onIntent(MainIntent.ScheduleChanged)
         }
+
     }
 
     // ***** 뒤로가기 핸들링
@@ -211,27 +216,29 @@ fun MainScreen(
 
                         BottomSheetContent.RESCHEDULE_CALL -> {
                             val schedule = state.selectedSchedule
-                            Log.d("TAG", "MainScreen 시간: ${schedule!!.scheduledTime}")
                             EditCallScreen(
-                                schedule = schedule,
+                                // 수정필요 : schedule 값이 일정이 아니라 선택된 보이스 정보
+                                schedule = schedule!!,
                                 state = EditCallState(
                                     isFreeModeSelected = false,
                                     isCategoryModeSelected = false,
                                     callScheduleId = schedule!!.callScheduleId,
+                                    scheduledDay = "SUNDAY",
                                     scheduledTime = schedule.scheduledTime,
-                                    selectedCategory = schedule.topicCategory,
+                                    selectedCategory = schedule.topicCategory ?: "자유주제3",
                                 ),
-                                onIntent = { intent ->
-                                    // 인텐트 처리
-                                    Log.d("TAG", "MainScreen: 수정에서 이벤트 밠ㅇ")
-                                },
                                 onBack = {
-//                                    onIntent(MainIntent.ShowWeeklyCallScreen)
                                     onIntent(MainIntent.ShowWeeklyCallsScreen)
                                 },
-                                onSuccess = {
-                                    onIntent(MainIntent.ScheduleChanged)
+                                onSuccess = { updatedSchedule, isEditMode ->
+                                    // 알람 수정, 삭제 작업이 성공적으로 완료되면 이쪽으로 onSuccess 응답이 온다.
+                                    Log.d("MainScreen", "Plan ${if (isEditMode) "수정" else "추가"} OK: $updatedSchedule")
+
+                                    // 바텀시트 닫기
                                     onIntent(MainIntent.OnCloseSettingsSheet)
+                                    android.os.Handler().postDelayed({
+                                        onIntent(MainIntent.OnSettingsClicked)
+                                    }, 300) // 300ms 지연
                                 }
                             )
                         }
