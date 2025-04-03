@@ -171,4 +171,8 @@ dependencies {
 
     //FCM 관련
     apply(plugin = "com.google.gms.google-services")
+
+    // WebSocket
+    implementation("org.java-websocket:Java-WebSocket:1.5.3")
+
 }

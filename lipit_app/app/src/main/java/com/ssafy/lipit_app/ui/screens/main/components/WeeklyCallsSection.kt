@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -23,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.ui.screens.main.CallItem
 import com.ssafy.lipit_app.ui.screens.main.MainIntent
+import com.ssafy.lipit_app.ui.screens.main.MainViewModel
 
 // 주간 전화 일정 한 눈에 보기
 @Composable
@@ -67,7 +70,7 @@ fun WeeklyCallsSection(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        onIntent(MainIntent.OnSettingsClicked) // ✅ 클릭 시 Intent 발송
+                        onIntent(MainIntent.OnSettingsClicked)
                     }
             )
         }
@@ -81,6 +84,23 @@ fun WeeklyCallsSection(
                 )
                 .padding(top = 10.dp, start = 12.dp, end = 12.dp, bottom = 12.dp)
         ) {
+
+            val hasSchedule = callItems.any {
+                it.scheduleDay == selectedDay
+            }
+
+            val filteredItems = callItems.filter {
+                it.scheduleDay == selectedDay
+            }
+
+            callItems.forEach {
+                Log.d(
+                    "schedule",
+                    "callItem.scheduleDay: ${it.scheduleDay}, selectedDay: $selectedDay"
+                )
+            }
+
+
             // 요일 선택 커스텀 탭
             DaySelector(
                 onDaySelected = { day ->
@@ -92,10 +112,41 @@ fun WeeklyCallsSection(
 
             Spacer(modifier = Modifier.height(5.dp))
 
+            val context = LocalContext.current
+
             // 스케줄 카드뷰
-            dailyCallSchedule(callItems)
+            if (hasSchedule) {
+                dailyCallSchedule(filteredItems, viewModel = MainViewModel(context))
+            } else {
+                Box(
+                    modifier = Modifier
+                        .height(70.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "스케줄이 없어요! 😶",
+                        modifier = Modifier.padding(16.dp),
+                        style = TextStyle(fontSize = 14.sp, color = Color.Gray)
+                    )
+                }
+
+            }
 
         }
 
+    }
+}
+
+// api에서 제공하는 형식이랑 맞지 않아 추가함
+fun dayFullToShort(day: String): String {
+    return when (day.uppercase()) {
+        "MONDAY" -> "Mon"
+        "TUESDAY" -> "Tue"
+        "WEDNESDAY" -> "Wed"
+        "THURSDAY" -> "Thu"
+        "FRIDAY" -> "Fri"
+        "SATURDAY" -> "Sat"
+        "SUNDAY" -> "Sun"
+        else -> ""
     }
 }

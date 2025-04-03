@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.main.components
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,10 +26,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.main.MainViewModel
 
 // 오늘의 문장
 @Composable
-fun TodaysSentence(sentenceOriginal: String, sentenceTranslated: String) {
+fun TodaysSentence(viewModel: MainViewModel, context: Context) {
+    val state by viewModel.state.collectAsState()
+
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -48,7 +55,7 @@ fun TodaysSentence(sentenceOriginal: String, sentenceTranslated: String) {
                 .fillMaxWidth()
                 .wrapContentHeight()
 
-            ) {
+        ) {
             // 오늘의 문장 원문 + 번역 텍스트
             Column(
                 modifier = Modifier
@@ -58,7 +65,7 @@ fun TodaysSentence(sentenceOriginal: String, sentenceTranslated: String) {
                     .wrapContentHeight() // 텍스트 높이만큼 늘어나게 설정
             ) {
                 Text(
-                    text = sentenceOriginal,
+                    text = "${state.sentenceOriginal}",
                     style = TextStyle(
                         fontSize = 15.sp,
                         lineHeight = 20.sp,
@@ -73,7 +80,7 @@ fun TodaysSentence(sentenceOriginal: String, sentenceTranslated: String) {
                 Spacer(modifier = Modifier.height(7.dp))
 
                 Text(
-                    text = "$sentenceTranslated  ✦˚",
+                    text = "${state.sentenceTranslated}  ✦˚",
                     style = TextStyle(
                         fontSize = 14.sp,
                         lineHeight = 20.sp,

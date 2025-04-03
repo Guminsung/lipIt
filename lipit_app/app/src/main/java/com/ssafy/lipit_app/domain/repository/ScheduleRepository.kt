@@ -1,19 +1,8 @@
 package com.ssafy.lipit_app.domain.repository
 
-import android.util.Log
-import com.ssafy.lipit_app.data.model.request_dto.auth.LoginRequest
-import com.ssafy.lipit_app.data.model.request_dto.auth.LogoutRequest
-import com.ssafy.lipit_app.data.model.request_dto.auth.RefreshAccessTokenRequest
-import com.ssafy.lipit_app.data.model.request_dto.auth.SignUpRequest
 import com.ssafy.lipit_app.data.model.request_dto.schedule.ScheduleCreateRequest
-import com.ssafy.lipit_app.data.model.response_dto.auth.LevelResponse
-import com.ssafy.lipit_app.data.model.response_dto.auth.LoginResponse
-import com.ssafy.lipit_app.data.model.response_dto.auth.LogoutResponse
-import com.ssafy.lipit_app.data.model.response_dto.auth.RefreshAccessTokenResponse
-import com.ssafy.lipit_app.data.model.response_dto.auth.SignupResponse
 import com.ssafy.lipit_app.data.model.response_dto.schedule.ScheduleResponse
 import com.ssafy.lipit_app.data.remote.RetrofitUtil
-import handleResponse
 
 class ScheduleRepository {
 
@@ -47,18 +36,11 @@ class ScheduleRepository {
     // 스케줄 추가
     suspend fun createSchedule(
         memberId: Long,
-        scheduleDay: String,
-        scheduledTime: String,
-        topicCategory: String
+        request: ScheduleCreateRequest
     ): Result<Unit> {
         return try {
-            val request = ScheduleCreateRequest(
-                scheduledDay = scheduleDay,
-                scheduledTime = scheduledTime,
-                topicCategory = topicCategory
-            )
-            val response = RetrofitUtil.scheduleService.createSchedule(request)
-
+//            Log.d("TAG", "createSchedule: ****************** ${request}")
+            val response = RetrofitUtil.scheduleService.createSchedule(memberId, request)
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {
@@ -74,16 +56,12 @@ class ScheduleRepository {
     suspend fun updateSchedule(
         callScheduleId: Long,
         memberId: Long,
-        scheduleDay: String,
-        scheduledTime: String,
-        topicCategory: String
+//        scheduleDay: String,
+//        scheduledTime: String,
+//        topicCategory: String,
+        request: ScheduleCreateRequest
     ): Result<Unit> {
         return try {
-            val request = ScheduleCreateRequest(
-                scheduledDay = scheduleDay,
-                scheduledTime = scheduledTime,
-                topicCategory = topicCategory
-            )
             val response = RetrofitUtil.scheduleService.updateSchedule(
                 callScheduleId = callScheduleId,
                 memberId = memberId,
@@ -96,6 +74,24 @@ class ScheduleRepository {
                 val error = response.errorBody()?.string()
                 Result.failure(Exception("일정 수정 실패: $error"))
             }
+//            val request = ScheduleCreateRequest(
+//                scheduledDay = scheduleDay,
+//                scheduledTime = scheduledTime,
+//                topicCategory = topicCategory
+//            )
+//            val response = RetrofitUtil.scheduleService.updateSchedule(
+//                callScheduleId = callScheduleId,
+//                memberId = memberId,
+//                request = request
+//            )
+//
+//
+//            if (response.isSuccessful) {
+//                Result.success(Unit)
+//            } else {
+//                val error = response.errorBody()?.string()
+//                Result.failure(Exception("일정 수정 실패: $error"))
+//            }
         } catch (e: Exception) {
             Result.failure(e)
         }

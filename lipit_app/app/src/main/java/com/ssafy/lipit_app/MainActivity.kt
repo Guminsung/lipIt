@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.ssafy.lipit_app.base.ApplicationClass
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
@@ -36,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ApplicationClass.init(applicationContext)
 
         CallNotificationHelper.createCallNotificationChannel(this)
 
@@ -101,6 +103,8 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+
     }
 
     override fun onNewIntent(intent: Intent) {

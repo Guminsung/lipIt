@@ -12,12 +12,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.ssafy.lipit_app.base.SecureDataStore
 import com.ssafy.lipit_app.ui.screens.auth.Login.LoginScreen
@@ -37,6 +39,7 @@ import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsViewModel
 import com.ssafy.lipit_app.ui.screens.main.MainIntent
 import com.ssafy.lipit_app.ui.screens.main.MainScreen
+import com.ssafy.lipit_app.ui.screens.main.MainState
 import com.ssafy.lipit_app.ui.screens.main.MainViewModel
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceIntent
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceScreen
@@ -46,6 +49,7 @@ import com.ssafy.lipit_app.ui.screens.report.ReportDetailViewModel
 import com.ssafy.lipit_app.ui.screens.report.ReportIntent
 import com.ssafy.lipit_app.ui.screens.report.ReportScreen
 import com.ssafy.lipit_app.ui.screens.report.ReportViewModel
+import kotlinx.coroutines.launch
 
 private const val TAG = "NavGraph"
 
@@ -109,8 +113,8 @@ fun NavGraph(
         navController = navController,
         startDestination = startDestination
     ) {
+
         composable("auth_start") {
-            Log.d(TAG, "auth_start 화면 구성")
             AuthStartScreen(
                 onLoginClick = {
                     Log.d(TAG, "로그인 화면으로 이동 요청")
@@ -161,6 +165,7 @@ fun NavGraph(
             )
         }
 
+
         composable("main") {
             Log.d(TAG, "main 화면 구성")
             val viewModel: MainViewModel = viewModel(
@@ -174,7 +179,9 @@ fun NavGraph(
 
             MainScreen(
                 onIntent = { intent ->
-                    viewModel.onIntent(intent)
+                    viewModel.viewModelScope.launch {
+                        viewModel.onIntent(intent)
+                    }
 
                     // Intent 유형에 따라 네비게이션 처리
                     when (intent) {
@@ -246,7 +253,7 @@ fun NavGraph(
 
             val viewModel = viewModel<IncomingCallViewModel>()
             val state by viewModel.state.collectAsState()
-            
+
             IncomingCallScreen(state = state,
                 onIntent = { viewModel.onIntent(it)})
         }
@@ -280,7 +287,6 @@ fun NavGraph(
         }
 
         composable("add_voice") {
-            Log.d(TAG, "add_voice 화면 구성")
             val viewModel = viewModel<AddVoiceViewModel>()
 
             AddVoiceScreen(

@@ -36,6 +36,8 @@ class SecureDataStore(private val context: Context) {
         val EMAIL_KEY = stringPreferencesKey("user_email")
         val USER_NAME_KEY = stringPreferencesKey("user_name")
         val FIRST_LOGIN_KEY = booleanPreferencesKey("is_first_login") // 첫 로그인 여부
+        val FCM_TOKEN_KEY = stringPreferencesKey("fcm_token") //fcm 토큰 추가
+
     }
 
     // JWT Access Token 가져오기
@@ -54,6 +56,7 @@ class SecureDataStore(private val context: Context) {
             prefs[MEMBER_ID_KEY] = response.memberId
             prefs[USER_NAME_KEY] = response.name
             prefs[EMAIL_KEY] = response.email
+            prefs[FCM_TOKEN_KEY] = response.fcmToken ?: ""
         }
     }
 
