@@ -50,7 +50,11 @@ data class MainState(
     val weeklyCallsState: WeeklyCallsState = WeeklyCallsState(),
 
     // 일정 수정 : 선택된 아이템 저장
-    val selectedSchedule: CallSchedule? = null
+    val selectedSchedule: CallSchedule? = null,
+
+    // Voice 관련
+    val callItem_name: String = "",
+    val imageUrl: String = ""
 )
 
 // 오늘 요일 찾기

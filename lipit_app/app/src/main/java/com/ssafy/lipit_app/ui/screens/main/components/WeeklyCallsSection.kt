@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.ui.screens.main.CallItem
 import com.ssafy.lipit_app.ui.screens.main.MainIntent
+import com.ssafy.lipit_app.ui.screens.main.MainViewModel
 
 // 주간 전화 일정 한 눈에 보기
 @Composable
@@ -68,7 +70,7 @@ fun WeeklyCallsSection(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        onIntent(MainIntent.OnSettingsClicked) // ✅ 클릭 시 Intent 발송
+                        onIntent(MainIntent.OnSettingsClicked)
                     }
             )
         }
@@ -110,9 +112,11 @@ fun WeeklyCallsSection(
 
             Spacer(modifier = Modifier.height(5.dp))
 
+            val context = LocalContext.current
+
             // 스케줄 카드뷰
             if (hasSchedule) {
-                dailyCallSchedule(filteredItems)
+                dailyCallSchedule(filteredItems, viewModel = MainViewModel(context))
             } else {
                 Box(
                     modifier = Modifier
