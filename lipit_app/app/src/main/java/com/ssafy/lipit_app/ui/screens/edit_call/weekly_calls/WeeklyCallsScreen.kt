@@ -1,10 +1,13 @@
-package com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls
+ package com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -16,22 +19,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.components.SelectedVoiceCard
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.components.WeeklySchedule
+import com.ssafy.lipit_app.ui.screens.main.MainIntent
 
+ // Main > Settings 누르면 보여지는 BottomSheet
 @Composable
 fun WeeklyCallsScreen(
     state: WeeklyCallsState,
-    onIntent: (WeeklyCallsIntent) -> Unit
+    onIntent: (WeeklyCallsIntent) -> Unit,
+    onMainIntent: (MainIntent) -> Unit
 ) {
     Column(
         modifier = Modifier
             .padding(top = 30.dp, start = 20.dp, end = 20.dp)
-            //.background(Color(0xFFFDF8FF))
+//            .background(Color(0xFFFDF8FF))
             .fillMaxWidth()
-            .height(
-                650.dp
-            )
+            .height(650.dp)
             .fillMaxHeight(0.7f)
-    ) {
+    ){
         // 제목
         Text(
             text = "Weekly Calls",
@@ -44,15 +48,17 @@ fun WeeklyCallsScreen(
                 )
         )
 
-        // 상단 - 선택 보이스 출력
+        // 현재 선택된 보이스
         SelectedVoiceCard(state.VoiceName, state.VoiceImageUrl, onIntent = onIntent)
 
-        // 하단 - Call 스케줄표
+        // 일주일 스케줄 일정
         WeeklySchedule(
             callSchedules = state.callSchedules,
-            onTapSchedule = {
-                // 바텀시트를 EditCallScreen 모드로 전환하는 콜백
-                onIntent(WeeklyCallsIntent.OnEditSchedule)
+            onTapSchedule = { schedule ->
+                onIntent(WeeklyCallsIntent.OnEditSchedule(schedule))
+            },
+            onDeleteSchedule = { scheduleId ->
+                onMainIntent(MainIntent.DeleteSchedule(scheduleId))
             }
         )
 
@@ -67,13 +73,13 @@ fun WeeklyCallsScreen(
 fun EditWeeklyCallsPreview() {
     // 테스트용 스케줄 정보
     val callSchedules: List<CallSchedule> = listOf(
-        CallSchedule(callScheduleId = 1, memberId = 1, scheduleDay = "월", scheduledTime = "08:00:00", topicCategory = "자유주제"),
-        CallSchedule(callScheduleId = 2, memberId = 1, scheduleDay = "화", scheduledTime = "09:30:00", topicCategory = "자유주제"),
-        CallSchedule(callScheduleId = 3, memberId = 1, scheduleDay = "수", scheduledTime = "10:00:00", topicCategory = "자유주제"),
-        CallSchedule(callScheduleId = 4, memberId = 1, scheduleDay = "목", scheduledTime = "14:00:00", topicCategory = "여행"),
-        CallSchedule(callScheduleId = 5, memberId = 1, scheduleDay = "금", scheduledTime = "16:30:00", topicCategory = "음식"),
-        CallSchedule(callScheduleId = 6, memberId = 1, scheduleDay = "토", scheduledTime = "11:00:00", topicCategory = "취미"),
-        CallSchedule(callScheduleId = 7, memberId = 1, scheduleDay = "일", scheduledTime = "13:00:00", topicCategory = "문화")
+//        CallSchedule(callScheduleId = 1, memberId = 1, scheduleDay = "월", scheduledTime = "08:00:00", topicCategory = "자유주제"),
+//        CallSchedule(callScheduleId = 2, memberId = 1, scheduleDay = "화", scheduledTime = "09:30:00", topicCategory = "자유주제"),
+//        CallSchedule(callScheduleId = 3, memberId = 1, scheduleDay = "수", scheduledTime = "10:00:00", topicCategory = "자유주제"),
+//        CallSchedule(callScheduleId = 4, memberId = 1, scheduleDay = "목", scheduledTime = "14:00:00", topicCategory = "여행"),
+//        CallSchedule(callScheduleId = 5, memberId = 1, scheduleDay = "금", scheduledTime = "16:30:00", topicCategory = "음식"),
+//        CallSchedule(callScheduleId = 6, memberId = 1, scheduleDay = "토", scheduledTime = "11:00:00", topicCategory = "취미"),
+//        CallSchedule(callScheduleId = 7, memberId = 1, scheduleDay = "일", scheduledTime = "13:00:00", topicCategory = "문화")
     )
 
 
@@ -84,6 +90,7 @@ fun EditWeeklyCallsPreview() {
 
             callSchedules = callSchedules
         ),
-        onIntent = {}
+        onIntent = {},
+        onMainIntent = {}
     )
 }

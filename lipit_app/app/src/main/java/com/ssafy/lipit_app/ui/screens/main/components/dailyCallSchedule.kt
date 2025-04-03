@@ -96,7 +96,7 @@ fun dailyCallSchedule(callItems: List<CallItem>) {
                 Text(
                     text = callItems[0].topic,
                     style = TextStyle(
-                        fontSize = 15.sp,
+                        fontSize = 13.sp,
                         lineHeight = 15.sp,
                         fontWeight = FontWeight(400),
                         color = Color(0xFF5F5F61),

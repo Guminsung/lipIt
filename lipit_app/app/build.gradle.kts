@@ -171,5 +171,4 @@ dependencies {
 
     //FCM 관련
     apply(plugin = "com.google.gms.google-services")
-
 }

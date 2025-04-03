@@ -40,11 +40,16 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ThisWeekSchedules(dayList: List<String>, callSchedules: List<CallSchedule>, onTapSchedule: () -> Unit) {
+fun thisWeekSchedules(
+    dayList: List<String>,
+    callSchedules: List<CallSchedule>,
+    onTapSchedule: (CallSchedule) -> Unit,
+    onDeleteSchedule: (Long) -> Unit
+)
+{
     val today = LocalDate.now()
     val dayOfWeek: DayOfWeek = today.dayOfWeek
     val koreanDayName: String = dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN)
-
 
     Column(
         modifier = Modifier
@@ -69,7 +74,8 @@ fun ThisWeekSchedules(dayList: List<String>, callSchedules: List<CallSchedule>, 
                             },
                             onTap = {
                                 //전화 개별 상세 편집 화면으로 넘어감
-                                onTapSchedule()
+//                                onTapSchedule()
+                                onTapSchedule(schedule)
                             }
                         )
                     }
@@ -80,73 +86,76 @@ fun ThisWeekSchedules(dayList: List<String>, callSchedules: List<CallSchedule>, 
                     ),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // 시간 텍스트
-                val time = schedule.scheduledTime.substringBeforeLast(":")
-                val divideTime = if (time.substringBeforeLast(":") < 12.toString()) "AM" else "PM"
+                // 스케줄 데이터가 없는 경우에는 Text, Category 아무것도 표시하지 않음
+                if (schedule.callScheduleId != -1L) {
+                    // 시간 텍스트
+                    val time = schedule.scheduledTime.substringBeforeLast(":")
+                    val divideTime = if (time.substringBeforeLast(":") < 12.toString()) "AM" else "PM"
 
-                Text(
-                    modifier = Modifier
-                        .padding(horizontal = 20.dp, vertical = 19.dp),
-                    text = time + " " + divideTime,
-                    style = androidx.compose.ui.text.TextStyle(
-                        fontSize = 18.sp,
-                        lineHeight = 15.sp,
-                        fontWeight = FontWeight(400),
-                        color = Color(0xFF5F5F61)
-                    )
-
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                // 토픽 텍스트 with 배경
-                Box(
-                    modifier = Modifier
-                        .height(25.dp)
-                        .background(
-                            color = Color(0xFFF3E7F9),
-                            shape = RoundedCornerShape(size = 15.dp)
-                        ),
-                    contentAlignment = Alignment.Center
-                ){
                     Text(
-                        text=schedule.topicCategory,
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 19.dp),
+                        text = "$time $divideTime",
                         style = androidx.compose.ui.text.TextStyle(
-                            fontSize = 12.sp,
+                            fontSize = 18.sp,
                             lineHeight = 15.sp,
                             fontWeight = FontWeight(400),
-                            color = Color(0xFF5F5F61),
-                            textAlign = TextAlign.Center,
-                        ),
-                        modifier = Modifier
-                            .padding(horizontal = 15.dp)
-
+                            color = Color(0xFF5F5F61)
+                        )
                     )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    // 카테고리
+                    Box(
+                        modifier = Modifier
+                            .height(25.dp)
+                            .background(
+                                color = Color(0xFFF3E7F9),
+                                shape = RoundedCornerShape(size = 15.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = schedule.topicCategory,
+                            style = androidx.compose.ui.text.TextStyle(
+                                fontSize = 12.sp,
+                                lineHeight = 15.sp,
+                                fontWeight = FontWeight(400),
+                                color = Color(0xFF5F5F61),
+                                textAlign = TextAlign.Center,
+                            ),
+                            modifier = Modifier.padding(horizontal = 15.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(5.dp))
+
+                    // 아이콘
+                    Icon(
+                        painterResource(id = R.drawable.menu_icon),
+                        contentDescription = "이동버튼",
+                        modifier = Modifier
+                            .width(20.dp)
+                            .height(20.dp),
+                        tint = Color(0xFF8055A6)
+                    )
+
+                    Spacer(modifier = Modifier.width(12.dp))
                 }
 
-                Spacer(modifier = Modifier.width(5.dp))
+//                if (showDeletePopup) {
+//                    DeleteCallDialog(
+//                        onDismiss = { showDeletePopup = false },
+//                        onConfirm = { id -> showDeletePopup = false }
+//                    )
+//                }
 
-                // todo: 드래그앤드롭 구현
-                // 이동 버튼
-
-                Icon(painterResource(id = R.drawable.menu_icon),
-                    contentDescription = "이동버튼",
-                    modifier = Modifier
-                        .width(20.dp)
-                        .height(20.dp),
-                    tint = Color(0xFF8055A6))
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-
-                // 팝업 커스텀
-                if (showDeletePopup) {
+                // LongClickEvent
+                if (showDeletePopup && schedule.callScheduleId != -1L) {
                     DeleteCallDialog(
+                        scheduleId = schedule.callScheduleId,
                         onDismiss = { showDeletePopup = false },
-                        onConfirm = {
-                            // 삭제 처리
-                            showDeletePopup = false
-                        }
+                        onConfirm = { id -> onDeleteSchedule(id) }
                     )
                 }
 

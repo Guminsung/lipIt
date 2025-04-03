@@ -16,8 +16,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.ssafy.lipit_app.base.SecureDataStore
-import com.ssafy.lipit_app.data.remote.RetrofitUtil
-import com.ssafy.lipit_app.domain.repository.ScheduleRepository
 import com.ssafy.lipit_app.ui.screens.auth.Login.LoginScreen
 import com.ssafy.lipit_app.ui.screens.auth.Login.LoginViewModel
 import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupScreen
@@ -36,10 +34,14 @@ import com.ssafy.lipit_app.ui.screens.main.MainIntent
 import com.ssafy.lipit_app.ui.screens.main.MainScreen
 import com.ssafy.lipit_app.ui.screens.main.MainState
 import com.ssafy.lipit_app.ui.screens.main.MainViewModel
+import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceIntent
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceScreen
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceViewModel
 import com.ssafy.lipit_app.ui.screens.report.ReportDetailScreen
+import com.ssafy.lipit_app.ui.screens.report.ReportDetailViewModel
+import com.ssafy.lipit_app.ui.screens.report.ReportIntent
 import com.ssafy.lipit_app.ui.screens.report.ReportScreen
+import com.ssafy.lipit_app.ui.screens.report.ReportViewModel
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
@@ -65,8 +67,6 @@ fun NavGraph(
         }
 
         composable("login") {
-//            val viewModel = viewModel<LoginViewModel>()
-            val context = LocalContext.current
             val viewModel: LoginViewModel = viewModel(
                 factory = object : ViewModelProvider.Factory {
                     @Suppress("UNCHECKED_CAST")
@@ -105,17 +105,12 @@ fun NavGraph(
                 factory = object : ViewModelProvider.Factory {
                     @Suppress("UNCHECKED_CAST")
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        val scheduleRepository = ScheduleRepository(context, RetrofitUtil.scheduleService)
-                        return MainViewModel(context, scheduleRepository) as T
+                        return MainViewModel(context) as T
                     }
                 }
             )
 
-            val state by viewModel.state.collectAsState()
-            val context = LocalContext.current.applicationContext
-
             MainScreen(
-//                state = state,
                 onIntent = { intent ->
                     viewModel.onIntent(intent)
 
@@ -142,7 +137,18 @@ fun NavGraph(
             val state by viewModel.state.collectAsState()
 
             MyVoiceScreen(
-                viewModel = viewModel
+                state = state,
+                onIntent = { intent ->
+                    when (intent) {
+                        is MyVoiceIntent.NavigateToAddVoice -> {
+                            navController.navigate("add_voice")
+                        }
+
+                        else -> {
+                            viewModel.onIntent(intent)
+                        }
+                    }
+                }
             )
         }
 
@@ -152,7 +158,8 @@ fun NavGraph(
 
             WeeklyCallsScreen(
                 state = state.weeklyState,
-                onIntent = { viewModel.onIntent(it) }
+                onIntent = { viewModel.onIntent(it) },
+                onMainIntent = {}
             )
         }
 
@@ -187,11 +194,21 @@ fun NavGraph(
 
         // 레포트 관련 화면들
         composable("reports") {
+
+            val viewModel = viewModel<ReportViewModel>()
             ReportScreen(
-                onReportItemClick = { reportId ->
-                    navController.navigate("report_detail_screen/$reportId")
-                },
-                onBackClick = { navController.popBackStack() }
+                state = viewModel.state.collectAsState().value,
+                onIntent = { intent ->
+                    when (intent) {
+                        is ReportIntent.NavigateToReportDetail -> {
+                            val reportId = intent.reportId
+                            navController.navigate("report_detail_screen/$reportId")
+                        }
+                        else -> {
+                            viewModel.onIntent(intent)
+                        }
+                    }
+                }
             )
         }
 
@@ -199,10 +216,21 @@ fun NavGraph(
             route = "report_detail_screen/{reportId}",
             arguments = listOf(navArgument("reportId") { type = NavType.LongType })
         ) { backStackEntry ->
+
             val reportId = backStackEntry.arguments?.getLong("reportId") ?: -1L
+            val viewModel: ReportDetailViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    @Suppress("UNCHECKED_CAST")
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return ReportDetailViewModel(reportId) as T
+                    }
+                }
+            )
+
             ReportDetailScreen(
                 reportId = reportId,
-                onBackClick = { navController.popBackStack() }
+                state = viewModel.state.collectAsState().value,
+                onIntent = viewModel::onIntent
             )
         }
 

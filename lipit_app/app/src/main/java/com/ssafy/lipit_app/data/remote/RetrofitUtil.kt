@@ -28,13 +28,16 @@ object RetrofitUtil {
         springRetrofit.create(AuthService::class.java)
     }
 
-    val myVoiceService: MyVoiceService by lazy {
-        springRetrofit.create(MyVoiceService::class.java)
-    }
-
     val scheduleService: ScheduleService by lazy {
         springRetrofit.create(ScheduleService::class.java)
     }
 
+    val myVoiceService: MyVoiceService by lazy {
+        springRetrofit.create(MyVoiceService::class.java)
+    }
+
+    val reportService: ReportService by lazy {
+        fastApiRetrofit.create(ReportService::class.java)
+    }
 
 }

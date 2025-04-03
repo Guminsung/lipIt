@@ -1,11 +1,14 @@
 package com.ssafy.lipit_app.ui.screens.main
 
+import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -14,12 +17,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -39,6 +48,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.auth.components.MypagePopup
+import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceScreen
+import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceState
+import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallScreen
+import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallState
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsIntent
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsScreen
 import com.ssafy.lipit_app.ui.screens.main.components.NextLevel
 import com.ssafy.lipit_app.ui.screens.main.components.ReportAndVoiceBtn
 import com.ssafy.lipit_app.ui.screens.main.components.TodaysSentence
@@ -56,6 +71,56 @@ fun MainScreen(
     val state by viewModel.state.collectAsState() // 고정된 값이 아닌 상태 관찰 -> 실시간 UI 반영
     val context = LocalContext.current
 
+    // ***** Bottom Sheet 관리 : show/hide 처리
+    val bottomSheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
+    LaunchedEffect(state.isSettingsSheetVisible) {
+        if (state.isSettingsSheetVisible) {
+            bottomSheetState.show()
+        } else {
+            bottomSheetState.hide()
+        }
+    }
+    LaunchedEffect(bottomSheetState.isVisible) {
+        if (!bottomSheetState.isVisible) { // && state.isSettingsSheetVisible
+            onIntent(MainIntent.OnCloseSettingsSheet)
+            onIntent(MainIntent.ResetBottomSheetContent)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        val memberId = SharedPreferenceUtils.getMemberId()
+        viewModel.fetchUserLevel(memberId)
+        viewModel.fetchWeeklySchedule(memberId)
+    }
+
+
+    // ***** 뒤로가기 핸들링
+    // BottomSheet 가 있으면 닫기 / 아무것도 없을 경우 두번 빠르게 눌러 앱 종료
+    BackHandler(enabled = bottomSheetState.isVisible) {
+        // 바텀시트가 열려있을 때 → 닫기
+        onIntent(MainIntent.OnCloseSettingsSheet)
+        onIntent(MainIntent.ResetBottomSheetContent)
+    }
+
+    var backPressedTime by remember { mutableStateOf(0L) }
+    BackHandler(enabled = !bottomSheetState.isVisible) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - backPressedTime < 2000) {
+            // 앱 종료
+            (context as? Activity)?.finish()
+        } else {
+            backPressedTime = currentTime
+            Toast.makeText(context, "한 번 더 누르면 종료됩니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // ***** BottomSheet 분기를위한 필드
+    val editVoiceState: EditVoiceState = EditVoiceState()
+
+
     // 로그아웃 관련
     LaunchedEffect(key1 = state.isLogoutSuccess) {
         if (state.isLogoutSuccess) {
@@ -69,10 +134,9 @@ fun MainScreen(
     LaunchedEffect(Unit) {
         val memberId = SharedPreferenceUtils.getMemberId()
         viewModel.fetchUserLevel(memberId)
-        viewModel.fetchWeeklySchedule(memberId)
+        //viewModel.fetchWeeklySchedule(memberId)
     }
 
-    
 
     // 브로드캐스트 수신기 등록
     // 흐름: MyFirebaseMessageService에서 보낸 브로드 캐스트 수신 -> 뷰모델 상태 갱신
@@ -98,45 +162,164 @@ fun MainScreen(
         viewModel.loadDailySentence()
     }
 
-    var selectedDay by remember { mutableStateOf(state.selectedDay) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFFDF8FF))
-            .padding(start = 20.dp, end = 20.dp, top = 40.dp),
+    //val state by viewModel.state.collectAsState()
+    // 1. (default: hide) BottomSheet 3가지 종류 : 일주일 스케줄, 수정, 보유 음성
+    // 2. (Base) MainScreen
+    ModalBottomSheetLayout(
+        sheetState = bottomSheetState,
+        sheetBackgroundColor = Color.Transparent,
+        sheetContent = {
+            Surface(
+                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                color = Color(0xFFFDF8FF),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.9f)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(vertical = 10.dp)
+                ) {
+                    // 핸들바
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(vertical = 8.dp)
+                            .size(width = 40.dp, height = 4.dp)
+                            .background(Color.LightGray, RoundedCornerShape(2.dp))
+                    )
 
-        ) {
-        UserInfoSection(state.userName, state, onIntent, state.level) // 상단의 유저 이름, 등급 부분
-        TodaysSentence(state.sentenceOriginal, state.sentenceTranslated) // 오늘의 문장
+                    // 상태에 따라 바텀시트 내용 분기
+                    when (state.bottomSheetContent) {
+                        BottomSheetContent.WEEKLY_CALLS -> {
+                            WeeklyCallsScreen(
+                                state = state.weeklyCallsState,
+                                onIntent = { intent ->
+                                    when (intent) {
+                                        is WeeklyCallsIntent.OnEditSchedule -> {
+                                            onIntent(MainIntent.SelectSchedule(intent.schedule))
+                                            onIntent(MainIntent.ShowRescheduleScreen(intent.schedule))
+                                        }
 
-        // 이번주 call 일정 살펴보기
-        WeeklyCallsSection(
-            selectedDay = selectedDay, //state의 selectedDay -> screen 안에서 정의한 selectedDay로 변경
-            callItems = state.callItems,
-            onIntent = {
-                if (it is MainIntent.OnDaySelected) {
-                    selectedDay = it.day
+                                        is WeeklyCallsIntent.OnChangeVoice -> {
+                                            onIntent(MainIntent.ShowMyVoicesScreen)
+                                        }
+
+                                        else -> {}
+                                    }
+                                },
+                                onMainIntent = onIntent
+                            )
+                        }
+
+                        BottomSheetContent.RESCHEDULE_CALL -> {
+                            val schedule = state.selectedSchedule
+                            Log.d("TAG", "MainScreen 시간: ${schedule!!.scheduledTime}")
+                            EditCallScreen(
+                                schedule = schedule,
+                                state = EditCallState(
+                                    isFreeModeSelected = false,
+                                    isCategoryModeSelected = false,
+                                    callScheduleId = schedule!!.callScheduleId,
+                                    scheduledTime = schedule.scheduledTime,
+                                    selectedCategory = schedule.topicCategory,
+                                ),
+                                onIntent = { intent ->
+                                    // 인텐트 처리
+                                    Log.d("TAG", "MainScreen: 수정에서 이벤트 밠ㅇ")
+                                },
+                                onBack = {
+//                                    onIntent(MainIntent.ShowWeeklyCallScreen)
+                                    onIntent(MainIntent.ShowWeeklyCallsScreen)
+                                },
+                                onSuccess = {
+                                    onIntent(MainIntent.ScheduleChanged)
+                                    onIntent(MainIntent.OnCloseSettingsSheet)
+                                }
+                            )
+                        }
+
+                        BottomSheetContent.MY_VOICES -> {
+                            EditVoiceScreen(
+                                state = EditVoiceState(
+                                    selectedVoiceName = "Gandalf",
+                                    selectedVoiceUrl = "https://example.com/gandalf.mp3",
+                                    celebrityVoices = listOf(/* ... */),
+                                    myCustomVoices = listOf(/* ... */)
+                                ), // MainState에서 정의된 값
+                                onIntent = { intent ->
+                                    // 필요하면 MainIntent로 감싸서 위임할 수도 있음
+                                    // ex) onIntent(MainIntent.SomeIntent(intent))
+                                },
+                                onBack = {
+                                    onIntent(MainIntent.OnCloseSettingsSheet)
+                                },
+                                onClickAddVoice = {
+//                                    onIntent(MainIntent.OnAddVoiceClicked)
+                                }
+                            )
+                        }
+                    }
                 }
             }
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // 리포트 & 마이 보이스로 넘어가는 버튼들
-        ReportAndVoiceBtn(onIntent)
-
-        // 레벨업 파트
-        NextLevel(reportPercentage = state.reportPercent, callTimePercentage = state.callPercent)
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // 전화 걸기 버튼
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center
+        }
+    ) {
+        // ***** 기존 MainScreen UI
+        var selectedDay by remember { mutableStateOf(state.selectedDay) }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFFDF8FF))
+                .padding(start = 20.dp, end = 20.dp, top = 40.dp)
         ) {
-            CallButton(onIntent)
+            var selectedDay by remember { mutableStateOf(state.selectedDay) }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFFDF8FF))
+                .padding(start = 20.dp, end = 20.dp, top = 40.dp),
+
+            ) {
+            UserInfoSection(state.userName, state, onIntent, state.level) // 상단의 유저 이름, 등급 부분
+            TodaysSentence(state.sentenceOriginal, state.sentenceTranslated) // 오늘의 문장
+
+            WeeklyCallsSection(
+                selectedDay = selectedDay,
+                callItems = state.callItems,
+                onIntent = {
+                    Log.d("TAG", "MainScreen: ${state.callItems}")
+                    if (it is MainIntent.OnDaySelected) {
+                        selectedDay = it.day
+                    } else {
+                        onIntent(it) // 나머지 이벤트 넘기기 (예: OnSettingsClicked)
+                    }
+                }
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 리포트 & 마이 보이스로 넘어가는 버튼들
+            ReportAndVoiceBtn(onIntent)
+
+            // 레벨업 파트
+            NextLevel(
+                reportPercentage = state.reportPercent,
+                callTimePercentage = state.callPercent
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // 전화 걸기 버튼
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                CallButton(onIntent)
+            }
         }
     }
 }
