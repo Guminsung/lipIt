@@ -21,6 +21,7 @@ public interface ScheduleMapper {
     // CallSchedule → ScheduleResponseDto 변환
     @Mapping(target = "callScheduleId", source = "callScheduleId")
     @Mapping(target = "scheduledDay", expression = "java(callSchedule.getScheduledDay().name())")
+    @Mapping(target = "scheduledTime", source = "scheduledTime")
     @Mapping(target = "topicCategory", expression = "java(callSchedule.getTopicCategory() != null ? callSchedule.getTopicCategory().name() : null)")
     ScheduleResponseDto toDto(CallSchedule callSchedule);
 
@@ -29,6 +30,8 @@ public interface ScheduleMapper {
 
     // 요청 DTO와 추가 정보로 Entity 생성
     @Mapping(target = "callScheduleId", ignore = true)
+    @Mapping(target = "missedCount", constant = "0")
+    @Mapping(target = "isCalled", constant = "false")
     CallSchedule toEntity(ScheduleRequestDto requestDto, Long memberId, DayOfWeek scheduledDay, TopicCategory topicCategory);
 
     // String을 Enum으로 변환하는 기본 메서드

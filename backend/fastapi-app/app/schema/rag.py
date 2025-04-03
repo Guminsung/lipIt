@@ -8,7 +8,7 @@ class RAGTestRequest(BaseModel):
 
 
 class RAGMatch(BaseModel):
-    callId: str
+    chunkId: str
     content: str  # 검색된 원문
     score: float  # 유사도 점수
 

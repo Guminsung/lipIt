@@ -32,6 +32,12 @@ public class CallSchedule {
     private TopicCategory topicCategory;
 
     @Column(nullable = false)
+    private Integer missedCount;
+
+    @Column(nullable = false)
+    private Boolean isCalled;
+
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @Column(nullable = false)
@@ -41,6 +47,8 @@ public class CallSchedule {
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+        this.missedCount = 0;
+        this.isCalled = false;
     }
 
     @PreUpdate
