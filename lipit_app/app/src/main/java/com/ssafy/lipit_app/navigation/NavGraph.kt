@@ -25,6 +25,8 @@ import com.ssafy.lipit_app.ui.screens.auth.Login.LoginViewModel
 import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupScreen
 import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupViewModel
 import com.ssafy.lipit_app.ui.screens.auth.components.AuthStartScreen
+import com.ssafy.lipit_app.ui.screens.call.incoming.IncomingCallScreen
+import com.ssafy.lipit_app.ui.screens.call.incoming.IncomingCallViewModel
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallViewModel
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallScreen
@@ -67,6 +69,9 @@ fun NavGraph(
         initialDestination == "onVoiceCall" -> {
             Log.d(TAG, "통화 화면으로 직접 이동")
             "onVoiceCall"
+        }
+        initialDestination == "inComingCall" -> {
+            "inComingCall"
         }
         secureDataStore.hasAccessTokenSync() -> {
             Log.d(TAG, "토큰 있음: 메인 화면으로 이동")
@@ -186,7 +191,6 @@ fun NavGraph(
                             navController.navigate("onVoiceCall")
                         }
                         else -> {
-                            Log.d(TAG, "기타 인텐트 처리: $intent")
                         }
                     }
                 },
@@ -236,6 +240,15 @@ fun NavGraph(
                 },
                 onMainIntent = {}
             )
+        }
+
+        composable("inComingCall") {
+
+            val viewModel = viewModel<IncomingCallViewModel>()
+            val state by viewModel.state.collectAsState()
+            
+            IncomingCallScreen(state = state,
+                onIntent = { viewModel.onIntent(it)})
         }
 
         composable("onVoiceCall") {
