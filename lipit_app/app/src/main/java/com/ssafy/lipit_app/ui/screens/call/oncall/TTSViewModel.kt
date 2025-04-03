@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.TTS
+package com.ssafy.lipit_app.ui.screens.call.oncall
 
 import android.content.Context
 import android.net.Uri

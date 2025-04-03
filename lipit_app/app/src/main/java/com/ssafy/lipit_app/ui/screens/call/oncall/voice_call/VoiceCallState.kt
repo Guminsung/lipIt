@@ -16,7 +16,7 @@ data class VoiceCallState(
     val showTranslation: Boolean = false,
 
     // 타이머 관련
-    val isLoading: Boolean = false,
+    var isLoading: Boolean = false,
     val isFinished: Boolean = false
 
 )
