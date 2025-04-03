@@ -45,13 +45,16 @@ interface ScheduleService {
 
     // 일정 생성
     @POST("schedule")
-    suspend fun createSchedule(@Body request: ScheduleCreateRequest): Response<BaseResponse<ScheduleResponse>>
+    suspend fun createSchedule(
+        @Query("memberId") memberId: Long,
+        @Body request: ScheduleCreateRequest
+    ): Response<BaseResponse<ScheduleResponse>>
 
     // 일정 수정
     @PATCH("schedule/{callScheduleId}")
     suspend fun updateSchedule(
-        @Query("memberId") memberId: Long,
         @Path("callScheduleId") callScheduleId: Long,
+        @Query("memberId") memberId: Long,
         @Body request: ScheduleCreateRequest
     ): Response<Void>
 

@@ -47,18 +47,11 @@ class ScheduleRepository {
     // 스케줄 추가
     suspend fun createSchedule(
         memberId: Long,
-        scheduleDay: String,
-        scheduledTime: String,
-        topicCategory: String
+        request: ScheduleCreateRequest
     ): Result<Unit> {
         return try {
-            val request = ScheduleCreateRequest(
-                scheduledDay = scheduleDay,
-                scheduledTime = scheduledTime,
-                topicCategory = topicCategory
-            )
-            val response = RetrofitUtil.scheduleService.createSchedule(request)
-
+            Log.d("TAG", "createSchedule: ****************** ${request}")
+            val response = RetrofitUtil.scheduleService.createSchedule(memberId, request)
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {
@@ -74,16 +67,12 @@ class ScheduleRepository {
     suspend fun updateSchedule(
         callScheduleId: Long,
         memberId: Long,
-        scheduleDay: String,
-        scheduledTime: String,
-        topicCategory: String
+//        scheduleDay: String,
+//        scheduledTime: String,
+//        topicCategory: String,
+        request: ScheduleCreateRequest
     ): Result<Unit> {
         return try {
-            val request = ScheduleCreateRequest(
-                scheduledDay = scheduleDay,
-                scheduledTime = scheduledTime,
-                topicCategory = topicCategory
-            )
             val response = RetrofitUtil.scheduleService.updateSchedule(
                 callScheduleId = callScheduleId,
                 memberId = memberId,
@@ -96,6 +85,24 @@ class ScheduleRepository {
                 val error = response.errorBody()?.string()
                 Result.failure(Exception("일정 수정 실패: $error"))
             }
+//            val request = ScheduleCreateRequest(
+//                scheduledDay = scheduleDay,
+//                scheduledTime = scheduledTime,
+//                topicCategory = topicCategory
+//            )
+//            val response = RetrofitUtil.scheduleService.updateSchedule(
+//                callScheduleId = callScheduleId,
+//                memberId = memberId,
+//                request = request
+//            )
+//
+//
+//            if (response.isSuccessful) {
+//                Result.success(Unit)
+//            } else {
+//                val error = response.errorBody()?.string()
+//                Result.failure(Exception("일정 수정 실패: $error"))
+//            }
         } catch (e: Exception) {
             Result.failure(e)
         }

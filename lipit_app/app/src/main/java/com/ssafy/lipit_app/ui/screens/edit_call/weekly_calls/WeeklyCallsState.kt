@@ -25,5 +25,5 @@ data class CallSchedule(
     val memberId: Long,
     val scheduleDay:String,
     val scheduledTime: String,
-    val topicCategory: String
+    val topicCategory: String?
 )

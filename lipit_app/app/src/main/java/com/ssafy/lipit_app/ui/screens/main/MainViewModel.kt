@@ -11,6 +11,7 @@ import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsState
 import com.ssafy.lipit_app.util.sortSchedulesByDay
 import androidx.lifecycle.viewModelScope
 import com.ssafy.lipit_app.data.model.request_dto.auth.LogoutRequest
+import com.ssafy.lipit_app.data.model.request_dto.schedule.ScheduleCreateRequest
 import com.ssafy.lipit_app.ui.screens.main.components.DailySentenceManager
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -91,6 +92,7 @@ class MainViewModel(private val context: Context) : ViewModel() {
             is MainIntent.ShowWeeklyCallsScreen -> {
                 _state.update { it.copy(bottomSheetContent = BottomSheetContent.WEEKLY_CALLS) }
             }
+
             // 스케줄 변경할 아이템 선택
             is MainIntent.SelectSchedule -> {
                 _state.update {
@@ -111,11 +113,12 @@ class MainViewModel(private val context: Context) : ViewModel() {
             }
 
             is MainIntent.DeleteSchedule -> {
-                deleteScheduleAndReload(intent.scheduleId)
-            }
+                // 삭제 전에 알람 취소
+                val scheduleToDelete = _state.value.weeklyCallsState.callSchedules.find { it.callScheduleId == intent.scheduleId }
+                updateScheduleAlarm(scheduleToDelete, isDelete = true)
 
-            is MainIntent.ScheduleChanged -> {
-                getWeeklyCallsSchedule()
+                // 스케줄 내역 삭제
+                deleteScheduleAndReload(intent.scheduleId)
             }
         }
     }
@@ -171,7 +174,7 @@ class MainViewModel(private val context: Context) : ViewModel() {
     }
 
     // [Weekly Calls: BottomSheet] 요일별 스케쥴 리스트
-    private fun getWeeklyCallsSchedule() {
+    fun getWeeklyCallsSchedule() {
         val memberId = SharedPreferenceUtils.getMemberId()
 
         viewModelScope.launch {
@@ -186,7 +189,9 @@ class MainViewModel(private val context: Context) : ViewModel() {
                             memberId = memberId,
                             scheduleDay = schedule.scheduledDay,
                             scheduledTime = schedule.scheduledTime,
-                            topicCategory = TopicCategory.fromEnglish(schedule.topicCategory)?.koreanName ?: "기타"
+                            topicCategory = schedule.topicCategory?.let {
+                                TopicCategory.fromEnglish(it)?.koreanName
+                            } ?: "자유주제"
                         )
                     }
 
@@ -198,7 +203,7 @@ class MainViewModel(private val context: Context) : ViewModel() {
                         it.copy(
                             isSettingsSheetVisible = true,
                             weeklyCallsState = WeeklyCallsState(
-                                VoiceName = "Harry Potter2", // TODO: 서버 연동 시 교체
+                                VoiceName = "Harry Potter: 하드코딩", // TODO: 서버 연동 시 교체
                                 VoiceImageUrl = "...",
                                 callSchedules = sortedSchedules
                             )
@@ -215,8 +220,7 @@ class MainViewModel(private val context: Context) : ViewModel() {
     }
 
     private fun deleteScheduleAndReload(scheduleId: Long) {
-//        val memberId = SharedPreferenceUtils.getMemberId()
-        val memberId = 1L
+        val memberId = SharedPreferenceUtils.getMemberId()
 
         viewModelScope.launch {
             val result = scheduleRepository.deleteSchedule(
@@ -231,4 +235,16 @@ class MainViewModel(private val context: Context) : ViewModel() {
             }
         }
     }
+
+    // TODO AlarmManager : Delete
+    // 알람 매니저 등록 함수
+    private fun updateScheduleAlarm(schedule: CallSchedule?, isDelete: Boolean = false) {
+        // isDelete : 삭제여부 (true) 로 들어오면 삭제 이벤트
+        // schedule : 스케쥴 내역 (요일, 시간, 카테고리) => 해당 데이터를 기반으로 알람 설정 진행
+        Log.d("TAG", "updateSchedule: Step 3")
+
+
+        Log.d("Alarm", "Alarm _---------- 알람 정보 업데이트: $schedule, 삭제여부: $isDelete")
+    }
+
 }

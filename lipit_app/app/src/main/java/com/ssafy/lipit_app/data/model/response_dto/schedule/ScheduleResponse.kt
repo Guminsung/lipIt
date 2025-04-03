@@ -4,5 +4,5 @@ data class ScheduleResponse(
     val callScheduleId: Long,
     val scheduledDay: String,
     val scheduledTime: String,
-    val topicCategory: String
+    val topicCategory: String?
 )
