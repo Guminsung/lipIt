@@ -1,33 +1,95 @@
 package com.ssafy.lipit_app.domain.repository
 
-import android.content.Context
-import android.util.Log
+import com.ssafy.lipit_app.data.model.request_dto.schedule.ScheduleCreateRequest
 import com.ssafy.lipit_app.data.model.response_dto.schedule.ScheduleResponse
 import com.ssafy.lipit_app.data.remote.RetrofitUtil
-import com.ssafy.lipit_app.data.remote.ScheduleService
 
-class ScheduleRepository(
-    private val context: Context,
-    private val scheduleService: ScheduleService
+class ScheduleRepository {
 
-) {
-    suspend fun getAllSchedules(memberId: Long): Result<List<ScheduleResponse>> {
+    // 일주일 스케줄 조회
+    suspend fun getWeeklyCallsSchedule(memberId: Long): Result<List<ScheduleResponse>> {
         return try {
-            //val token = SecureDataStore.getInstance(context).getAccessToken()
-
-            //val response = scheduleService.schedule(memberId, "Bearer $token")
             val response = RetrofitUtil.scheduleService.getScheduleList(memberId)
 
             if (response.isSuccessful) {
-                Result.success(response.body()?.data ?: emptyList())
+                val body = response.body()?.data ?: emptyList()
+                Result.success(body)
             } else {
-                val errorMsg = response.errorBody()?.string()
-                Log.e("schedule", "서버 응답 에러: $errorMsg")
-                Result.failure(Exception("스케줄 조회 실패: ${response.body()?.message ?: errorMsg}"))
+                val error = response.errorBody()?.string()
+                Result.failure(Exception("API 실패: $error"))
             }
-
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
+
+    suspend fun deleteSchedule(callScheduleId:Long, memberId: Long): Result<Unit> {
+        return try {
+            val response = RetrofitUtil.scheduleService.deleteSchedule(callScheduleId, memberId)
+            if (response.isSuccessful) Result.success(Unit)
+            else Result.failure(Exception("삭제 실패"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // 스케줄 추가
+    suspend fun createSchedule(
+        memberId: Long,
+        scheduleDay: String,
+        scheduledTime: String,
+        topicCategory: String
+    ): Result<Unit> {
+        return try {
+            val request = ScheduleCreateRequest(
+                scheduledDay = scheduleDay,
+                scheduledTime = scheduledTime,
+                topicCategory = topicCategory
+            )
+            val response = RetrofitUtil.scheduleService.createSchedule(request)
+
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                val error = response.errorBody()?.string()
+                Result.failure(Exception("일정 생성 실패: $error"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // 수정
+    suspend fun updateSchedule(
+        callScheduleId: Long,
+        memberId: Long,
+        scheduleDay: String,
+        scheduledTime: String,
+        topicCategory: String
+    ): Result<Unit> {
+        return try {
+            val request = ScheduleCreateRequest(
+                scheduledDay = scheduleDay,
+                scheduledTime = scheduledTime,
+                topicCategory = topicCategory
+            )
+            val response = RetrofitUtil.scheduleService.updateSchedule(
+                callScheduleId = callScheduleId,
+                memberId = memberId,
+                request = request
+            )
+
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                val error = response.errorBody()?.string()
+                Result.failure(Exception("일정 수정 실패: $error"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+
+
 }

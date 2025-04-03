@@ -42,7 +42,6 @@ class ApplicationClass : Application() {
         DailySentenceManager.init(this) // 오늘의 문장 매니저 초기화
         fetchFcmToken()
 
-
         gson = GsonBuilder()
             .setLenient()
             .disableHtmlEscaping()

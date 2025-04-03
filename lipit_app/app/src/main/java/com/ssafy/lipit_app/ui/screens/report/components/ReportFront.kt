@@ -1,16 +1,18 @@
-package com.ssafy.lipit_app.ui.screens.report
+package com.ssafy.lipit_app.ui.screens.report.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
@@ -18,47 +20,24 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ssafy.lipit_app.data.model.request_dto.report.ReportSummary
+import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.data.model.response_dto.report.ReportListResponse
 import com.ssafy.lipit_app.util.CommonUtils.formatDate
 import com.ssafy.lipit_app.util.CommonUtils.formatSeconds
 
-
+// 카드 앞면
 @Composable
-fun SummaryContent() {
-
-    // 더미 데이터
-    val communicationSummaryText = "사용자는 오픽 시험을 준비하며, 다양한 주제에 대한 연습을 원하고, 롤플레이와 피드백을 요청하였다."
-    val feedbackSummaryText =
-        "AI는 사용자의 발음이나 문법 실수를 지적하며, 예를 들어 \"I go to park\"를 \"I go to the park\"로 수정하도록 제안합니다."
-    val createdAt = "2025-03-15"
-
-    val summary = ReportSummary(
-        callDuration = 280,
-        wordCount = 100,
-        sentenceCount = 15,
-        communicationSummary = communicationSummaryText,
-        feedbackSummary = feedbackSummaryText,
-        createdAt = createdAt
-    )
-
-
-    // 카드 앞면 (뒤집혔을 때 숨김)
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-    ) {
-        ReportContent(summary)
-    }
-
-}
-
-@Composable
-fun ReportContent(summary: ReportSummary) {
+fun ReportFront(
+    report: ReportListResponse,
+    onReportItemClick: (Long) -> Unit
+) {
 
     Column(
         modifier = Modifier
@@ -68,6 +47,10 @@ fun ReportContent(summary: ReportSummary) {
                 shape = RoundedCornerShape(25.dp)
             )
             .background(Color.Transparent, shape = RoundedCornerShape(25.dp))
+            .paint(
+                painter = painterResource(id = R.drawable.bg_report),
+                contentScale = ContentScale.FillBounds
+            )
             .padding(horizontal = 30.dp, vertical = 23.dp)
     ) {
 
@@ -79,18 +62,39 @@ fun ReportContent(summary: ReportSummary) {
                 verticalAlignment = Alignment.Bottom
             ) {
                 Text(
-                    text = formatDate(summary.createdAt),
+                    text = formatDate(report.createdAt),
                     color = Color.White,
-                    fontSize = 24.sp,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
                 )
+
+                Row(
+                    verticalAlignment = Alignment.Bottom,
+                    modifier = Modifier.clickable {
+                        onReportItemClick(report.reportId)
+                    }
+                ) {
+                    Text(
+                        "상세보기 ",
+                        color = Color.White.copy(0.3f),
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Image(
+                        painter = painterResource(id = R.drawable.btn_report_detail),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(18.dp)
+                    )
+                }
 
             }
 
             Text(
-                "착신 통화 ${formatSeconds(summary.callDuration)}",
-                color = Color.White,
-                fontSize = 15.sp
+                "착신 통화 ${formatSeconds(report.callDuration)}",
+                color = Color.White.copy(0.8f),
+                fontSize = 15.sp,
             )
         }
 
@@ -107,7 +111,7 @@ fun ReportContent(summary: ReportSummary) {
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "${summary.wordCount}개", fontSize = 14.sp)
+                Text(text = "${report.wordCount}개", fontSize = 14.sp)
                 Text(
                     text = "말한 단어 수",
                     fontWeight = FontWeight.Bold,
@@ -127,7 +131,7 @@ fun ReportContent(summary: ReportSummary) {
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "${summary.sentenceCount}개", fontSize = 14.sp)
+                Text(text = "${report.sentenceCount}개", fontSize = 14.sp)
                 Text(
                     text = "말한 문장 수",
                     fontWeight = FontWeight.Bold,
@@ -147,8 +151,8 @@ fun ReportContent(summary: ReportSummary) {
                 fontWeight = FontWeight.Bold
             )
             Text(
-                summary.communicationSummary,
-                color = Color.White,
+                text = report.communicationSummary,
+                color = Color.White.copy(0.8f),
                 fontSize = 14.sp,
                 lineHeight = 24.sp
             )
@@ -164,21 +168,11 @@ fun ReportContent(summary: ReportSummary) {
                 fontWeight = FontWeight.Bold
             )
             Text(
-                summary.feedbackSummary,
-                color = Color.White,
+                text = report.feedbackSummary,
+                color = Color.White.copy(0.8f),
                 fontSize = 14.sp,
                 lineHeight = 24.sp
             )
         }
-
     }
-
-}
-
-
-@Composable
-@Preview(showBackground = true)
-fun SummaryPreview() {
-
-    SummaryContent()
 }
