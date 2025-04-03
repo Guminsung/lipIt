@@ -1,19 +1,8 @@
 package com.ssafy.lipit_app.domain.repository
 
-import android.util.Log
-import com.ssafy.lipit_app.data.model.request_dto.auth.LoginRequest
-import com.ssafy.lipit_app.data.model.request_dto.auth.LogoutRequest
-import com.ssafy.lipit_app.data.model.request_dto.auth.RefreshAccessTokenRequest
-import com.ssafy.lipit_app.data.model.request_dto.auth.SignUpRequest
 import com.ssafy.lipit_app.data.model.request_dto.schedule.ScheduleCreateRequest
-import com.ssafy.lipit_app.data.model.response_dto.auth.LevelResponse
-import com.ssafy.lipit_app.data.model.response_dto.auth.LoginResponse
-import com.ssafy.lipit_app.data.model.response_dto.auth.LogoutResponse
-import com.ssafy.lipit_app.data.model.response_dto.auth.RefreshAccessTokenResponse
-import com.ssafy.lipit_app.data.model.response_dto.auth.SignupResponse
 import com.ssafy.lipit_app.data.model.response_dto.schedule.ScheduleResponse
 import com.ssafy.lipit_app.data.remote.RetrofitUtil
-import handleResponse
 
 class ScheduleRepository {
 
@@ -50,7 +39,7 @@ class ScheduleRepository {
         request: ScheduleCreateRequest
     ): Result<Unit> {
         return try {
-            Log.d("TAG", "createSchedule: ****************** ${request}")
+//            Log.d("TAG", "createSchedule: ****************** ${request}")
             val response = RetrofitUtil.scheduleService.createSchedule(memberId, request)
             if (response.isSuccessful) {
                 Result.success(Unit)

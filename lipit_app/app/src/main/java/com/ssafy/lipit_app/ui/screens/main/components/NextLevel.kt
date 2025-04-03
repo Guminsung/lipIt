@@ -2,6 +2,7 @@ package com.ssafy.lipit_app.ui.screens.main.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -34,6 +39,7 @@ import com.ssafy.lipit_app.R
 fun NextLevel(reportPercentage: Int, callTimePercentage: Int) {
     // 레벨 1~5 (기준: 리포트 수, 통화 누적 시간)
 
+    var showLevelUpDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier.padding(top = 23.dp, bottom = 15.dp)
@@ -53,7 +59,7 @@ fun NextLevel(reportPercentage: Int, callTimePercentage: Int) {
 
             Spacer(modifier = Modifier.width(2.dp))
 
-            // 물음표 버튼 - 관련 안내(자세한 팝업 UI는 추후 추가 예정)
+            // 물음표 버튼 - 레벨업 관련 안내
             Icon(
                 painterResource(id = R.drawable.main_question_icon),
                 contentDescription = "?",
@@ -61,7 +67,17 @@ fun NextLevel(reportPercentage: Int, callTimePercentage: Int) {
                 modifier = Modifier
                     .size(18.dp)
                     .offset(y = (-2).dp)
+                    .clickable {
+                        // 레벨 설명 팝업 띄우기
+                        showLevelUpDialog = true
+                    }
             )
+
+            if (showLevelUpDialog) {
+                LevelUpDialog(
+                    onDismissRequest = { showLevelUpDialog = false }
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(10.dp))
