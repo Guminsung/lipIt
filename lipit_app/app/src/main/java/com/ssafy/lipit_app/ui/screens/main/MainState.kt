@@ -23,13 +23,13 @@ data class MainState(
     val callItems: List<CallItem> = listOf(
         CallItem(
             id = 1,
-            name = "Harry Potter",
-            topic = "자유주제",
-            time = "08:00",
-            imageUrl = "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png",
-            "월"
+            name = "",
+            topic = "",
+            time = "",
+            imageUrl = "",
+            scheduleDay = ""
         )
-    ), // 해당 요일의 통화 리스트
+    ),
 
     //Level Up 파트
     val reportPercent: Int = 0,
@@ -45,12 +45,15 @@ data class MainState(
 
     // [Weekly Calls] 일주일 일정 확인
     val isSettingsSheetVisible: Boolean = false,
-    //    val weeklyCallsState: WeeklyCallsState = WeeklyCallsState()
     val bottomSheetContent: BottomSheetContent = BottomSheetContent.WEEKLY_CALLS,
     val weeklyCallsState: WeeklyCallsState = WeeklyCallsState(),
 
     // 일정 수정 : 선택된 아이템 저장
-    val selectedSchedule: CallSchedule? = null
+    val selectedSchedule: CallSchedule? = null,
+
+    // Voice 관련
+    val callItem_name: String = "",
+    val imageUrl: String = ""
 )
 
 // 오늘 요일 찾기
@@ -71,7 +74,7 @@ fun getTodayDay(): String {
 }
 
 data class CallItem(
-    val id: Int,
+    val id: Long,
     val name: String,
     val topic: String,
     val time: String,
