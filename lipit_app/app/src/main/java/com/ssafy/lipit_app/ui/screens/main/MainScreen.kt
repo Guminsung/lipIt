@@ -213,7 +213,9 @@ fun MainScreen(
                                 onBack = {
                                     onIntent(MainIntent.OnCloseSettingsSheet)
                                 },
-                                onNavigateToAddVoice = {}
+                                onNavigateToAddVoice = {
+                                    onIntent(MainIntent.NavigateToAddVoice)
+                                },
                             )
                         }
                     }
