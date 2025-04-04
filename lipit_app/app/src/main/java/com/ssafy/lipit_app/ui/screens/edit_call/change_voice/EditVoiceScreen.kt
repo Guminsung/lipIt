@@ -6,19 +6,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -43,11 +38,9 @@ import coil.compose.AsyncImage
 import com.cheonjaeung.compose.grid.SimpleGridCells
 import com.cheonjaeung.compose.grid.VerticalGrid
 import com.ssafy.lipit_app.R
-import com.ssafy.lipit_app.data.model.VoiceList
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.CelabResponse
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.CustomResponse
 import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.components.LockedProfileImage
-import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceIntent
 
 @Composable
 fun EditVoiceScreen(
@@ -101,6 +94,9 @@ fun EditVoiceScreen(
                         voiceUrl = voiceUrl
                     )
                 )
+            },
+            onVoiceChange = { voiceId ->
+                viewModel.onIntent(EditVoiceIntent.ChangeVoice(voiceId))
             }
         )
 
@@ -128,6 +124,9 @@ fun EditVoiceScreen(
                 Log.d("EditVoiceScreen", "음성 추가 버튼이 클릭되었습니다")
                 viewModel.onIntent(EditVoiceIntent.NavigateToAddVoice)
                 onNavigateToAddVoice()
+            },
+            onVoiceChange = { voiceId ->
+                viewModel.onIntent(EditVoiceIntent.ChangeVoice(voiceId = voiceId))
             }
         )
 
@@ -153,7 +152,8 @@ fun TextTitle(title: String) {
 fun CelebrityVoiceList(
     celebrityVoices: List<CelabResponse>,
     selectedVoiceName: String,
-    onSelectVoice: (Long, String, String) -> Unit
+    onSelectVoice: (Long, String, String) -> Unit,
+    onVoiceChange: (Long) -> Unit
 ) {
     Log.d("CelebrityVoiceList", "셀럽 목소리 데이터: $celebrityVoices")
     val celebSize = celebrityVoices.size
@@ -181,6 +181,11 @@ fun CelebrityVoiceList(
                         isSelected = voice.voiceName == selectedVoiceName,
                         onClick = {
                             onSelectVoice(voice.voiceId, voice.voiceName, voice.customImageUrl)
+                        },
+                        onVoiceChange = {
+                            if (voice.activated) {
+                                onVoiceChange(voice.voiceId)
+                            }
                         }
                     )
                 }
@@ -208,10 +213,10 @@ fun CustomVoiceList(
     customVoices: List<CustomResponse>,
     selectedVoiceName: String,
     onSelectVoice: (Long, String, String) -> Unit,
-    onClickAddVoice: () -> Unit
+    onClickAddVoice: () -> Unit,
+    onVoiceChange: (Long) -> Unit
 ) {
     Log.d("CustomVoiceList", "커스텀 목소리 데이터: $customVoices")
-    val customSize = customVoices.size
 
     Box(
         modifier = Modifier
@@ -232,6 +237,9 @@ fun CustomVoiceList(
                     isSelected = voice.voiceName == selectedVoiceName,
                     onClick = {
                         onSelectVoice(voice.voiceId, voice.voiceName, voice.customImageUrl)
+                    },
+                    onVoiceChange = {
+                        onVoiceChange(voice.voiceId)
                     }
                 )
             }
@@ -289,13 +297,17 @@ fun VoiceItem(
     name: String,
     activated: Boolean,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onVoiceChange: () -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .graphicsLayer(clip = false)
-            .clickable(enabled = activated) { onClick() }
+            .clickable(enabled = activated) {
+                onVoiceChange()
+                onClick()
+            }
     ) {
 
         Box(

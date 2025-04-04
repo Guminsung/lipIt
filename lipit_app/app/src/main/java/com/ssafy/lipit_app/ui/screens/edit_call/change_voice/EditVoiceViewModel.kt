@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class EditVoiceViewModel: ViewModel() {
+class EditVoiceViewModel : ViewModel() {
 
     private val _state = MutableStateFlow(EditVoiceState())
     val state: StateFlow<EditVoiceState> = _state.asStateFlow()
@@ -27,11 +27,12 @@ class EditVoiceViewModel: ViewModel() {
 
 
     fun onIntent(intent: EditVoiceIntent) {
-        when(intent) {
+        when (intent) {
             is EditVoiceIntent.LoadCelebrityVoices -> loadCelebrityVoices()
             is EditVoiceIntent.LoadCustomVoices -> loadCustomVoices()
             is EditVoiceIntent.SelectVoice -> selectVoice(intent)
             is EditVoiceIntent.NavigateToAddVoice -> {}
+            is EditVoiceIntent.ChangeVoice -> changeVoice(intent.voiceId)
         }
     }
 
@@ -114,5 +115,38 @@ class EditVoiceViewModel: ViewModel() {
                 )
             }
         }
+    }
+
+
+    private fun changeVoice(voiceId: Long) {
+        viewModelScope.launch {
+            try {
+                _state.update { it.copy(isLoading = true, errorMessage = null) }
+
+                // 1. 음성 변경 API 호출
+                val result = voiceRepository.changeVoice(memberId, voiceId)
+                Log.d("MyVoiceViewModel", "changeVoice API 응답: $result")
+
+                result.onSuccess { response ->
+                    Log.d("MyVoiceViewModel", "음성 변경 성공, 데이터 다시 로드")
+                    loadInitialData()
+                }.onFailure { error ->
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = error.message ?: "음성 변경 중 오류가 발생했습니다."
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = e.message ?: "음성 변경 중 오류가 발생했습니다."
+                    )
+                }
+            }
+        }
+
     }
 }
