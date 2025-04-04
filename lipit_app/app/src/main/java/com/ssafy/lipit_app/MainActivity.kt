@@ -13,33 +13,53 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import com.ssafy.lipit_app.base.ApplicationClass
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 import com.ssafy.lipit_app.navigation.NavGraph
 import com.ssafy.lipit_app.theme.LipItTheme
+import com.ssafy.lipit_app.ui.screens.call.alarm.AlarmScheduler
 import com.ssafy.lipit_app.ui.screens.call.alarm.CallNotificationHelper
 
 private const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity() {
 
+    // 알람 스케줄러 인스턴스
+    private lateinit var alarmScheduler: AlarmScheduler
+
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ApplicationClass.init(applicationContext)
 
+        // 알림 채널 생성
         CallNotificationHelper.createCallNotificationChannel(this)
+        // 알람 스케줄러 초기화
+        alarmScheduler = AlarmScheduler(this)
 
         val initialDestination = intent.getStringExtra("NAVIGATION_DESTINATION")
         Log.d(TAG, "Initial destination: $initialDestination")
@@ -74,37 +94,18 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-
             LipItTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-
                     NavGraph(
                         navController = navController,
                         initialDestination = initialDestination
                     )
-
-//                        Button(
-//                            onClick = {
-//                                CallNotificationHelper.showCallNotification(
-//                                    context = this@MainActivity,
-//                                    callerName = "Harry Potter"
-//                                )
-//                                startActivity(intent)
-//                            },
-//                            modifier = Modifier
-//                                .align(Alignment.BottomCenter)
-//                                .padding(16.dp)
-//                        ) {
-//                            Text("Test Call Notification")
-//                        }
                 }
             }
         }
-
-
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -113,7 +114,7 @@ class MainActivity : AppCompatActivity() {
 
         val newDestination = intent.getStringExtra("NAVIGATION_DESTINATION")
         if (newDestination != null) {
-            Log.d(TAG, "New intent with destination: $newDestination")
+            Log.d(TAG, "New intent의 destination: $newDestination")
 
             val restartIntent = Intent(this, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
