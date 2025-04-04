@@ -3,6 +3,7 @@ package com.ssafy.lipit_app.navigation
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
@@ -206,10 +207,20 @@ fun NavGraph(
                 }
             )
 
+//            AddVoiceScreen(
+//                state = viewModel.state.collectAsState().value,
+//                onIntent = viewModel::onIntent
+//            )
+            // LaunchedEffect로 Context 초기화하기
+            LaunchedEffect(key1 = Unit) {
+                viewModel.setContext(context)
+            }
+
             AddVoiceScreen(
                 state = viewModel.state.collectAsState().value,
                 onIntent = viewModel::onIntent
             )
+            
         }
 
         // 레포트 관련 화면들

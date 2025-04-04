@@ -24,7 +24,9 @@ class AuthInterceptor(private val context: Context) : Interceptor {
         if (
             url.contains("/auth/login") ||
             url.contains("/auth/signup") ||
-            url.contains("/auth/refresh")
+            url.contains("/auth/refresh") ||
+            url.contains("api.openai.com") ||
+            url.contains("amazonaws.com")
         ) {
             Log.d("AuthInterceptor", "인증이 필요하지 않은 요청: $url")
             return chain.proceed(originalRequest)
