@@ -41,6 +41,7 @@ import com.ssafy.lipit_app.data.model.VoiceList
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.CelabResponse
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.CustomResponse
 import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.components.LockedProfileImage
+import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceIntent
 
 @Composable
 fun EditVoiceScreen(
@@ -95,8 +96,6 @@ fun EditVoiceScreen(
             }
         )
 
-
-
         Spacer(modifier = Modifier.height(50.dp))
 
         //커스텀
@@ -125,6 +124,7 @@ fun EditVoiceScreen(
         )
 
         Spacer(modifier = Modifier.height(50.dp))
+
     }
 }
 

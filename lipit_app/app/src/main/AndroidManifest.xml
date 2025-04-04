@@ -21,6 +21,10 @@
         </intent>
     </queries>
 
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".base.ApplicationClass"
         android:allowBackup="true"
@@ -32,7 +36,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Lipit_app"
         tools:targetApi="31">
-
         <activity
             android:name=".MainActivity"
             android:exported="true"

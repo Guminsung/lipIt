@@ -7,6 +7,7 @@ val localProperties = Properties().apply {
 }
 val serverUrl_spring = localProperties["SERVER_URL_SPRING"] as String
 val serverUrl_fastapi = localProperties["SERVER_URL_FASTAPI"] as String
+val open_ai_key = localProperties["OPEN_AI_KEY"] as String
 
 plugins {
     alias(libs.plugins.android.application)
@@ -37,10 +38,13 @@ android {
         getByName("debug") {
             buildConfigField("String", "SERVER_URL_SPRING", "\"$serverUrl_spring\"")
             buildConfigField("String", "SERVER_URL_FASTAPI", "\"$serverUrl_fastapi\"")
+            buildConfigField("String", "OPEN_AI_KEY", "\"$open_ai_key\"")
         }
+
         getByName("release") {
             buildConfigField("String", "SERVER_URL_SPRING", "\"$serverUrl_spring\"")
             buildConfigField("String", "SERVER_URL_FASTAPI", "\"$serverUrl_fastapi\"")
+            buildConfigField("String", "OPEN_AI_KEY", "\"$open_ai_key\"")
         }
 
         release {
