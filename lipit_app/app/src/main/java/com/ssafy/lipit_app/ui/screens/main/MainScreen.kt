@@ -83,7 +83,6 @@ fun MainScreen(
             onIntent(MainIntent.OnCloseSettingsSheet)
             onIntent(MainIntent.ResetBottomSheetContent)
         }
-
     }
 
     LaunchedEffect(Unit) {
