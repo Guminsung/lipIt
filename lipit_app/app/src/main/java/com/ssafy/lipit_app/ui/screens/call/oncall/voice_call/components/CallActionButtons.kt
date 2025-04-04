@@ -1,6 +1,5 @@
 package com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components
 
-import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -20,7 +19,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,7 +33,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallIntent
@@ -44,13 +44,13 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
 fun CallActionButtons(
     state: VoiceCallState,
     onIntent: (VoiceCallIntent) -> Unit,
-    navController: NavController
+    viewModel: VoiceCallViewModel,
+    navController: NavController,
+    textState: MutableState<String>,
 ) {
-    // 메뉴 버튼 펼침 여부
     var isMenuExpanded by remember { mutableStateOf(false) }
-    val viewModel = viewModel<VoiceCallViewModel>()
+    var isRecording by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    var isListening by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
@@ -183,7 +183,7 @@ fun CallActionButtons(
                 .background(color = Color(0xFFFE3B31))
                 .clickable {
                     // 전화 끊기
-                    viewModel.sendEndCall() // ← 통화 종료 요청
+                    viewModel.sendEndCall() // 통화 종료 요청
                     navController.navigate("main") {
                         popUpTo("call_screen") { inclusive = true }
                     }
@@ -201,14 +201,6 @@ fun CallActionButtons(
             )
         }
 
-        val recognizer = remember {
-            VoiceRecognizerHelper(context) { result ->
-                Log.d("VoiceCallScreen", "🙋 User: $result")
-
-                viewModel.sendUserSpeech(result)
-            }
-        }
-
         // 음성 보내기
         Box(
             modifier = Modifier
@@ -216,11 +208,15 @@ fun CallActionButtons(
                 .height(70.dp)
                 .clip(CircleShape)
                 .background(color = Color(0x1AFDF8FF))
+                // 보내기 버튼 클릭
                 .clickable {
-                    // STT + websocket음성 보내기 기능 구현
-                    isListening = true
-                    recognizer.startListening()
-
+                    val message = textState.value
+                    if (message.isNotBlank()) {
+                        viewModel.sendUserSpeech(message)
+                        textState.value = "" // 메시지 전송 후 텍스트 초기화
+                    } else{
+                        //todo: 아무말도 안하면 ai한테 다시 말해달라고 보내기
+                    }
                 },
             contentAlignment = Alignment.Center
         ) {
@@ -232,6 +228,26 @@ fun CallActionButtons(
                     .height(62.dp),
                 tint = Color(0xFFFDF8FF)
             )
+        }
+    }
+
+    if (isRecording) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(10.dp)
+                    .height(10.dp)
+                    .clip(CircleShape)
+                    .background(Color.Red)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text("녹음 중...", color = Color.Red)
         }
     }
 }

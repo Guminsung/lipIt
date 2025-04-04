@@ -62,6 +62,15 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.10"
     }
+
+    packagingOptions {
+        resources.excludes.add("META-INF/*")
+    }
+
+    aaptOptions {
+        noCompress += "model-en-us"
+    }
+
 }
 
 dependencies {
@@ -174,5 +183,9 @@ dependencies {
 
     // WebSocket
     implementation("org.java-websocket:Java-WebSocket:1.5.3")
+
+    // Vosk API - call stt 관련
+    implementation("com.alphacephei:vosk-android:0.3.32")
+    implementation("net.java.dev.jna:jna:5.13.0@aar")
 
 }
