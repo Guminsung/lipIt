@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -210,16 +211,23 @@ fun MyVoiceScreen(
             }
         }
 
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         when (state.selectedTab) {
             "Celebrity" -> {
                 if (state.myCelebrityVoiceList.isNotEmpty()) {
                     val pagerState =
                         rememberPagerState(pageCount = { state.myCelebrityVoiceList.size })
+                    val fling =  PagerDefaults.flingBehavior(
+                        state = pagerState,
+                        snapPositionalThreshold = 0.3f // 더 낮으면 쉽게 넘어감
+                    )
 
-                    HorizontalPager(state = pagerState) { page ->
+                    HorizontalPager(
+                        state = pagerState,
+                        contentPadding = PaddingValues(horizontal = 50.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        pageSpacing = (-20).dp,
+                        flingBehavior = fling
+                    ) { page ->
                         CelebVoiceScreen(
                             pagerState = pagerState,
                             page = page,
