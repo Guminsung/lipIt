@@ -311,10 +311,6 @@ fun NavGraph(
                 }
             )
 
-//            AddVoiceScreen(
-//                state = viewModel.state.collectAsState().value,
-//                onIntent = viewModel::onIntent
-//            )
             // LaunchedEffect로 Context 초기화하기
             LaunchedEffect(key1 = Unit) {
                 viewModel.setContext(context)

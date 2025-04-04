@@ -17,7 +17,11 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -36,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.cheonjaeung.compose.grid.SimpleGridCells
+import com.cheonjaeung.compose.grid.VerticalGrid
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.VoiceList
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.CelabResponse
@@ -51,12 +57,14 @@ fun EditVoiceScreen(
 ) {
 
     val state = viewModel.state.collectAsState().value
+    val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(Color(0xFFFDF8FF))
-            .padding(top = 44.dp, start = 20.dp, end = 20.dp),
+            .padding(top = 44.dp, start = 20.dp, end = 20.dp)
+            .verticalScroll(scrollState),
     ) {
 
         BackHandler {
@@ -119,7 +127,6 @@ fun EditVoiceScreen(
             },
             onClickAddVoice = {
                 viewModel.onIntent(EditVoiceIntent.NavigateToAddVoice)
-                onNavigateToAddVoice()
             }
         )
 
@@ -159,10 +166,12 @@ fun CelebrityVoiceList(
                 .fillMaxWidth()
                 .graphicsLayer(clip = false)
         ) {
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+
+            VerticalGrid(
+                columns = SimpleGridCells.Fixed(3),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                items(sortedVoices.size) { index ->
+                for (index in 0..<sortedVoices.size) {
                     val voice = sortedVoices[index]
                     VoiceItem(
                         url = voice.customImageUrl,
@@ -208,10 +217,12 @@ fun CustomVoiceList(
             .fillMaxWidth()
             .graphicsLayer(clip = false)
     ) {
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+
+        VerticalGrid(
+            columns = SimpleGridCells.Fixed(3),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            items(customSize) { index ->
+            for (index in 0..<customVoices.size) {
                 val voice = customVoices[index]
                 VoiceItem(
                     url = voice.customImageUrl,
@@ -223,11 +234,9 @@ fun CustomVoiceList(
                     }
                 )
             }
-
             // 추가 버튼 아이템
-            item {
-                AddVoiceItem(onClickAddVoice = onClickAddVoice)
-            }
+            AddVoiceItem(onClickAddVoice = onClickAddVoice)
+
         }
     }
 }
@@ -239,8 +248,7 @@ fun AddVoiceItem(onClickAddVoice: () -> Unit) {
     ) {
         Box(
             modifier = Modifier
-                .padding(start = 5.dp)
-                .offset(y = (-10).dp, x = (-10).dp)
+                .padding(vertical = 5.dp, horizontal = 10.dp)
                 .graphicsLayer {
                     clip = true
                 },
@@ -326,16 +334,14 @@ fun VoiceItem(
                             .fillMaxSize()
                             .clip(CircleShape),
                         error = painterResource(
-                            id = if (activated) R.drawable.profile_test_img
-                            else R.drawable.profile_sample_locked
+                            id = R.drawable.profile_test_img
                         )
                     )
                 } else {
                     // URL이 비어있을 경우 기본 이미지 표시
                     Image(
                         painter = painterResource(
-                            id = if (activated) R.drawable.profile_test_img
-                            else R.drawable.profile_sample_locked
+                            id = R.drawable.profile_test_img
                         ),
                         contentDescription = "기본 프로필",
                         modifier = Modifier
@@ -364,6 +370,7 @@ fun VoiceItem(
             )
         )
 
+        Spacer(modifier = Modifier.height(7.dp))
     }
 }
 
