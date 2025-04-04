@@ -81,14 +81,15 @@ fun CelebVoiceScreen(
         fraction = 1f - pageOffset.coerceIn(0f, 1f)
     )
 
+    val scale = lerp(0.80f, 1f, 1f - pageOffset)
 
     Column {
 
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(350.dp)
+                .height(400.dp)
                 .padding(horizontal = 16.dp, vertical = 24.dp)
                 .clip(RoundedCornerShape(32.dp))
                 .clickable {
@@ -101,15 +102,11 @@ fun CelebVoiceScreen(
                 Modifier
                     .fillMaxWidth()
                     .graphicsLayer {
-                        // 페이저 효과와 뒤집기 효과 결합
-                        alpha = if (rotation < 90f) pageAlpha else 0f
+                        alpha = lerp(0.5f, 1f, 1f - pageOffset)
                         rotationY = rotation
                         cameraDistance = 12f * density // 카메라 거리 설정 추가
-                        // 회전 중에 약간 축소하여 짤림 방지
-                        scaleX =
-                            0.9f + (0.1f * (1f - (rotation / 90f).absoluteValue.coerceIn(0f, 1f)))
-                        scaleY =
-                            0.9f + (0.1f * (1f - (rotation / 90f).absoluteValue.coerceIn(0f, 1f)))
+                        scaleX = scale
+                        scaleY = scale
                     }
                     .clip(RoundedCornerShape(32.dp))
                     .border(
@@ -256,7 +253,7 @@ fun CelebVoiceScreen(
                             elevation = ButtonDefaults.elevation(0.dp),
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
 
-                        ) {
+                            ) {
                             Text("변경")
                         }
 
