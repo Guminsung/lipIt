@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.*
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -299,7 +301,24 @@ fun NavGraph(
         }
 
         composable("add_voice") {
-            val viewModel = viewModel<AddVoiceViewModel>()
+            val context = LocalContext.current
+            val viewModel: AddVoiceViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    @Suppress("UNCHECKED_CAST")
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return AddVoiceViewModel(context) as T
+                    }
+                }
+            )
+
+//            AddVoiceScreen(
+//                state = viewModel.state.collectAsState().value,
+//                onIntent = viewModel::onIntent
+//            )
+            // LaunchedEffect로 Context 초기화하기
+            LaunchedEffect(key1 = Unit) {
+                viewModel.setContext(context)
+            }
 
             AddVoiceScreen(
                 state = viewModel.state.collectAsState().value,
