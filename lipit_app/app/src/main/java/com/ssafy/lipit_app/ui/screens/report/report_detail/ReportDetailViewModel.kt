@@ -1,10 +1,9 @@
-package com.ssafy.lipit_app.ui.screens.report
+package com.ssafy.lipit_app.ui.screens.report.report_detail
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.lipit_app.domain.repository.ReportRepository
-import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
