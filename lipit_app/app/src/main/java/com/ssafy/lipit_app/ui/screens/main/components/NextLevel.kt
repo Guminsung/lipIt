@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -24,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -57,21 +59,25 @@ fun NextLevel(reportPercentage: Int, callTimePercentage: Int) {
                 )
             )
 
-            Spacer(modifier = Modifier.width(2.dp))
+
+            Spacer(modifier = Modifier.width(3.dp))
 
             // 물음표 버튼 - 레벨업 관련 안내
+
             Icon(
                 painterResource(id = R.drawable.main_question_icon),
                 contentDescription = "?",
                 tint = Color(0xFFCBCBCB),
                 modifier = Modifier
                     .size(18.dp)
-                    .offset(y = (-2).dp)
+                    .offset(y = -1.dp)
+                    .clip(CircleShape)
                     .clickable {
                         // 레벨 설명 팝업 띄우기
                         showLevelUpDialog = true
                     }
             )
+
 
             if (showLevelUpDialog) {
                 LevelUpDialog(

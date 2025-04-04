@@ -112,9 +112,9 @@ fun ReportDetailScreen(
                             color = if (state.selectedTabIndex == index) Color.White else Color.White.copy(
                                 alpha = 0.6f
                             ),
-                            fontSize = 14.sp, // 글씨 크기 조절
-                            maxLines = 1, // 한 줄로 제한
-                            fontWeight = if (state.selectedTabIndex == index) FontWeight.Bold else FontWeight.Normal,
+                            fontSize = 16.sp,
+                            maxLines = 1,
+                            fontWeight = if (state.selectedTabIndex == index) FontWeight.Bold else FontWeight.Light,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.fillMaxWidth()
                         )
