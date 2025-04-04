@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
@@ -15,6 +17,8 @@ import androidx.compose.material.TabRowDefaults
 import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.paint
@@ -31,6 +35,7 @@ import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.report.components.FullScriptContent
 import com.ssafy.lipit_app.ui.screens.report.components.NativeSpeakerContent
 import com.ssafy.lipit_app.ui.screens.report.components.SummaryContent
+import kotlinx.coroutines.launch
 
 @Composable
 fun ReportDetailScreen(
@@ -40,6 +45,16 @@ fun ReportDetailScreen(
 ) {
 
     val tabTitles = listOf("요약", "원어민 표현", "전체 스크립트")
+    val coroutineScope = rememberCoroutineScope()
+    val pagerState = rememberPagerState(
+        pageCount = { tabTitles.size },
+        initialPageOffsetFraction = 0f,
+        initialPage = 0
+    )
+
+    LaunchedEffect(pagerState.currentPage) {
+        onIntent(ReportDetailIntent.SelectTab(pagerState.currentPage))
+    }
 
     Column(
         modifier = Modifier
@@ -84,7 +99,12 @@ fun ReportDetailScreen(
             tabTitles.forEachIndexed { index, title ->
                 Tab(
                     selected = state.selectedTabIndex == index,
-                    onClick = { onIntent(ReportDetailIntent.SelectTab(index)) },
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                        onIntent(ReportDetailIntent.SelectTab(index))
+                    },
                     modifier = Modifier.weight(1f),
                     text = {
                         Text(
@@ -103,6 +123,7 @@ fun ReportDetailScreen(
             }
         }
 
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -114,20 +135,25 @@ fun ReportDetailScreen(
                 )
                 .padding(start = 20.dp, end = 20.dp, top = 24.dp)
         ) {
-
-            // 탭 화면
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 20.dp)
-                    .clip(RoundedCornerShape(16.dp))
-            ) {
-                when (state.selectedTabIndex) {
-                    0 -> SummaryContent(state.reportSummary)
-                    1 -> NativeSpeakerContent(state.nativeExpression)
-                    2 -> FullScriptContent(state.reportScript)
+            HorizontalPager(
+                state = pagerState,
+                userScrollEnabled = true
+            ) { page ->
+                // 탭 화면
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 20.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                ) {
+                    when (page) {
+                        0 -> SummaryContent(state.reportSummary)
+                        1 -> NativeSpeakerContent(state.nativeExpression)
+                        2 -> FullScriptContent(state.reportScript)
+                    }
                 }
             }
         }
+
     }
 }
