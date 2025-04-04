@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,7 +40,7 @@ fun DaySelector(
 
     // 현재 선택된 요일의 인덱스
     var currentIndex by remember {
-        mutableStateOf(days.indexOf(selectedDay).coerceIn(0, days.size - 1))
+        mutableIntStateOf(days.indexOf(selectedDay).coerceIn(0, days.size - 1))
     }
 
     Row(
