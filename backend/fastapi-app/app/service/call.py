@@ -35,7 +35,7 @@ end_call_graph = build_end_call_graph()
 
 
 async def start_call(
-    db: AsyncSession, request: StartCallRequest, member_id: int, voice_name: str
+    db: AsyncSession, request: StartCallRequest, member_id: int=1, voice_name: str=""
 ) -> StartCallResponse:
     # 자유 주제(topic = None)인 경우 뉴스/날씨 데이터로 topic 추출
     topic = request.topic
@@ -79,8 +79,8 @@ async def add_message_to_call(
     db: AsyncSession,
     call_id: int,
     request: UserMessageRequest,
-    member_id: int,
-    voice_name: str,
+    member_id: int=1,
+    voice_name: str = "",
 ) -> AIMessageResponse:
     call_record = await get_call_by_id(db, call_id)
     if not call_record:
