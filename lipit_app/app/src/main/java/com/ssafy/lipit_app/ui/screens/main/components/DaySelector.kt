@@ -42,16 +42,6 @@ fun DaySelector(
         mutableStateOf(days.indexOf(selectedDay).coerceIn(0, days.size - 1))
     }
 
-    // 애니메이션 효과를 위한 오프셋 상태
-    val animatedOffsetX by animateDpAsState(
-        targetValue = (currentIndex * 48).dp,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessMedium
-        ),
-        label = "daySelector"
-    )
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
