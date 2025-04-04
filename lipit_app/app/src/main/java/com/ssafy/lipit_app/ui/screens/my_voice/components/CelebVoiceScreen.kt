@@ -90,6 +90,7 @@ fun CelebVoiceScreen(
                 .fillMaxWidth()
                 .height(350.dp)
                 .padding(horizontal = 16.dp, vertical = 24.dp)
+                .clip(RoundedCornerShape(32.dp))
                 .clickable {
                     isFlipped = !isFlipped
                 },

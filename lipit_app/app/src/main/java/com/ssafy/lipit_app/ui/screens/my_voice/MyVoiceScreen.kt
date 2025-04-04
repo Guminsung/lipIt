@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.my_voice
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,11 +28,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,16 +43,14 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ssafy.lipit_app.R
-import com.ssafy.lipit_app.data.model.response_dto.myvoice.CelabResponse
-import com.ssafy.lipit_app.data.model.response_dto.myvoice.CustomResponse
 import com.ssafy.lipit_app.ui.screens.my_voice.components.CelebVoiceScreen
 import com.ssafy.lipit_app.ui.screens.my_voice.components.CustomVoiceScreen
 import mx.platacard.pagerindicator.PagerIndicator
+
 
 @Composable
 fun MyVoiceScreen(
@@ -146,7 +141,7 @@ fun MyVoiceScreen(
                     Text(
                         text = state.selectedVoiceName,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp,
+                        fontSize = 20.sp,
                         color = Color.Black
                     )
                 }
@@ -168,9 +163,13 @@ fun MyVoiceScreen(
                     color = if (state.selectedTab == "Celebrity") Color.White else Color.White.copy(
                         0.4f
                     ),
-                    modifier = Modifier.clickable {
-                        onIntent(MyVoiceIntent.SelectTab("Celebrity"))
-                    }
+                    modifier = Modifier
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            onIntent(MyVoiceIntent.SelectTab("Celebrity"))
+                        }
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
@@ -179,9 +178,13 @@ fun MyVoiceScreen(
                     color = if (state.selectedTab == "Custom") Color.White else Color.White.copy(
                         0.4f
                     ),
-                    modifier = Modifier.clickable {
-                        onIntent(MyVoiceIntent.SelectTab("Custom"))
-                    }
+                    modifier = Modifier
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            onIntent(MyVoiceIntent.SelectTab("Custom"))
+                        }
                 )
 
 
