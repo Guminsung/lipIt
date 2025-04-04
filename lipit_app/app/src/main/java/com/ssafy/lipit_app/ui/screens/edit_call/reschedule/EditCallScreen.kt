@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -41,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -50,8 +52,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.domain.repository.ScheduleRepository
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.CallSchedule
 import kotlinx.coroutines.selects.select
 
@@ -65,23 +70,33 @@ fun EditCallScreen(
     // 뒤로가기 이벤트 처리
     BackHandler { onBack() }
 
-    // ViewModel
-    val viewModel: EditCallViewModel = viewModel()
+    val context = LocalContext.current
+    val viewModel: EditCallViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return EditCallViewModel(
+                    context = context
+                ) as T
+            }
+        }
+    )
+
 //    val state by viewModel.state.collectAsState()
 
     //  schedule 초기값 추출
     val initialHour = schedule.scheduledTime.substringBefore(":").toIntOrNull() ?: 0
     val initialMinute = schedule.scheduledTime.substringAfter(":").substringBefore(":").toIntOrNull() ?: 0
     // 시간 상태 remember로 관리
-    var selectedHour by remember { mutableStateOf(initialHour) }
-    var selectedMinute by remember { mutableStateOf(initialMinute) }
+    var selectedHour by remember { mutableIntStateOf(initialHour) }
+    var selectedMinute by remember { mutableIntStateOf(initialMinute) }
 
 
     // 스케줄 모드(수정or추가) & 카테고리 설정 관련 : 토픽이 없을 경우 '자유주제", 토픽이 있을 경우 해당카테고리 설정
     val isEditMode = schedule.callScheduleId != -1L
 
     val hasTopicCategory = !schedule.topicCategory.isNullOrBlank() && schedule.topicCategory != "자유주제"
-    var selectedIndex by remember { mutableStateOf(if (hasTopicCategory) 1 else 0) }
+    var selectedIndex by remember { mutableIntStateOf(if (hasTopicCategory) 1 else 0) }
     var selectedCategory by remember { mutableStateOf(if (schedule.topicCategory == "자유주제") "" else schedule.topicCategory ?: "") }
 
     // UI
@@ -333,7 +348,7 @@ fun WheelColumn(
             val isSelected = index == currentIndex
             Text(
                 text = items[index],
-                fontSize = if (isSelected) 20.sp else 17.sp,
+                fontSize = if (isSelected) 24.sp else 17.sp,
                 modifier = Modifier
                     .height(30.dp)
                     .wrapContentHeight(Alignment.CenterVertically)
@@ -353,8 +368,6 @@ fun EditCallButtons(
     isEditMode: Boolean,
     onIntent: (EditCallIntent) -> Unit,
     onBack: () -> Unit
-//    onCancel: () -> Unit,
-//    onDelete: () -> Unit
 ) {
     Row(modifier = Modifier.fillMaxWidth()) {
 
@@ -391,7 +404,6 @@ fun EditCallButtons(
                     onIntent(EditCallIntent.UpdateSchedule(schedule))
                 } else {
                     Log.d("TAG", "EditCallButtons: AddedCallPlan ${schedule}")
-//                    onIntent(EditCallIntent.CreateSchedule(schedule))
                     onIntent(EditCallIntent.CreateSchedule(schedule))
                 }
             },
@@ -488,12 +500,6 @@ fun CustomSegmentedButtons(
 @Composable
 fun EditCallsPreview() {
     EditCallScreen(
-//        state = EditCallState(
-//            isFreeModeSelected = false,
-//            isCategoryModeSelected = true,
-//            selectedCategory = "스포츠"
-//        ),
-//        onIntent = {},
         onBack = {},
         schedule = CallSchedule(
             callScheduleId = -1L,

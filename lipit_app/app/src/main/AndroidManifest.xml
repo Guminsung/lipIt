@@ -10,6 +10,10 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
+    <!-- 알림 매니저 설정 -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
 
     <queries>
         <intent>
@@ -56,6 +60,11 @@
                 <action android:name="com.ssafy.lipit_app.ACTION_DECLINE_CALL" />
             </intent-filter>
         </receiver>
+
+        <receiver
+            android:name=".ui.screens.call.alarm.ScheduledCallReceiver"
+            android:enabled="true"
+            android:exported="false" />
 
     </application>
 
