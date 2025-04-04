@@ -19,9 +19,14 @@ import java.io.File
 import javax.inject.Inject
 
 
-class AddVoiceViewModel @Inject constructor(context: Context) : ViewModel() {
+
+class AddVoiceViewModel(context: Context) : ViewModel() {
     private val TAG = "AddVoiceViewModel"
+
+    // 내부 상태 Flow
     private val _state = MutableStateFlow(AddVoiceState())
+
+    // 외부에 노출되는 읽기 전용 상태 Flow
     val state: StateFlow<AddVoiceState> = _state
 
     private var recorder: MediaRecorder? = null
@@ -36,6 +41,23 @@ class AddVoiceViewModel @Inject constructor(context: Context) : ViewModel() {
     // Context 설정 메서드 (Activity나 Fragment에서 호출)
     fun setContext(context: Context) {
         appContext = context.applicationContext
+    }
+
+    // Intent 처리 메서드 - 모든 상태 변경은 이 메서드를 통해서만 이루어짐
+    @RequiresApi(Build.VERSION_CODES.S)
+    fun onIntent(intent: AddVoiceIntent) {
+        when (intent) {
+            is AddVoiceIntent.StartRecording -> startRecording()
+            is AddVoiceIntent.StopRecording -> stopRecording()
+            is AddVoiceIntent.NextSentence -> nextSentence()
+            is AddVoiceIntent.SetVoiceName -> {
+                _state.update { it.copy(voiceName = intent.name) }
+            }
+            is AddVoiceIntent.SubmitVoice -> submitVoice()
+            is AddVoiceIntent.NavigateToMain -> {
+                // NavigateToMain은 NavGraph에서 처리되므로 여기서는 아무것도 하지 않음
+            }
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -224,70 +246,6 @@ class AddVoiceViewModel @Inject constructor(context: Context) : ViewModel() {
         }
     }
 
-    fun setVoiceName(name: String) {
-        _state.update { it.copy(voiceName = name) }
-    }
-
-//    fun submitVoice() {
-//        val current = _state.value
-//        if (current.voiceName.isBlank()) {
-//            _state.update { it.copy(errorMessage = "음성 이름을 입력해주세요.") }
-//            return
-//        }
-//
-//        viewModelScope.launch {
-//            try {
-//                _state.update { it.copy(isUploading = true, errorMessage = null) }
-//
-//                // 1. 오디오 파일 병합
-//                val mergedFile = withContext(Dispatchers.IO) {
-//                    voiceRepository.mergeAudioFiles(audioFiles, current.voiceName)
-//                }
-//
-//                // 2. S3에 음성 파일 업로드
-//                val s3Result = voiceRepository.uploadVoiceToS3(mergedFile, current.voiceName)
-//
-//                if (s3Result.isSuccess) {
-//                    val s3Response = s3Result.getOrThrow()
-//                    val voiceUrl = s3Response.cdnUrl
-//
-//                    // 3. 백엔드 서버에 음성 정보 저장
-////                    memberId: Long,
-////                    voiceName: String,
-////                    audioUrl: String,
-////                    imageUrl: String = ""
-//                    val memberId = SharedPreferenceUtils.getMemberId()
-//                    val saveResult = voiceRepository.saveCustomVoice(memberId, current.voiceName, voiceUrl, "")
-//
-//                    if (saveResult.isSuccess) {
-//                        // 모든 과정 성공
-//                        _state.update { it.copy(
-//                            isUploading = false,
-//                            uploadSuccess = true,
-//                            errorMessage = null
-//                        )}
-//                    } else {
-//                        // 백엔드 서버 저장 실패
-//                        val exception = saveResult.exceptionOrNull()
-//                        throw Exception("음성 정보 저장 실패: ${exception?.message}")
-//                    }
-//                } else {
-//                    // S3 업로드 실패
-//                    val exception = s3Result.exceptionOrNull()
-//                    throw Exception("S3 업로드 실패: ${exception?.message}")
-//                }
-//            } catch (e: Exception) {
-//                Log.e(TAG, "음성 업로드 실패: ${e.message}", e)
-//                _state.update {
-//                    it.copy(
-//                        isUploading = false,
-//                        errorMessage = "음성 업로드 중 오류가 발생했습니다: ${e.message}"
-//                    )
-//                }
-//            }
-//        }
-//    }
-
     fun submitVoice() {
         val current = _state.value
         val memberId = SharedPreferenceUtils.getMemberId()
@@ -315,7 +273,7 @@ class AddVoiceViewModel @Inject constructor(context: Context) : ViewModel() {
                 // 3. 실제 업로드
                 voiceRepository.uploadToPresignedUrl(mergedFile, audioUrl).getOrThrow()
 
-                // TODO 사용자가 직접 추가한 이미지파일로 넘겨야 함
+                //                // TODO 사용자가 직접 추가한 이미지파일로 넘겨야 함
 //                val imageFile = File(...) // 이미지 경로 필요
 //                voiceRepository.uploadToPresignedUrl(imageFile, imageUrl).getOrThrow()
 
@@ -339,7 +297,6 @@ class AddVoiceViewModel @Inject constructor(context: Context) : ViewModel() {
             }
         }
     }
-
 
     // 개선된 STT 정확도 계산 함수
     private fun calculateAccuracy(original: String, recognized: String): Float {
@@ -421,18 +378,6 @@ class AddVoiceViewModel @Inject constructor(context: Context) : ViewModel() {
         }
 
         return dp[m][n]
-    }
-
-    @RequiresApi(Build.VERSION_CODES.S)
-    fun onIntent(intent: AddVoiceIntent) {
-        when (intent) {
-            is AddVoiceIntent.StartRecording -> startRecording()
-            is AddVoiceIntent.StopRecording -> stopRecording()
-            is AddVoiceIntent.NextSentence -> nextSentence()
-            is AddVoiceIntent.SetVoiceName -> setVoiceName(intent.name)
-            is AddVoiceIntent.SubmitVoice -> submitVoice()
-            is AddVoiceIntent.NavigateToMain -> {} // NavGraph에서 처리
-        }
     }
 
     override fun onCleared() {
