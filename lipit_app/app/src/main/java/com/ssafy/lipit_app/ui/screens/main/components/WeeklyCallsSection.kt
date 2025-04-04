@@ -11,9 +11,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.ui.screens.main.CallItem
 import com.ssafy.lipit_app.ui.screens.main.MainIntent
 import com.ssafy.lipit_app.ui.screens.main.MainViewModel
+import kotlinx.coroutines.launch
 
 // 주간 전화 일정 한 눈에 보기
 @Composable
@@ -34,11 +39,18 @@ fun WeeklyCallsSection(
     callItems: List<CallItem>,
     onIntent: (MainIntent) -> Unit
 ) {
+    val context = LocalContext.current
+    val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    val pagerState = rememberPagerState(
+        initialPage = days.indexOf(selectedDay),
+        pageCount = { days.size }
+    )
+    val coroutineScope = rememberCoroutineScope()
+
     Column(
-        modifier = Modifier
-            .padding(top = 25.dp)
+        modifier = Modifier.padding(top = 25.dp)
     ) {
-        // 제목 + 버튼 영역
+        // 제목 + 설정 버튼 Row
         Row(
             Modifier
                 .padding(bottom = 14.dp)
@@ -74,7 +86,7 @@ fun WeeklyCallsSection(
             )
         }
 
-        // 전화 일정 출력 영역
+
         Column(
             modifier = Modifier
                 .background(
@@ -83,58 +95,56 @@ fun WeeklyCallsSection(
                 )
                 .padding(top = 10.dp, start = 12.dp, end = 12.dp, bottom = 12.dp)
         ) {
-
-            val hasSchedule = callItems.any {
-                it.scheduleDay == selectedDay
-            }
-
-            val filteredItems = callItems.filter {
-                it.scheduleDay == selectedDay
-            }
-
-            callItems.forEach {
-                Log.d(
-                    "schedule",
-                    "callItem.scheduleDay: ${it.scheduleDay}, selectedDay: $selectedDay"
-                )
-            }
-
-
-            // 요일 선택 커스텀 탭
+            // DaySelector 탭
             DaySelector(
                 onDaySelected = { day ->
+                    val index = days.indexOf(day)
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(index)
+                    }
                     onIntent(MainIntent.OnDaySelected(day))
-                    Log.d("selectedDay", "selectedDay: $day")
                 },
                 selectedDay
             )
 
             Spacer(modifier = Modifier.height(5.dp))
 
-            val context = LocalContext.current
+            // 🧭 Pager로 전화 스케줄 보여주기
+            HorizontalPager(
+                state = pagerState,
+                pageSpacing = 12.dp,
+                modifier = Modifier.fillMaxWidth()
+            ) { page ->
+                val day = days[page]
+                val filteredItems = callItems.filter { it.scheduleDay == day }
 
-            // 스케줄 카드뷰
-            if (hasSchedule) {
-                dailyCallSchedule(filteredItems, viewModel = MainViewModel(context))
-            } else {
-                Box(
-                    modifier = Modifier
-                        .height(70.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "스케줄이 없어요! 😶",
-                        modifier = Modifier.padding(16.dp),
-                        style = TextStyle(fontSize = 14.sp, color = Color.Gray)
-                    )
+                if (filteredItems.isNotEmpty()) {
+                    dailyCallSchedule(filteredItems, viewModel = MainViewModel(context))
+                } else {
+                    Box(
+                        modifier = Modifier.height(70.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "스케줄이 없어요! 😶",
+                            modifier = Modifier.padding(16.dp),
+                            style = TextStyle(fontSize = 14.sp, color = Color.Gray)
+                        )
+                    }
                 }
-
             }
 
+            // pager 변경 감지해서 요일 업데이트
+            LaunchedEffect(pagerState.currentPage) {
+                val newDay = days[pagerState.currentPage]
+                if (newDay != selectedDay) {
+                    onIntent(MainIntent.OnDaySelected(newDay))
+                }
+            }
         }
-
     }
 }
+
 
 // api에서 제공하는 형식이랑 맞지 않아 추가함
 fun dayFullToShort(day: String): String {
