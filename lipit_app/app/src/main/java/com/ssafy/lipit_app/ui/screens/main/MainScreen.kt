@@ -173,6 +173,7 @@ fun MainScreen(
                                             onIntent(MainIntent.SelectSchedule(intent.schedule))
                                             onIntent(MainIntent.ShowRescheduleScreen(intent.schedule))
                                         }
+
                                         is WeeklyCallsIntent.OnChangeVoice -> {
                                             onIntent(MainIntent.ShowMyVoicesScreen)
                                         }
@@ -193,7 +194,10 @@ fun MainScreen(
                                 },
                                 onSuccess = { updatedSchedule, isEditMode ->
                                     // 알람 수정, 삭제 작업이 성공적으로 완료되면 이쪽으로 onSuccess 응답이 온다.
-                                    Log.d("MainScreen", "Plan ${if (isEditMode) "수정" else "추가"} OK: $updatedSchedule")
+                                    Log.d(
+                                        "MainScreen",
+                                        "Plan ${if (isEditMode) "수정" else "추가"} OK: $updatedSchedule"
+                                    )
 
                                     // 바텀시트 닫고 다시 열기 (데이터 내용 갱신)
                                     onIntent(MainIntent.OnCloseSettingsSheet)
@@ -202,27 +206,16 @@ fun MainScreen(
                                     }, 300) // 300ms 지연
                                 }
                             )
-                        } // ... BottomSheetContent.RESCHEDULE_CALL
+                        }
+
                         BottomSheetContent.MY_VOICES -> {
                             EditVoiceScreen(
-                                state = EditVoiceState(
-                                    selectedVoiceName = "Gandalf",
-                                    selectedVoiceUrl = "https://example.com/gandalf.mp3",
-                                    celebrityVoices = listOf(/* ... */),
-                                    myCustomVoices = listOf(/* ... */)
-                                ), // MainState에서 정의된 값
-                                onIntent = { intent ->
-                                    // 필요하면 MainIntent로 감싸서 위임할 수도 있음
-                                    // ex) onIntent(MainIntent.SomeIntent(intent))
-                                },
                                 onBack = {
                                     onIntent(MainIntent.OnCloseSettingsSheet)
                                 },
-                                onClickAddVoice = {
-//                                    onIntent(MainIntent.OnAddVoiceClicked)
-                                }
+                                onNavigateToAddVoice = {}
                             )
-                        } // ...BottomSheetContent.MY_VOICE
+                        }
                     }
                 }
             }
@@ -230,14 +223,14 @@ fun MainScreen(
     ) {
         // ***** 기존 MainScreen UI
         var selectedDay by remember { mutableStateOf(state.selectedDay) }
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFFDF8FF))
-                .padding(start = 20.dp, end = 20.dp, top = 40.dp)
-        ) {
-            var selectedDay by remember { mutableStateOf(state.selectedDay) }
-        }
+//        Column(
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .background(Color(0xFFFDF8FF))
+//                .padding(start = 20.dp, end = 20.dp, top = 40.dp)
+//        ) {
+//            var selectedDay by remember { mutableStateOf(state.selectedDay) }
+//        }
 
         Column(
             modifier = Modifier
@@ -355,7 +348,6 @@ fun UserInfoSection(
         }
     }
 }
-
 
 
 // 레벨 등급에 따른 아이콘 매핑
