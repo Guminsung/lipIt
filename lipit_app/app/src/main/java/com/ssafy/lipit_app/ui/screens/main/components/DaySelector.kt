@@ -28,15 +28,7 @@ fun DaySelector(
     selectedDay: String
 ) {
     val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-    val selectedIndex = days.indexOf(selectedDay)
 
-    // 애니메이션 효과 추가
-    // 슬라이딩 형식으로 배경 이동
-    val itemWidth = 41.dp // 박스 가로 길이
-    val animatedOffsetX by animateDpAsState(
-        targetValue = (selectedIndex * 48).dp,
-        label = "offsetX"
-    )
 
     Row(
         modifier = Modifier
