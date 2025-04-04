@@ -20,7 +20,6 @@ router.api_doc(
     request_example={"filename": "voice-audio/1_1.wav"},
     success_example={
         "url": "https://s3.amazonaws.com/your-bucket/voice-audio/1_1.wav?AWSAccessKeyId=...",
-        "key": "uploads/test.wav",
         "cdnUrl": "https://d123abc456.cloudfront.net/voice-audio/1_1.wav",
     },
     errors={
@@ -41,10 +40,10 @@ S3에 파일을 직접 업로드할 수 있는 임시 URL을 발급합니다. �
         - 음성 이미지: `voice-image`
         - 음성 파일: `voice-audio`
     - 파일 이름
-        - 음성 이미지: `{memberId}`_`{voiceId}`
-        - 음성 파일: `{memberId}`_`{voiceId}`
+        - 음성 이미지: `{memberId}`_`{timestamp}`
+        - 음성 파일: `{memberId}`_`{timestamp}`
 
-- 예시: `voice-audio/1_1.wav`
+- 예시: `voice-audio/1_1743742614.wav`
 
 
 ** `cdnUrl`를 통해 업로드한 파일에 접근 가능하며 이 URL을 DB에 저장합니다.
