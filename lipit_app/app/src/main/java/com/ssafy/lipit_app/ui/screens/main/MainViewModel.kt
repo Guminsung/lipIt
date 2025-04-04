@@ -282,11 +282,12 @@ class MainViewModel(
 
                     // 3. 상태 업데이트
                     _state.update {
+                        Log.d("mainViewModel", "${it.weeklyCallsState.voiceName} ")
                         it.copy(
                             isSettingsSheetVisible = true,
                             weeklyCallsState = WeeklyCallsState(
-                                VoiceName = "Harry Potter: 하드코딩", // TODO: 서버 연동 시 교체
-                                VoiceImageUrl = "...",
+                                voiceName = it.callItem_name,
+                                voiceImageUrl = it.imageUrl,
                                 callSchedules = sortedSchedules
                             )
                         )
