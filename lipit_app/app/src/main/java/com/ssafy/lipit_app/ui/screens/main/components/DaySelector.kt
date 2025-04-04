@@ -59,11 +59,10 @@ fun DaySelector(
                     .clip(RoundedCornerShape(50.dp))
                     .background(
                         // 선택된 요일의 배경은 여기서 직접 처리
-                        if (index == currentIndex) Color(0xFFA37BBD) else Color.Transparent,
+                        if (day == selectedDay) Color(0xFFA37BBD) else Color.Transparent,
                         shape = RoundedCornerShape(size = 50.dp)
                     )
                     .clickable {
-                        currentIndex = index
                         onDaySelected(day)
                     }
                     .align(Alignment.CenterVertically),
@@ -75,8 +74,8 @@ fun DaySelector(
                     style = TextStyle(
                         fontSize = 13.sp,
                         lineHeight = 15.sp,
-                        fontWeight = if (index == currentIndex) FontWeight(700) else FontWeight(500),
-                        color = if (index == currentIndex) Color(0xFFFFFFFF) else Color(0xFFA7A7A7),
+                        fontWeight = if (day == selectedDay) FontWeight(700) else FontWeight(500),
+                        color = if (day == selectedDay) Color(0xFFFFFFFF) else Color(0xFFA7A7A7),
                         textAlign = TextAlign.Center,
                     )
                 )
