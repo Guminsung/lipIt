@@ -29,12 +29,12 @@ fun CallWithSubtitleAndTranslate(state: VoiceCallState) {
             )
         )
 
-        Spacer(modifier = Modifier.height(7.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         Text(
             text = state.AIMessageTranslate,
             style = TextStyle(
-                fontSize = 17.sp,
+                fontSize = 15.sp,
                 lineHeight = 30.sp,
                 fontWeight = FontWeight(274),
                 color = Color(0xB2FDF8FF),

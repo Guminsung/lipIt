@@ -62,6 +62,12 @@ class VoiceCallViewModel : ViewModel() {
                 }
             }
 
+            is VoiceCallIntent.UpdateTranslation -> {
+                _state.update{
+                    it.copy(AIMessageTranslate = intent.translatedMessage)
+                }
+            }
+
             is VoiceCallIntent.TranslationOff -> { // 자막 O, 번역 X
                 _state.update {
                     it.copy(showSubtitle = true, showTranslation = false)
