@@ -219,7 +219,7 @@ fun MainScreen(
                                     onIntent(MainIntent.OnCloseSettingsSheet)
                                 },
                                 onClickAddVoice = {
-//                                    onIntent(MainIntent.OnAddVoiceClicked)
+                                    onIntent(MainIntent.NavigateToAddVoice)
                                 }
                             )
                         } // ...BottomSheetContent.MY_VOICE

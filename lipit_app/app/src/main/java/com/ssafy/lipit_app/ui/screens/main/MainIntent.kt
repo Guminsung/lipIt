@@ -11,6 +11,7 @@ sealed class MainIntent {
     object NavigateToReports : MainIntent()
     object NavigateToMyVoices : MainIntent()
     object NavigateToCallScreen : MainIntent()
+    object NavigateToAddVoice: MainIntent()
 
     // 로그아웃 관련
     object OnLogoutClicked : MainIntent()

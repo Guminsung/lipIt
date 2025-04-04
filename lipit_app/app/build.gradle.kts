@@ -175,4 +175,9 @@ dependencies {
     // WebSocket
     implementation("org.java-websocket:Java-WebSocket:1.5.3")
 
+    //  STT
+//    implementation("net.java.dev.jna:jna:5.5.0@aar")
+//    implementation("org.vosk:vosk-android:0.3.30")
+//    implementation("com.github.alphacep:vosk-api:android")
+
 }

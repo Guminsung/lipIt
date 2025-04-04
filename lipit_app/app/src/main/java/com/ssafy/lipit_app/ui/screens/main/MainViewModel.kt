@@ -84,7 +84,8 @@ class MainViewModel(
             // NavGraph에서 처리
             is MainIntent.NavigateToReports,
             is MainIntent.NavigateToMyVoices,
-            is MainIntent.NavigateToCallScreen -> {
+            is MainIntent.NavigateToCallScreen,
+            is MainIntent.NavigateToAddVoice -> {
                 // 네비게이션 관련 상태 업데이트
             }
 
@@ -136,6 +137,8 @@ class MainViewModel(
                 // 스케줄 내역 삭제
                 deleteScheduleAndReload(intent.scheduleId)
             }
+
+
         }
     }
 
