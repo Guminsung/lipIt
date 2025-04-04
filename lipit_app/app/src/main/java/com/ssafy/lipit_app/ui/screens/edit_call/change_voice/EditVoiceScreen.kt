@@ -110,7 +110,6 @@ fun EditVoiceScreen(
         TextTitle("Custom")
         Spacer(modifier = Modifier.height(21.dp))
 
-        val customSize = state.customVoices.size
         Log.d("EditVoiceScreen", "커스텀 목소리 수: ${state.customVoices}")
 
         CustomVoiceList(
@@ -126,7 +125,9 @@ fun EditVoiceScreen(
                 )
             },
             onClickAddVoice = {
+                Log.d("EditVoiceScreen", "음성 추가 버튼이 클릭되었습니다")
                 viewModel.onIntent(EditVoiceIntent.NavigateToAddVoice)
+                onNavigateToAddVoice()
             }
         )
 

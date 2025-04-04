@@ -37,6 +37,7 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
 import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceViewModel
+import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceIntent
 import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceViewModel
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsScreen
@@ -210,6 +211,10 @@ fun NavGraph(
                             navController.navigate("onVoiceCall")
                         }
 
+                        is MainIntent.NavigateToAddVoice -> {
+                            navController.navigate("add_voice")
+                        }
+
                         else -> {
                         }
                     }
@@ -328,7 +333,13 @@ fun NavGraph(
         composable(route = "edit_voice") {
             EditVoiceScreen(
                 onBack = { navController.popBackStack() },
-                onNavigateToAddVoice = { navController.navigate("add_voice") }
+                onNavigateToAddVoice = {
+                    Log.d(TAG, "add_voice로 네비게이션 시도")
+                    navController.navigate("add_voice") {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             )
         }
 
