@@ -1,18 +1,28 @@
 package com.ssafy.lipit_app.ui.screens.edit_call.reschedule
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.lipit_app.data.model.request_dto.schedule.ScheduleCreateRequest
 import com.ssafy.lipit_app.data.model.response_dto.schedule.TopicCategory
 import com.ssafy.lipit_app.domain.repository.ScheduleRepository
+import com.ssafy.lipit_app.ui.screens.call.alarm.AlarmScheduler
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.CallSchedule
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.temporal.TemporalAdjusters
 
-class EditCallViewModel : ViewModel(){
+class EditCallViewModel(
+    private val context: Context? = null
+) : ViewModel() {
+
     private val _state = MutableStateFlow(EditCallState())
     val state: StateFlow<EditCallState> = _state
 
@@ -20,25 +30,25 @@ class EditCallViewModel : ViewModel(){
 
 
     fun onIntent(intent: EditCallIntent, onSuccess: () -> Unit = {}) {
-        when(intent){
-            is EditCallIntent.SelectCategory -> TODO()
-            is EditCallIntent.SelectFreeMode -> TODO()
+        when (intent) {
+            is EditCallIntent.SelectCategory -> {}
+            is EditCallIntent.SelectFreeMode -> {}
 
             is EditCallIntent.CreateSchedule -> {
-                createSchedule(intent.schedule, onSuccess)
+                createSchedule(intent.schedule, onSuccess)  // 일정 추가
             }
 
-            // EditCallScreen.kt 에서 수정 이벤트가 발생하면 실행 된다.
             is EditCallIntent.UpdateSchedule -> {
                 Log.d("TAG", "EditCallViewModel Change: EditCallITnetn ${intent.schedule}")
-                updateSchedule(intent.schedule, onSuccess)
+                updateSchedule(intent.schedule, onSuccess)  // 일정 수정
             }
+
         }
     }
 
     private fun createSchedule(schedule: CallSchedule, onSuccess: () -> Unit) {
         viewModelScope.launch {
-//            val memberId = schedule.memberId
+
             val memberId = SharedPreferenceUtils.getMemberId()
             val day = schedule.scheduleDay
             val time = schedule.scheduledTime
@@ -62,7 +72,7 @@ class EditCallViewModel : ViewModel(){
 
             val result = scheduleRepository.createSchedule(memberId, request)
             if (result.isSuccess) {
-                setScheduleAlarm(schedule)
+                setScheduleAlarm(schedule)  // 알림 추가
                 onSuccess()
             } else {
                 println("❌ 일정 추가 실패: ${result.exceptionOrNull()?.message}")
@@ -102,7 +112,7 @@ class EditCallViewModel : ViewModel(){
 
             if (result.isSuccess) {
                 Log.d("TAG", "updateSchedule: Step 1")
-                setScheduleAlarm(schedule)
+                setScheduleAlarm(schedule)  // 알림 수정
                 onSuccess()
             } else {
                 println("❌ 일정 수정 실패: ${result.exceptionOrNull()?.message}")
@@ -115,13 +125,56 @@ class EditCallViewModel : ViewModel(){
      *
      * TODO AlarmManager : Add, Update == Set
      * AlarmManager 수정/추가 작업 진행할 부분
-     *
      */
     private fun setScheduleAlarm(schedule: CallSchedule) {
-        // schedule : 스케쥴 내역 (요일, 시간, 카테고리) => 해당 데이터를 기반으로 알람 설정 진행
-        Log.d("TAG", "updateSchedule: Step 3 Here Alarm Setting")
+        context?.let { context ->
+            val alarmScheduler = AlarmScheduler(context)
 
-        Log.d("Alarm", "Alarm _---------- 알람 정보 업데이트: $schedule")
+            val scheduledDay = when (schedule.scheduleDay) {
+                "MONDAY" -> DayOfWeek.MONDAY
+                "TUESDAY" -> DayOfWeek.TUESDAY
+                "WEDNESDAY" -> DayOfWeek.WEDNESDAY
+                "THURSDAY" -> DayOfWeek.THURSDAY
+                "FRIDAY" -> DayOfWeek.FRIDAY
+                "SATURDAY" -> DayOfWeek.SATURDAY
+                "SUNDAY" -> DayOfWeek.SUNDAY
+                else -> DayOfWeek.MONDAY
+            }
+
+            val scheduledTime = LocalTime.parse(schedule.scheduledTime)
+            val currentDateTime = LocalDateTime.now()
+            val currentDayOfWeek = currentDateTime.dayOfWeek
+            Log.d("AlarmScheduler", "currentDatetime: $currentDateTime, dayofweek: $currentDayOfWeek")
+            val nextScheduledDate = if (currentDayOfWeek == scheduledDay) {
+                // 현재 요일과 스케줄된 요일이 같으면 오늘 시간으로 설정
+                currentDateTime.with(scheduledTime)
+            } else {
+                // 다른 요일이면 다음 해당 요일로 설정
+                currentDateTime
+                    .with(TemporalAdjusters.nextOrSame(scheduledDay))
+                    .with(scheduledTime)
+            }
+
+            alarmScheduler.scheduleCallAlarm(
+                time = nextScheduledDate,
+                callerName = schedule.topicCategory ?: "HarryPotter",  // TODO:: 보이스 설정이름으로
+                alarmId = schedule.callScheduleId.toInt()
+            )
+
+            Log.d("Alarm", "Alarm 설정: $schedule")
+        }
+    }
+
+    private fun DayOfWeek.toDayOfWeek(): DayOfWeek {
+        return when (this) {
+            DayOfWeek.MONDAY -> DayOfWeek.MONDAY
+            DayOfWeek.TUESDAY -> DayOfWeek.TUESDAY
+            DayOfWeek.WEDNESDAY -> DayOfWeek.WEDNESDAY
+            DayOfWeek.THURSDAY -> DayOfWeek.THURSDAY
+            DayOfWeek.FRIDAY -> DayOfWeek.FRIDAY
+            DayOfWeek.SATURDAY -> DayOfWeek.SATURDAY
+            DayOfWeek.SUNDAY -> DayOfWeek.SUNDAY
+        }
     }
 
 }

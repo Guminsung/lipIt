@@ -179,4 +179,8 @@ dependencies {
     // WebSocket
     implementation("org.java-websocket:Java-WebSocket:1.5.3")
 
+    // 그리드 리스트 화면
+    implementation("com.cheonjaeung.compose.grid:grid:2.2.1")
+
 }
+

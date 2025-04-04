@@ -14,13 +14,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,16 +31,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.CallSchedule
+import com.ssafy.lipit_app.ui.screens.main.MainViewModel
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun thisWeekSchedules(
+fun ThisWeekSchedules(
     dayList: List<String>,
     callSchedules: List<CallSchedule>,
     onTapSchedule: (CallSchedule) -> Unit,
@@ -143,14 +144,7 @@ fun thisWeekSchedules(
                     Spacer(modifier = Modifier.width(12.dp))
                 }
 
-//                if (showDeletePopup) {
-//                    DeleteCallDialog(
-//                        onDismiss = { showDeletePopup = false },
-//                        onConfirm = { id -> showDeletePopup = false }
-//                    )
-//                }
-
-                // LongClickEvent
+                // LongClickEvent: 꾹 눌러 삭제
                 if (showDeletePopup && schedule.callScheduleId != -1L) {
                     DeleteCallDialog(
                         scheduleId = schedule.callScheduleId,

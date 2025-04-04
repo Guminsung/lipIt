@@ -2,6 +2,25 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- 기본 포그라운드 서비스 권한 -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+
+    <!-- Android 14 이상에서는 특정 유형의 포그라운드 서비스 권한 필요 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+    <!-- 알림 매니저 설정 -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
+
+    <queries>
+        <intent>
+            <action android:name="android.telecom.ConnectionService" />
+        </intent>
+    </queries>
+
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -20,7 +39,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize">
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -35,6 +54,20 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
+        <receiver
+            android:name=".ui.screens.call.alarm.CallActionReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.ssafy.lipit_app.ACTION_ACCEPT_CALL" />
+                <action android:name="com.ssafy.lipit_app.ACTION_DECLINE_CALL" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".ui.screens.call.alarm.ScheduledCallReceiver"
+            android:enabled="true"
+            android:exported="false" />
 
     </application>
 
