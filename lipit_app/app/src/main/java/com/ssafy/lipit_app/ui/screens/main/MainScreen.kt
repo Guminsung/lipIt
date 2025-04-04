@@ -215,7 +215,7 @@ fun MainScreen(
                                 },
                                 onNavigateToAddVoice = {
                                     onIntent(MainIntent.NavigateToAddVoice)
-                                },
+                                }
                             )
                         }
                     }
