@@ -9,6 +9,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,10 +21,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -46,7 +50,6 @@ import com.ssafy.lipit_app.ui.screens.auth.components.MypagePopup
 import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceState
 import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallScreen
-import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallState
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsIntent
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsScreen
 import com.ssafy.lipit_app.ui.screens.main.components.NextLevel
@@ -289,6 +292,7 @@ fun CallButton(onIntent: (MainIntent) -> Unit) {
         contentDescription = "전화 걸기",
         modifier = Modifier
             .size(70.dp)
+            .clip(CircleShape)
             .clickable { // 화면 이동
                 onIntent(MainIntent.NavigateToCallScreen)
             }
