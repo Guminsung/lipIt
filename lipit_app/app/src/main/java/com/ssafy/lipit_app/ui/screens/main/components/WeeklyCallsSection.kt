@@ -20,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -47,6 +48,14 @@ fun WeeklyCallsSection(
     )
     val coroutineScope = rememberCoroutineScope()
 
+    // pager 변경 감지해서 요일 업데이트
+    LaunchedEffect(pagerState.currentPage) {
+        val newDay = days[pagerState.currentPage]
+        if (newDay != selectedDay) {
+            onIntent(MainIntent.OnDaySelected(newDay))
+        }
+    }
+
     Column(
         modifier = Modifier.padding(top = 25.dp)
     ) {
@@ -65,8 +74,7 @@ fun WeeklyCallsSection(
                     lineHeight = 30.sp,
                     fontWeight = FontWeight(700),
                     color = Color(0xFF3D3D3D),
-
-                    )
+                )
             )
 
             // 편집 버튼
@@ -80,6 +88,7 @@ fun WeeklyCallsSection(
                     textAlign = TextAlign.End,
                 ),
                 modifier = Modifier
+                    .clip(RoundedCornerShape(15.dp))
                     .clickable {
                         onIntent(MainIntent.OnSettingsClicked)
                     }
@@ -134,13 +143,6 @@ fun WeeklyCallsSection(
                 }
             }
 
-            // pager 변경 감지해서 요일 업데이트
-            LaunchedEffect(pagerState.currentPage) {
-                val newDay = days[pagerState.currentPage]
-                if (newDay != selectedDay) {
-                    onIntent(MainIntent.OnDaySelected(newDay))
-                }
-            }
         }
     }
 }
