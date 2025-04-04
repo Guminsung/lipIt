@@ -33,6 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceIntent
 
 @Composable
 fun EditVoiceScreen(
@@ -153,6 +154,7 @@ fun VoiceItemList(isCustom: Boolean, onClickAddVoice: () -> Unit) {
                 )
             }
 
+            // Custom Voice 추가 부분
             if (isCustom) {
                 item {
                     Column(
@@ -178,6 +180,8 @@ fun VoiceItemList(isCustom: Boolean, onClickAddVoice: () -> Unit) {
                                     .clip(CircleShape)
                                     .clickable{
                                         onClickAddVoice()
+//                                        onIntent(MyVoiceIntent.NavigateToAddVoice)
+//                                        navController.navigate("add_voice")
                                     }
                             )
                         }

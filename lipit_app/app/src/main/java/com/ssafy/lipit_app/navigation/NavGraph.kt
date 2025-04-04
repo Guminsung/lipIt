@@ -123,6 +123,7 @@ fun NavGraph(
                         is MainIntent.NavigateToReports -> navController.navigate("reports")
                         is MainIntent.NavigateToMyVoices -> navController.navigate("my_voices")
                         is MainIntent.NavigateToCallScreen -> navController.navigate("call_screen")
+                        is MainIntent.NavigateToAddVoice -> navController.navigate("add_voice") // 추가된 부분
                         else -> { /* 다른 Intent 유형은 ViewModel에서 처리 */
                         }
                     }
@@ -186,15 +187,30 @@ fun NavGraph(
             )
         }
 
+//        composable("add_voice") {
+//            val viewModel = viewModel<AddVoiceViewModel>()
+//
+//            AddVoiceScreen(
+//                state = viewModel.state.collectAsState().value,
+//                onIntent = viewModel::onIntent
+//            )
+//        }
         composable("add_voice") {
-            val viewModel = viewModel<AddVoiceViewModel>()
+            val context = LocalContext.current
+            val viewModel: AddVoiceViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    @Suppress("UNCHECKED_CAST")
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return AddVoiceViewModel(context) as T
+                    }
+                }
+            )
 
             AddVoiceScreen(
                 state = viewModel.state.collectAsState().value,
                 onIntent = viewModel::onIntent
             )
         }
-
 
         // 레포트 관련 화면들
         composable("reports") {
