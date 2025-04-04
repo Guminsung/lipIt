@@ -151,6 +151,7 @@ class VoiceCallViewModel : ViewModel() {
 
     // 웹 소켓 채팅 관련
     /** ExoPlayer 초기화 */
+    /** ExoPlayer 초기화 */
     fun initializePlayer(context: Context) {
         if (exoPlayer == null) {
             exoPlayer = ExoPlayer.Builder(context).build()
@@ -199,7 +200,7 @@ class VoiceCallViewModel : ViewModel() {
                     }
 
                     if (pendingText != null && pendingCallId != null) {
-                        sendText(pendingText!!)
+                       sendText(pendingText!!)
                         pendingText = null
                     }
                 }
@@ -442,47 +443,126 @@ class VoiceCallViewModel : ViewModel() {
         isCallEnded = false
     }
 
+
+
     // ===================================================================
 
     // STT 관련 함수
+
+    // 음성 인식 서비스에 대한 액세스를 제공
+    // 보내기 버튼으로 녹음을 멈추기 위해서 전역으로 수정
+    private var appContext: Context? = null
+    private var speechRecognizer: SpeechRecognizer? = null
+    private var isListening = false
+    var latestSpeechResult by mutableStateOf("")
+    val systemMessage = mutableStateOf<String?>(null)
+
+    fun setContext(context: Context) {
+        appContext = context.applicationContext
+    }
+
+    // AI 음성 종료 후 음성 인식 자동 시작
+    fun onAiVoiceEnded() {
+        Log.d("VoiceCallScreen", "AI 음성 끝남, 자동으로 음성 인식 시작!")
+        if (!isListening) {  // 음성 인식이 이미 시작되지 않았다면
+            isListening = true
+            Log.d("VoiceCallScreen", "음성 인식 시작됨!")
+        }
+    }
+
     fun startSpeechToText(context: Context, onResult: (String) -> Unit) {
-        val speechRecognizer =
-            SpeechRecognizer.createSpeechRecognizer(context) //음성 인식 서비스에 대한 액세스를 제공
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-            )
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US") // 영어 인식
+        if (isListening) {
+            Log.d("STT", "이미 음성 인식 중!")
+            return  // 이미 음성 인식 중이면 다시 시작하지 않음
         }
 
-        speechRecognizer.setRecognitionListener(object : RecognitionListener {
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context)
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
+            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+        }
+
+        speechRecognizer?.setRecognitionListener(object : RecognitionListener {
             override fun onResults(results: Bundle?) {
                 val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                matches?.firstOrNull()?.let { onResult(it) }
-                speechRecognizer.destroy()
+                val result = matches?.firstOrNull()
+
+                if (!result.isNullOrBlank()) {
+                    Log.d("STT", "✅ 결과 있음: $result")
+                    onResult(result)
+                    stopSpeechToText()
+                } else {
+                    Log.w("STT", "⚠️ 인식된 결과 없음, 다시 STT 시작")
+                    startSpeechToText(context, onResult) // 다시 STT 시작
+                }
+            }
+
+            override fun onEndOfSpeech() {
+                Log.d("STT", "🚫 onEndOfSpeech → 무시 (사용자 버튼으로 종료)")
             }
 
             override fun onError(error: Int) {
-                Log.e("STT", "인식 오류: $error")
-                speechRecognizer.destroy()
+                Log.e("STT", "❌ 인식 오류: $error")
+
+                if (error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT) {
+                    Log.w("STT", "⚠️ 말이 감지되지 않아 STT 재시작")
+                    restartSpeechToText(context, onResult)
+                } else {
+                    stopSpeechToText() // 다른 오류는 그냥 종료
+                }
             }
 
-            // 나머지 override는 생략 가능
             override fun onReadyForSpeech(params: Bundle?) {}
             override fun onBeginningOfSpeech() {}
             override fun onRmsChanged(rmsdB: Float) {}
             override fun onBufferReceived(buffer: ByteArray?) {}
-            override fun onEndOfSpeech() {}
             override fun onPartialResults(partialResults: Bundle?) {}
             override fun onEvent(eventType: Int, params: Bundle?) {}
         })
 
-        speechRecognizer.startListening(intent)
+        isListening = true
+        speechRecognizer?.startListening(intent)
+        Log.d("STT", "🎤 STT 시작됨")
+
     }
+
+    fun restartSpeechToText(context: Context, onResult: (String) -> Unit) {
+        stopSpeechToText()
+        Handler(Looper.getMainLooper()).postDelayed({
+            startSpeechToText(context, onResult)
+        }, 500) // 0.5초 딜레이 두고 재시작
+    }
+
+
+    fun stopSpeechToText() {
+        Log.d("STT", "🛑 STT 수동 종료")
+        speechRecognizer?.stopListening()
+        speechRecognizer?.cancel()
+        speechRecognizer?.destroy()
+        speechRecognizer = null
+    }
+
 
     fun sendUserSpeech(text: String) {
         sendText(text) // 기존 웹소켓 전송 함수 재활용
     }
+
+    fun clearLatestSpeechResult() {
+        latestSpeechResult = ""
+    }
+
+
+    fun showNoInputMessage() {
+        if (systemMessage.value == null) {
+            systemMessage.value = "음성이 감지되지 않았어요. 대신 AI가 다시 물어봐 달라고 했어요."
+            sendUserSpeech("It’s a bit quiet. Could you repeat that for me?")
+        }
+    }
+
+    fun clearSystemMessage() {
+        systemMessage.value = null
+    }
+
 
 }
