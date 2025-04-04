@@ -40,11 +40,12 @@ fun WeeklyCallsSection(
     ) {
         // 제목 + 버튼 영역
         Row(
-            Modifier.padding(bottom = 14.dp),
+            Modifier
+                .padding(bottom = 14.dp)
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-
-            ) {
+        ) {
             Text(
                 text = "Weekly Calls",
                 style = TextStyle(
@@ -55,7 +56,6 @@ fun WeeklyCallsSection(
 
                     )
             )
-
 
             // 편집 버튼
             Text(
@@ -68,7 +68,6 @@ fun WeeklyCallsSection(
                     textAlign = TextAlign.End,
                 ),
                 modifier = Modifier
-                    .fillMaxWidth()
                     .clickable {
                         onIntent(MainIntent.OnSettingsClicked)
                     }
