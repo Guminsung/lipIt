@@ -44,8 +44,9 @@ fun WeeklyCallsSection(
 ) {
     val context = LocalContext.current
     val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    val initialPage = days.indexOf(selectedDay).coerceAtLeast(0)
     val pagerState = rememberPagerState(
-        initialPage = days.indexOf(selectedDay),
+        initialPage = initialPage,
         pageCount = { days.size }
     )
     val coroutineScope = rememberCoroutineScope()
@@ -55,6 +56,13 @@ fun WeeklyCallsSection(
         val newDay = days[pagerState.currentPage]
         if (newDay != selectedDay) {
             onIntent(MainIntent.OnDaySelected(newDay))
+        }
+    }
+
+    LaunchedEffect(selectedDay) {
+        val newIndex = days.indexOf(selectedDay)
+        if (newIndex >= 0 && newIndex != pagerState.currentPage) {
+            pagerState.animateScrollToPage(newIndex)
         }
     }
 
@@ -111,10 +119,6 @@ fun WeeklyCallsSection(
             // DaySelector 탭
             DaySelector(
                 onDaySelected = { day ->
-                    val index = days.indexOf(day)
-                    coroutineScope.launch {
-                        pagerState.animateScrollToPage(index)
-                    }
                     onIntent(MainIntent.OnDaySelected(day))
                 },
                 selectedDay
