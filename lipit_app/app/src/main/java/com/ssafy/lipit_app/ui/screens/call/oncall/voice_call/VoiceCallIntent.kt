@@ -5,6 +5,7 @@ sealed interface VoiceCallIntent {
     //자막 이벤트
     data class SubtitleOn(val showSubtitle: Boolean) : VoiceCallIntent
     data class SubtitleOff(val showSubtitle: Boolean) : VoiceCallIntent
+    data class UpdateSubtitle(val message: String) : VoiceCallIntent
 
     //번역 이벤트
     data class TranslationOn(val showTranslation: Boolean) : VoiceCallIntent

@@ -93,6 +93,10 @@ fun VoiceCallScreen(
                     messageKor = viewModel.aiMessageKor
                 )
             )
+
+            // 자막 켜짐 업뎃
+            viewModel.onIntent(VoiceCallIntent.UpdateSubtitle(viewModel.aiMessage))
+
             Log.d("VoiceCallScreen", "🤖 AI: ${viewModel.aiMessage}")
 
             viewModel.clearAiMessage()

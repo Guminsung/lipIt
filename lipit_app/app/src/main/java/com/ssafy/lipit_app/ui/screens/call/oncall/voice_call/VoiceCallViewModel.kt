@@ -44,6 +44,12 @@ class VoiceCallViewModel : ViewModel() {
 
     fun onIntent(intent: VoiceCallIntent) {
         when (intent) {
+            is VoiceCallIntent.UpdateSubtitle -> {
+                _state.update {
+                    it.copy(AIMessageOriginal = intent.message)
+                }
+            }
+            
             is VoiceCallIntent.SubtitleOn -> { // 자막 O, 번역 X
                 _state.update {
                     it.copy(showSubtitle = true, showTranslation = false)
@@ -81,6 +87,7 @@ class VoiceCallViewModel : ViewModel() {
                     }
                 }
             }
+
         }
     }
 
@@ -200,7 +207,7 @@ class VoiceCallViewModel : ViewModel() {
                     }
 
                     if (pendingText != null && pendingCallId != null) {
-                       sendText(pendingText!!)
+                        sendText(pendingText!!)
                         pendingText = null
                     }
                 }
@@ -444,7 +451,6 @@ class VoiceCallViewModel : ViewModel() {
     }
 
 
-
     // ===================================================================
 
     // STT 관련 함수
@@ -478,7 +484,10 @@ class VoiceCallViewModel : ViewModel() {
 
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context)
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(
+                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+            )
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
         }
@@ -506,8 +515,9 @@ class VoiceCallViewModel : ViewModel() {
                 Log.e("STT", "❌ 인식 오류: $error")
 
                 if (error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT) {
-                    Log.w("STT", "⚠️ 말이 감지되지 않아 STT 재시작")
-                    restartSpeechToText(context, onResult)
+                    // restartSpeechToText(context, onResult)
+                    showNoInputMessage()
+
                 } else {
                     stopSpeechToText() // 다른 오류는 그냥 종료
                 }
@@ -536,6 +546,8 @@ class VoiceCallViewModel : ViewModel() {
 
 
     fun stopSpeechToText() {
+        isListening = false // 안해주면 계속 듣고 있다고 판단함
+
         Log.d("STT", "🛑 STT 수동 종료")
         speechRecognizer?.stopListening()
         speechRecognizer?.cancel()
@@ -554,10 +566,12 @@ class VoiceCallViewModel : ViewModel() {
 
 
     fun showNoInputMessage() {
-        if (systemMessage.value == null) {
-            systemMessage.value = "음성이 감지되지 않았어요. 대신 AI가 다시 물어봐 달라고 했어요."
-            sendUserSpeech("It’s a bit quiet. Could you repeat that for me?")
-        }
+//        if (systemMessage.value == null) {
+//            systemMessage.value = "음성이 감지되지 않았어요. 대신 AI가 다시 물어봐 달라고 했어요."
+//            sendUserSpeech("It’s a bit quiet. Could you repeat that for me?")
+//        }
+        sendUserSpeech("It’s a bit quiet. Could you repeat that for me?")
+
     }
 
     fun clearSystemMessage() {

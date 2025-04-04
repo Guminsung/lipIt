@@ -24,7 +24,6 @@ import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupViewModel
 import com.ssafy.lipit_app.ui.screens.auth.components.AuthStartScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallViewModel
-import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallIntent
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
 import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceScreen
@@ -143,15 +142,7 @@ fun NavGraph(
 
             VoiceCallScreen(
                 state = state,
-                onIntent = { intent ->
-                    when (intent) {
-                        is VoiceCallIntent.timerIsOver -> navController.navigate("main")
-                        is VoiceCallIntent.SubtitleOff -> TODO()
-                        is VoiceCallIntent.SubtitleOn -> TODO()
-                        is VoiceCallIntent.TranslationOff -> TODO()
-                        is VoiceCallIntent.TranslationOn -> TODO()
-                    }
-                },
+                onIntent = { intent -> viewModel.onIntent(intent) },
                 viewModel,
                 navController
             )
@@ -195,7 +186,7 @@ fun NavGraph(
 
             VoiceCallScreen(
                 state = state,
-                onIntent = { viewModel.onIntent(it) },
+                onIntent = { intent -> viewModel.onIntent(intent) },
                 viewModel,
                 navController
             )
