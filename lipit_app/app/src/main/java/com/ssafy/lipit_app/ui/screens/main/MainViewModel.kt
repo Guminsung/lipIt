@@ -13,6 +13,7 @@ import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsState
 import com.ssafy.lipit_app.util.sortSchedulesByDay
 import androidx.lifecycle.viewModelScope
 import com.ssafy.lipit_app.data.model.request_dto.schedule.ScheduleCreateRequest
+import com.ssafy.lipit_app.ui.screens.call.alarm.AlarmScheduler
 import com.ssafy.lipit_app.ui.screens.main.components.DailySentenceManager
 import com.ssafy.lipit_app.ui.screens.main.components.dayFullToShort
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
@@ -23,8 +24,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class MainViewModel(
-    private val context: Context,
-    //private val scheduleRepository: ScheduleRepository
+    private val context: Context
 ) : ViewModel() {
     private val _state = MutableStateFlow(MainState())
     val state: StateFlow<MainState> = _state
@@ -45,7 +45,7 @@ class MainViewModel(
         loadInitialData()
     }
 
-    fun loadDailySentence() {
+    private fun loadDailySentence() {
         val sentenceOriginal = DailySentenceManager.getOriginal().ifBlank {
             "With your talent and hard work, sky’s the limit!"
         }
@@ -61,7 +61,7 @@ class MainViewModel(
         )
     }
 
-    suspend fun onIntent(intent: MainIntent) {
+    fun onIntent(intent: MainIntent) {
         when (intent) {
             is MainIntent.OnDaySelected -> {
                 _state.update {
@@ -116,6 +116,7 @@ class MainViewModel(
                     it.copy(selectedSchedule = intent.schedule)
                 }
             }
+
             is MainIntent.ShowRescheduleScreen -> {
                 _state.update {
                     it.copy(
@@ -124,6 +125,7 @@ class MainViewModel(
                     )
                 }
             }
+
             is MainIntent.ShowMyVoicesScreen -> {
                 _state.update { it.copy(bottomSheetContent = BottomSheetContent.MY_VOICES) }
 
@@ -131,8 +133,9 @@ class MainViewModel(
 
             is MainIntent.DeleteSchedule -> {
                 // 삭제 전에 알람 취소
-                val scheduleToDelete = _state.value.weeklyCallsState.callSchedules.find { it.callScheduleId == intent.scheduleId }
-                updateScheduleAlarm(scheduleToDelete, isDelete = true)
+                val scheduleToDelete =
+                    _state.value.weeklyCallsState.callSchedules.find { it.callScheduleId == intent.scheduleId }
+                cancelScheduleAlarm(scheduleToDelete, isDelete = true)
 
                 // 스케줄 내역 삭제
                 deleteScheduleAndReload(intent.scheduleId)
@@ -195,9 +198,6 @@ class MainViewModel(
         }
     }
 
-    //    val callItem_name = ""
-//    val imageUrl = ""
-
     // 사용자의 일주일 스케줄 조회하기 - Main 화면
     fun fetchWeeklySchedule(memberId: Long) {
         Log.d("TAG", "fetchWeeklySchedule: 사용자 일주일스케줄 조회")
@@ -258,7 +258,7 @@ class MainViewModel(
 
 
     // [Weekly Calls: BottomSheet] 요일별 스케쥴 리스트
-    fun getWeeklyCallsSchedule() {
+    private fun getWeeklyCallsSchedule() {
         Log.d("TAG", "getWeeklyCallsSchedule: 이벤트 발생")
         val memberId = SharedPreferenceUtils.getMemberId()
 
@@ -285,11 +285,12 @@ class MainViewModel(
 
                     // 3. 상태 업데이트
                     _state.update {
+                        Log.d("mainViewModel", "${it.weeklyCallsState.voiceName} ")
                         it.copy(
                             isSettingsSheetVisible = true,
                             weeklyCallsState = WeeklyCallsState(
-                                VoiceName = "Harry Potter: 하드코딩", // TODO: 서버 연동 시 교체
-                                VoiceImageUrl = "...",
+                                voiceName = it.callItem_name,
+                                voiceImageUrl = it.imageUrl,
                                 callSchedules = sortedSchedules
                             )
                         )
@@ -322,12 +323,20 @@ class MainViewModel(
     }
 
     // TODO AlarmManager : Delete
-    // 알람 매니저 등록 함수
-    private fun updateScheduleAlarm(schedule: CallSchedule?, isDelete: Boolean = false) {
+    // 알람 매니저 : 알림 삭제 구현
+    private fun cancelScheduleAlarm(schedule: CallSchedule?, isDelete: Boolean = false) {
         // isDelete : 삭제여부 (true) 로 들어오면 삭제 이벤트
         // schedule : 스케쥴 내역 (요일, 시간, 카테고리) => 해당 데이터를 기반으로 알람 설정 진행
         Log.d("TAG", "updateSchedule: Step 3")
 
+        schedule?.let {
+            val alarmScheduler = AlarmScheduler(context)
+
+            if (isDelete) {
+                alarmScheduler.cancelAlarm(schedule.callScheduleId.toInt())
+                Log.d("Alarm", "알람 취소: ${schedule.callScheduleId} ${schedule.scheduleDay}")
+            }
+        }
 
         Log.d("Alarm", "Alarm _---------- 알람 정보 업데이트: $schedule, 삭제여부: $isDelete")
     }

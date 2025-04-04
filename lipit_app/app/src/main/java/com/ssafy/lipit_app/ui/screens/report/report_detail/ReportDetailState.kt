@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.report
+package com.ssafy.lipit_app.ui.screens.report.report_detail
 
 import com.ssafy.lipit_app.data.model.request_dto.report.NativeExpression
 import com.ssafy.lipit_app.data.model.request_dto.report.ReportScript

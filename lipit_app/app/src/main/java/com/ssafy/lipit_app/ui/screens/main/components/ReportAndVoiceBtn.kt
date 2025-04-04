@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -44,6 +45,7 @@ fun ReportAndVoiceBtn(
                 .fillMaxHeight()
                 .weight(1f)
                 .align(Alignment.CenterVertically)
+                .clip(RoundedCornerShape(15.dp))
                 .clickable { // 화면 이동
                     onIntent(MainIntent.NavigateToReports)
                 }
@@ -82,8 +84,9 @@ fun ReportAndVoiceBtn(
             modifier = Modifier
                 .background(color = Color(0xB2F3E7F9), shape = RoundedCornerShape(size = 15.dp))
                 .fillMaxHeight()
-                .offset(y = (-3).dp)
-                .clickable { // 화면 이동
+                .clip(RoundedCornerShape(15.dp))
+//                .offset(y = (-3).dp)
+                .clickable {
                     onIntent(MainIntent.NavigateToMyVoices)
                 }
                 .weight(1f),

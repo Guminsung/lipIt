@@ -67,7 +67,7 @@ fun CustomVoiceScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = 10.dp),
+                    .padding(bottom = 10.dp, top = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // 커스텀 음성 목록 표시

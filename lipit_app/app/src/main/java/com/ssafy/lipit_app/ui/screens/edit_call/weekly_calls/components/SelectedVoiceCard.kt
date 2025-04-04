@@ -9,12 +9,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -23,12 +26,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsIntent
 import com.ssafy.lipit_app.ui.screens.main.MainIntent
 
 @Composable
-fun SelectedVoiceCard(voiceName: String, voiceImageUrl: String, onIntent: (WeeklyCallsIntent) -> Unit) {
+fun SelectedVoiceCard(
+    voiceName: String,
+    voiceImageUrl: String,
+    onIntent: (WeeklyCallsIntent) -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth(),
@@ -52,23 +60,28 @@ fun SelectedVoiceCard(voiceName: String, voiceImageUrl: String, onIntent: (Weekl
             verticalAlignment = Alignment.CenterVertically,
         ) {
             // url을 통해 이미지 받아오기
-//            AsyncImage(
-//                modifier = Modifier
-//                    .size(52.dp)
-//                    .clip(CircleShape),
-//                model = voiceImageUrl, //임시
-//                contentDescription = "voice 프로필 사진"
-//            )
+            if (voiceImageUrl.isNotEmpty()) {
+                AsyncImage(
+                    model = voiceImageUrl,
+                    contentDescription = "voice 프로필 사진",
+                    modifier = Modifier
+                        .size(52.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(id = R.drawable.profile_test_img),
+                    error = painterResource(id = R.drawable.profile_test_img)
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.profile_test_img),
+                    contentDescription = "기본 프로필",
+                    modifier = Modifier
+                        .size(52.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            }
 
-            // 임시: url 없어서 일단 drawable로 테스트
-            Image(
-                painterResource(id = R.drawable.profile_test_img),
-                contentDescription = "테스트 프로필",
-                modifier = Modifier
-                    .width(57.dp)
-                    .height(57.dp)
-                    .padding(start = 5.dp)
-            )
 
             Spacer(modifier = Modifier.width(12.dp))
 
