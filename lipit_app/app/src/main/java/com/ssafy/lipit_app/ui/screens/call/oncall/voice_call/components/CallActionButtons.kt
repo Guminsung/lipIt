@@ -112,7 +112,8 @@ fun CallActionButtons(
                                     } else {
                                         onIntent(VoiceCallIntent.SubtitleOff(false))
                                     }
-                                },
+                                }
+                            ,
                             tint = Color(0xFFFDF8FF)
                         )
 
@@ -210,12 +211,19 @@ fun CallActionButtons(
                 .background(color = Color(0x1AFDF8FF))
                 // 보내기 버튼 클릭
                 .clickable {
-                    val message = textState.value
+                    val message = textState.value.trim()
                     if (message.isNotBlank()) {
                         viewModel.sendUserSpeech(message)
-                        textState.value = "" // 메시지 전송 후 텍스트 초기화
-                    } else{
-                        //todo: 아무말도 안하면 ai한테 다시 말해달라고 보내기
+                        textState.value = ""
+                    } else {
+                        // 말 안 하면 showNoInputMessage()에서 처리됨
+                        viewModel.startSpeechToText(context) { result ->
+                            if (result.isNotBlank()) {
+                                viewModel.sendUserSpeech(result)
+                            } else {
+                                viewModel.showNoInputMessage()
+                            }
+                        }
                     }
                 },
             contentAlignment = Alignment.Center
