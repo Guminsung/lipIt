@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -44,6 +45,7 @@ fun AddVoiceScreen(
     state: AddVoiceState,
     onIntent: (AddVoiceIntent) -> Unit,
 ) {
+
     // 모든 문장 녹음 완료 후 이름 입력 화면
     if (state.isAllSentencesRecorded) {
         VoiceNameInputScreen(state, onIntent)
