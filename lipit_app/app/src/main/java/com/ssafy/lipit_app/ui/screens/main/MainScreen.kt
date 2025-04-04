@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.main
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Build
 import android.util.Log
@@ -10,6 +11,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -311,46 +314,72 @@ fun UserInfoSection(
     var showPopup by remember { mutableStateOf(false) } // 로그아웃 팝업 관련
 
     Row(
+        modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            // 누르면 팝업으로 로그아웃 버튼 (추후 다른 버튼도 추가하던지..)
-            .clickable {
-                showPopup = true
-            }
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        //  사용자 이름
-        Text(
-            text = "Hello, $userName",
-            style = androidx.compose.ui.text.TextStyle(
-                fontSize = 20.sp,
-                lineHeight = 50.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFF000000),
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                // 누르면 팝업으로 로그아웃 버튼 (추후 다른 버튼도 추가하던지..)
+                .clickable(
+                    indication = null,
+                    interactionSource = remember {
+                        MutableInteractionSource()
+                    }
+                ) {
+                    showPopup = true
+                }
+        ) {
+            //  사용자 이름
+            Text(
+                text = "Hello, $userName",
+                style = TextStyle(
+                    fontSize = 24.sp,
+                    lineHeight = 50.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF000000),
+                )
             )
-        )
 
-        Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
-        // 사용자 등급
-        Image(
-            painter = painterResource(id = getLevelIcon(level)),
-            contentDescription = "사용자 등급",
-            modifier = Modifier.size(26.dp)
-        )
-
-        // 로그아웃 팝업 관련
-        if (showPopup) {
-            MypagePopup(
-                onDismissRequest = { showPopup = false },
-                onConfirmation = {
-                    showPopup = false
-                    // 로그아웃 로직 처리
-                    onIntent(MainIntent.OnLogoutClicked)
-                },
-                dialogTitle = "로그아웃 하시겠습니까?",
-                dialogText = "로그아웃하고 앱에서 나가기.. "
+            // 사용자 등급
+            Image(
+                painter = painterResource(id = getLevelIcon(level)),
+                contentDescription = "사용자 등급",
+                modifier = Modifier.size(26.dp)
             )
+
+            // 로그아웃 팝업 관련
+            if (showPopup) {
+                MypagePopup(
+                    onDismissRequest = { showPopup = false },
+                    onConfirmation = {
+                        showPopup = false
+                        // 로그아웃 로직 처리
+                        onIntent(MainIntent.OnLogoutClicked)
+                    },
+                    dialogTitle = "로그아웃 하시겠습니까?",
+                    dialogText = "로그아웃하고 앱에서 나가기"
+                )
+            }
         }
+
+        Image(
+            painter = painterResource(id = R.drawable.ic_logout),
+            contentDescription = null,
+            modifier = Modifier
+                .size(22.dp)
+                .clickable(
+                    indication = null,
+                    interactionSource = remember {
+                        MutableInteractionSource()
+                    }
+                ) {
+                    showPopup = true
+                }
+        )
     }
 }
 
