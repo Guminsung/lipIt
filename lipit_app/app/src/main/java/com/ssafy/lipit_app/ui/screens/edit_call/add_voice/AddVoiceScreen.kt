@@ -282,7 +282,6 @@ fun VoiceNameInputScreen(
     state: AddVoiceState,
     onIntent: (AddVoiceIntent) -> Unit
 ) {
-    var voiceName by remember { mutableStateOf(state.voiceName) }
 
     Column(
         modifier = Modifier
@@ -303,10 +302,11 @@ fun VoiceNameInputScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
+//        var voiceName by remember { mutableStateOf(state.voiceName) }
         OutlinedTextField(
-            value = voiceName,
+            value = state.voiceName,
             onValueChange = {
-                voiceName = it
+//                voiceName = it
                 onIntent(AddVoiceIntent.SetVoiceName(it))
             },
             label = { Text("음성 이름") },
@@ -324,7 +324,7 @@ fun VoiceNameInputScreen(
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF9C27B0)
             ),
-            enabled = !state.isUploading && voiceName.isNotBlank()
+            enabled = !state.isUploading && state.voiceName.isNotBlank()
         ) {
             if (state.isUploading) {
                 CircularProgressIndicator(
