@@ -35,6 +35,8 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
 import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceViewModel
+import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceScreen
+import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceViewModel
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsViewModel
 import com.ssafy.lipit_app.ui.screens.main.MainIntent
@@ -65,7 +67,10 @@ fun NavGraph(
     val isInitialized = remember { mutableStateOf(false) }
     // NavGraph 초기화 (한 번만 실행되도록)
     if (!isInitialized.value) {
-        Log.d(TAG, "NavGraph 초기화: initialDestination=$initialDestination, hasToken=${secureDataStore.hasAccessTokenSync()}")
+        Log.d(
+            TAG,
+            "NavGraph 초기화: initialDestination=$initialDestination, hasToken=${secureDataStore.hasAccessTokenSync()}"
+        )
         isInitialized.value = true
     }
 
@@ -74,13 +79,16 @@ fun NavGraph(
             Log.d(TAG, "통화 화면으로 직접 이동")
             "onVoiceCall"
         }
+
         initialDestination == "inComingCall" -> {
             "inComingCall"
         }
+
         secureDataStore.hasAccessTokenSync() -> {
             Log.d(TAG, "토큰 있음: 메인 화면으로 이동")
             "main"
         }
+
         else -> {
             Log.d(TAG, "토큰 없음: 로그인 화면으로 이동")
             "auth_start"
@@ -189,14 +197,17 @@ fun NavGraph(
                             Log.d(TAG, "메인에서 레포트 화면으로 이동 요청")
                             navController.navigate("reports")
                         }
+
                         is MainIntent.NavigateToMyVoices -> {
                             Log.d(TAG, "메인에서 내 목소리 화면으로 이동 요청")
                             navController.navigate("my_voices")
                         }
+
                         is MainIntent.NavigateToCallScreen -> {
                             Log.d(TAG, "메인에서 통화 화면으로 이동 요청:  onVoiceCall")
                             navController.navigate("onVoiceCall")
                         }
+
                         else -> {
                         }
                     }
@@ -225,6 +236,7 @@ fun NavGraph(
                             Log.d(TAG, "목소리 추가 화면으로 이동 요청")
                             navController.navigate("add_voice")
                         }
+
                         else -> {
                             Log.d(TAG, "MyVoice 인텐트 처리: $intent")
                             viewModel.onIntent(intent)
@@ -255,7 +267,7 @@ fun NavGraph(
             val state by viewModel.state.collectAsState()
 
             IncomingCallScreen(state = state,
-                onIntent = { viewModel.onIntent(it)})
+                onIntent = { viewModel.onIntent(it) })
         }
 
         composable("onVoiceCall") {
@@ -298,6 +310,13 @@ fun NavGraph(
             )
         }
 
+        composable(route = "edit_voice") {
+            EditVoiceScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToAddVoice = { navController.navigate("add_voice") }
+            )
+        }
+
         // 레포트 관련 화면들
         composable("reports") {
             Log.d(TAG, "reports 화면 구성")
@@ -311,6 +330,7 @@ fun NavGraph(
                             Log.d(TAG, "레포트 상세 화면으로 이동 요청: reportId=$reportId")
                             navController.navigate("report_detail_screen/$reportId")
                         }
+
                         else -> {
                             Log.d(TAG, "Report 인텐트 처리: $intent")
                             viewModel.onIntent(intent)

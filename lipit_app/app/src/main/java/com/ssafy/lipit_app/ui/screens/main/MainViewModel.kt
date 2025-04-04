@@ -45,7 +45,7 @@ class MainViewModel(
         loadInitialData()
     }
 
-    fun loadDailySentence() {
+    private fun loadDailySentence() {
         val sentenceOriginal = DailySentenceManager.getOriginal().ifBlank {
             "With your talent and hard work, sky’s the limit!"
         }
