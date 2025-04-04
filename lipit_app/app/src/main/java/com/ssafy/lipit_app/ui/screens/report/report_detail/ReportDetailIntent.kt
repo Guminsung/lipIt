@@ -1,4 +1,4 @@
-package com.ssafy.lipit_app.ui.screens.report
+package com.ssafy.lipit_app.ui.screens.report.report_detail
 
 sealed class ReportDetailIntent {
     data class LoadReportSummary(val reportId: Long) : ReportDetailIntent()  // 리포트 요약
