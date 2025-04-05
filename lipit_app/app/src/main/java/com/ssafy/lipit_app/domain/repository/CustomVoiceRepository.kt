@@ -112,6 +112,7 @@ class CustomVoiceRepository {
 
     suspend fun mergeAudioFiles(audioFiles: List<String>, outputFileName: String): File {
         Log.d(TAG, "음성 파일 병합 시작 (${audioFiles.size}개 파일)")
+        Log.d(TAG, "mergeAudioFiles: ${audioFiles}")
 
         if (audioFiles.isEmpty()) {
             throw IllegalArgumentException("병합할 오디오 파일이 없습니다.")
@@ -119,6 +120,7 @@ class CustomVoiceRepository {
 
         val outputDir = File(File(audioFiles.first()).parent)
         val outputFile = File(outputDir, "$outputFileName.mp3")
+//        val outputFile = File(outputDir, "$outputFileName.wav")
 
         return withContext(Dispatchers.IO) {
             try {
@@ -126,24 +128,25 @@ class CustomVoiceRepository {
                 val fileListPath = File(outputDir, "filelist.txt").absolutePath
 
                 // 입력 파일 목록 생성
-                val fileListContent = audioFiles.joinToString("\n") {
-                    "file '${it.replace("'", "\\'")}'"
+                val fileListContent = audioFiles.joinToString("\n") { filePath ->
+                    "file '${filePath.replace("'", "\\'")}'"
                 }
                 File(fileListPath).writeText(fileListContent)
 
-                // FFmpeg 명령어 구성 - 파일 목록을 사용해 연결
-                val cmd = arrayOf(
-                    "-f", "concat",          // 연결 모드
-                    "-safe", "0",            // 안전 모드 해제 (절대 경로 허용)
-                    "-i", fileListPath,      // 입력 파일 목록
-                    "-c:a", "aac",           // 오디오 코덱
-                    "-b:a", "128k",          // 비트레이트
-                    "-y",                    // 기존 파일 덮어쓰기
-                    outputFile.absolutePath  // 출력 파일
-                )
+                // 디버깅을 위해 파일 내용 로깅
+                Log.d(TAG, "filelist.txt 내용:\n${File(fileListPath).readText()}")
 
-                // 새로운 FFmpeg-Kit 라이브러리 사용
-                val session = FFmpegKit.execute(cmd.joinToString(" "))
+                // FFmpeg 명령어 - 명시적으로 MP3 인코딩을 지정
+                // MP3
+                val ffmpegCommand = "-f concat -safe 0 -i $fileListPath -c:a libmp3lame -q:a 2 -y ${outputFile.absolutePath}"
+
+                // WAV
+//                val ffmpegCommand = "-f concat -safe 0 -i $fileListPath -c:a pcm_s16le -ar 44100 -y ${outputFile.absolutePath}"
+
+
+                Log.d(TAG, "FFmpeg 명령어: $ffmpegCommand")
+
+                val session = FFmpegKit.execute(ffmpegCommand)
 
                 // 임시 파일 삭제
                 File(fileListPath).delete()
@@ -152,7 +155,7 @@ class CustomVoiceRepository {
                     Log.d(TAG, "음성 파일 병합 완료: ${outputFile.absolutePath}")
                     return@withContext outputFile
                 } else {
-                    val errorMessage = "FFmpeg 명령어 실행 실패 (코드: ${session.returnCode}, 오류: ${session.failStackTrace})"
+                    val errorMessage = "FFmpeg 명령어 실행 실패: ${session.allLogsAsString}"
                     Log.e(TAG, errorMessage)
                     throw Exception(errorMessage)
                 }
