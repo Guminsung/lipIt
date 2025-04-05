@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.lipit_app.data.model.response_dto.schedule.TopicCategory
+import com.ssafy.lipit_app.domain.repository.MyVoiceRepository
 import com.ssafy.lipit_app.domain.repository.ScheduleRepository
 import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.WeeklyCallsUiState
 import com.ssafy.lipit_app.util.sortSchedulesByDay
@@ -55,6 +56,7 @@ class WeeklyCallsViewModel : ViewModel() {
                     ))
                 }
             }
+
         }
     }
 

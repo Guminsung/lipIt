@@ -132,6 +132,7 @@ fun WeeklyCallsSection(
                 val filteredItems = callItems.filter { it.scheduleDay == day }
 
                 if (filteredItems.isNotEmpty()) {
+                    Log.d("TAG", "WeeklyCallsSection: 데이터찾기 ${filteredItems}")
                     dailyCallSchedule(filteredItems, viewModel = MainViewModel(context))
                 } else {
                     Box(
