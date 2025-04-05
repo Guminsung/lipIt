@@ -38,6 +38,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.ChatMessage
+import com.ssafy.lipit_app.data.model.ChatMessageText
 import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallViewModel
@@ -47,12 +48,14 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.Subtitle
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.Subtitle.CallWithoutSubtitle
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.VoiceCallHeader
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
+import kotlinx.coroutines.delay
 
 @Composable
 fun VoiceCallScreen(
     onIntent: (VoiceCallIntent) -> Unit,
     viewModel: VoiceCallViewModel,
-    navController: NavController
+    navController: NavController,
+    textCallViewModel: TextCallViewModel
 ) {
     val context = LocalContext.current
     val textState = remember { mutableStateOf("") }
@@ -81,7 +84,11 @@ fun VoiceCallScreen(
 
     // 퍼미션 체크
     LaunchedEffect(Unit) {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             if (context is Activity) {
                 ActivityCompat.requestPermissions(
                     context,
@@ -123,6 +130,20 @@ fun VoiceCallScreen(
                     messageKor = viewModel.aiMessageKor
                 )
             )
+
+            // TextCall에도 메시지 추가
+            if (state.currentMode == "Text") {
+                delay(100)
+
+                textCallViewModel.addMessage(
+                    ChatMessageText(
+                        text = viewModel.aiMessage,
+                        translatedText = viewModel.aiMessageKor,
+                        isFromUser = false
+                    )
+                )
+            }
+
 
             onIntent(VoiceCallIntent.UpdateSubtitle(viewModel.aiMessage))
             onIntent(VoiceCallIntent.UpdateTranslation(viewModel.aiMessageKor))
@@ -243,19 +264,40 @@ fun CallScreen(voiceViewModel: VoiceCallViewModel, navController: NavController)
         "Voice" -> VoiceCallScreen(
             onIntent = { voiceViewModel.onIntent(it) },
             viewModel = voiceViewModel,
-            navController = navController
+            navController = navController,
+            textCallViewModel = textViewModel
         )
+
         "Text" -> {
             LaunchedEffect(Unit) {
                 textViewModel.setInitialMessages(voiceViewModel.convertToTextMessages())
+
+                // 보이스에서 텍스트 바로 전환 시 ai message가 넘어오지 않는 현상 방지를 위해
+                // 한 번 더 넣어줌
+                if (voiceViewModel.aiMessage.isNotBlank()) {
+                    Log.d("CallScreen", "🆕 진입 시 aiMessage 반영: ${voiceViewModel.aiMessage}")
+                    textViewModel.addMessage(
+                        ChatMessageText(
+                            text = voiceViewModel.aiMessage,
+                            translatedText = voiceViewModel.aiMessageKor,
+                            isFromUser = false
+                        )
+                    )
+                    voiceViewModel.clearAiMessage()
+                }
             }
 
             TextCallScreen(
                 viewModel = textViewModel,
-                onIntent = { textViewModel.onIntent(it) },
                 navController = navController,
-                onModeToggle = { voiceViewModel.toggleMode() }
+                onModeToggle = { voiceViewModel.toggleMode() },
+                onIntent = { intent ->
+                    textViewModel.onIntent(intent) { userText ->
+                        voiceViewModel.sendText(userText)
+                    }
+                }
             )
+
         }
     }
 }
