@@ -216,6 +216,7 @@ fun MainScreen(
                         BottomSheetContent.MY_VOICES -> {
                             EditVoiceScreen(
                                 onBack = {
+                                    onIntent(MainIntent.RefreshAfterVoiceChange)
                                     onIntent(MainIntent.OnCloseSettingsSheet)
                                 },
                                 onNavigateToAddVoice = {
@@ -230,6 +231,7 @@ fun MainScreen(
     ) {
         // ***** 기존 MainScreen UI
         var selectedDay by remember { mutableStateOf(state.selectedDay) }
+
 //        Column(
 //            modifier = Modifier
 //                .fillMaxSize()
@@ -249,6 +251,8 @@ fun MainScreen(
             UserInfoSection(state.userName, state, onIntent, state.level) // 상단의 유저 이름, 등급 부분
             TodaysSentence(viewModel, context) // 오늘의 문장
 
+//            val filteredItems = state.callItems.filter { it.scheduleDay == selectedDay }
+//            Log.d("TAG", "MainScreen: CallItem 데이터 내용 : ${filteredItems}")
             WeeklyCallsSection(
                 selectedDay = selectedDay,
                 callItems = state.callItems,

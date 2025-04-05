@@ -141,6 +141,11 @@ class MainViewModel(
                 deleteScheduleAndReload(intent.scheduleId)
             }
 
+            // 음성 정보 업데이트 후 메인 화면 갱신
+            is MainIntent.RefreshAfterVoiceChange -> {
+                loadInitialData()
+            }
+
 
         }
     }
@@ -211,14 +216,25 @@ class MainViewModel(
                     CallItem(
                         id = schedule.callScheduleId,
                         name = currentState.callItem_name,
-//                        topic = TopicCategory.fromEnglish(schedule.topicCategory)?.koreanName
-//                            ?: "기타",
                         topic = schedule.topicCategory?.let {
                             TopicCategory.fromEnglish(it)?.koreanName
                         } ?: "자유주제",
                         time = schedule.scheduledTime,
                         imageUrl = currentState.imageUrl,
                         scheduleDay = dayFullToShort(schedule.scheduledDay)
+                    )
+                }
+
+                // 추가 BottomSheet 참조 내용도 업데이트
+                _state.update {
+                    it.copy(
+                        callItems = callItems,
+                        callItem_name = currentState.callItem_name,
+                        imageUrl = currentState.imageUrl,
+                        weeklyCallsState = it.weeklyCallsState.copy(
+                            voiceName = currentState.callItem_name,
+                            voiceImageUrl = currentState.imageUrl
+                        )
                     )
                 }
 
@@ -244,10 +260,28 @@ class MainViewModel(
                 selectedVoiceResult.onSuccess { voice ->
                     // 2. 선택된 음성 정보 저장
                     _state.update { currentState ->
+
+                        val updatedCallItems = currentState.callItems.map { callItem ->
+                            callItem.copy(
+                                name = voice[0].voiceName,
+                                imageUrl = voice[0].customImageUrl
+                            )
+                        }
+
+                        // 현재 선택된 Vocie 정보를 불러오면 BottomSheet 참조 내용 추가 업데이트
                         currentState.copy(
+                            // 콜 아이템 업데이트
+                            callItems = updatedCallItems,
+                            // 메인 상태 업데이트
                             callItem_name = voice[0].voiceName,
-                            imageUrl = voice[0].customImageUrl
+                            imageUrl = voice[0].customImageUrl,
+                            // 바텀 시트 상태 업데이트
+                            weeklyCallsState = currentState.weeklyCallsState.copy(
+                                voiceName = voice[0].voiceName,
+                                voiceImageUrl = voice[0].customImageUrl
+                            )
                         )
+
                     }
                 }
             } catch (e: Exception) {
@@ -264,10 +298,23 @@ class MainViewModel(
 
         viewModelScope.launch {
             try {
+                val voiceResult = voiceRepository.getVoice(memberId)
                 val response = scheduleRepository.getWeeklyCallsSchedule(memberId = memberId)
 
                 response.onSuccess { scheduleList ->
-                    // 1. ScheduleResponse → CallSchedule로 변환
+                    // 1. 최신 음성 정보 먼저 확인
+                    var voiceName = _state.value.callItem_name
+                    var voiceImageUrl = _state.value.imageUrl
+
+                    // 새 음성 정보 있으면 업데이트
+                    voiceResult.onSuccess { voiceList ->
+                        if (voiceList.isNotEmpty()) {
+                            voiceName = voiceList[0].voiceName
+                            voiceImageUrl = voiceList[0].customImageUrl
+                        }
+                    }
+
+                    // 2. ScheduleResponse → CallSchedule로 변환
                     val convertedSchedules = scheduleList.map { schedule ->
                         CallSchedule(
                             callScheduleId = schedule.callScheduleId,
@@ -284,13 +331,14 @@ class MainViewModel(
                     val sortedSchedules = sortSchedulesByDay(convertedSchedules)
 
                     // 3. 상태 업데이트
-                    _state.update {
-                        Log.d("mainViewModel", "${it.weeklyCallsState.voiceName} ")
+                    _state.update { it ->
                         it.copy(
+                            callItem_name = voiceName,
+                            imageUrl = voiceImageUrl,
                             isSettingsSheetVisible = true,
                             weeklyCallsState = WeeklyCallsState(
-                                voiceName = it.callItem_name,
-                                voiceImageUrl = it.imageUrl,
+                                voiceName = voiceName,
+                                voiceImageUrl = voiceImageUrl,
                                 callSchedules = sortedSchedules
                             )
                         )
