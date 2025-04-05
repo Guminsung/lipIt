@@ -40,27 +40,29 @@ fun AddVoiceScreen(
     state: AddVoiceState,
     onIntent: (AddVoiceIntent) -> Unit,
 ) {
-    // 에러 팝업 - 상태에 따라 표시
+    // 기본 화면은 항상 보여줌 : 녹음하는 화면 or 녹음 완료 화면
+    when {
+        state.isAllSentencesRecorded -> {
+            VoiceNameInputScreen(state, onIntent)
+        }
+        else -> {
+            RecordingScreen(state, onIntent)
+        }
+    }
+
+    // 커스텀보이스 생성후 다이얼로그는 화면 위에 얹는 형태로 조건부 표시
+    if (state.uploadSuccess) {
+        SuccessDialog(
+            onDismiss = { onIntent(AddVoiceIntent.NavigateToMain) },
+            onConfirm = { onIntent(AddVoiceIntent.NavigateToMain) }
+        )
+    }
+
     if (state.showErrorPopup && state.errorMessage != null) {
         ErrorDialog(
             errorMessage = state.errorMessage,
             onDismiss = { onIntent(AddVoiceIntent.DismissErrorDialog) }
         )
-    }
-
-    if (state.uploadSuccess) {
-        // 업로드 성공 시 완료 팝업
-//        UploadSuccessScreen(onIntent)
-        SuccessDialog(
-            onDismiss = { onIntent(AddVoiceIntent.NavigateToMain) },
-            onConfirm = { onIntent(AddVoiceIntent.NavigateToMain) }  // 확인 버튼 클릭 시 메인으로 이동
-        )
-    } else if (state.isAllSentencesRecorded) {
-        // 모든 문장 녹음 완료 후 이름 입력 화면
-        VoiceNameInputScreen(state, onIntent)
-    } else {
-        // 녹음 화면
-        RecordingScreen(state, onIntent)
     }
 }
 
