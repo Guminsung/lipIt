@@ -19,6 +19,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import com.ssafy.lipit_app.domain.repository.MyVoiceRepository
 import com.ssafy.lipit_app.util.WebSocketHeartbeat
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -49,7 +50,7 @@ class VoiceCallViewModel : ViewModel() {
                     it.copy(AIMessageOriginal = intent.message)
                 }
             }
-            
+
             is VoiceCallIntent.SubtitleOn -> { // 자막 O, 번역 X
                 _state.update {
                     it.copy(showSubtitle = true, showTranslation = false)
@@ -63,7 +64,7 @@ class VoiceCallViewModel : ViewModel() {
             }
 
             is VoiceCallIntent.UpdateTranslation -> {
-                _state.update{
+                _state.update {
                     it.copy(AIMessageTranslate = intent.translatedMessage)
                 }
             }
@@ -93,9 +94,32 @@ class VoiceCallViewModel : ViewModel() {
                     }
                 }
             }
-
         }
     }
+
+
+    private val voiceRepository by lazy { MyVoiceRepository() }
+
+    fun loadVoiceName(memberId: Long) {
+        Log.d("VoiceCallViewModel", "🟢 loadVoiceName() 호출됨")
+        Log.d("VoiceCallViewModel", "📢 voiceRepository 인스턴스: $voiceRepository")
+
+        viewModelScope.launch {
+            Log.d("VoiceCallViewModel", "🟢 코루틴 시작")
+
+            val result = voiceRepository.getVoiceName(memberId)
+
+            result.onSuccess { name ->
+                Log.d("VoiceCallViewModel", "✅ 이름 받아옴: $name")
+                _state.update { it.copy(voiceName = name) }
+            }.onFailure {
+                Log.e("VoiceCallViewModel", "❌ 이름 로드 실패: ${it.message}")
+            }
+        }
+    }
+
+
+
 
     // ===================================================================
 
@@ -208,9 +232,25 @@ class VoiceCallViewModel : ViewModel() {
 
                     pendingStartJson?.let {
                         Log.d("WebSocket", "📤 대기 중이던 startCall 전송")
-                        ws?.send(it)
-                        pendingStartJson = null
+
+                        if (ws?.isOpen == true) {
+                            ws?.send(it)
+                            pendingStartJson = null
+                        } else {
+                            Log.w("WebSocket", "❗️ws는 연결되었지만 아직 open 상태가 아님, 잠시 후 재시도")
+                            // 재시도 로직 또는 일정 시간 후 재전송 로직 추가
+                            mainHandler.postDelayed({
+                                if (ws?.isOpen == true) {
+                                    ws?.send(it)
+                                    pendingStartJson = null
+                                    Log.d("WebSocket", "📤 재시도 후 startCall 전송 성공")
+                                } else {
+                                    Log.e("WebSocket", "❌ 재시도에도 ws가 아직 열리지 않음")
+                                }
+                            }, 300) // 300ms 후 재시도
+                        }
                     }
+
 
                     if (pendingText != null && pendingCallId != null) {
                         sendText(pendingText!!)
@@ -307,6 +347,7 @@ class VoiceCallViewModel : ViewModel() {
                     heartbeat = null
 
                     Log.e("WebSocket", "❌ 오류: ${ex?.message}")
+                    // todo: No address associated with hostname일 경우 서버 종료를 의미하니 추가 ui요소 만들기
                     reconnectWithDelay()
                 }
             }
