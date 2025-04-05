@@ -310,7 +310,8 @@ fun NavGraph(
                         popUpTo("onTextCall") { inclusive = true } // 이전 스택 제거 (선택사항)
                         launchSingleTop = true
                     }
-                }
+                },
+                voiceCallViewModel = VoiceCallViewModel()
             )
 
         }

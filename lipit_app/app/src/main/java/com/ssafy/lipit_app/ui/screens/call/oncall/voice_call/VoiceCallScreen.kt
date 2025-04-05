@@ -122,6 +122,7 @@ fun VoiceCallScreen(
             viewModel.addAiMessage(viewModel.aiMessage, viewModel.aiMessageKor)
 
             Log.d("VoiceCallScreen", "🤖 AI: ${viewModel.aiMessage}")
+            Log.d("VoiceCallScreen", "🤖 currentMode: ${state.currentMode}")
 
             chatMessages.add(
                 ChatMessage(
@@ -143,8 +144,8 @@ fun VoiceCallScreen(
                     )
                 )
             }
-
-
+            
+            // 자막용 업뎃
             onIntent(VoiceCallIntent.UpdateSubtitle(viewModel.aiMessage))
             onIntent(VoiceCallIntent.UpdateTranslation(viewModel.aiMessageKor))
 
@@ -295,7 +296,8 @@ fun CallScreen(voiceViewModel: VoiceCallViewModel, navController: NavController)
                     textViewModel.onIntent(intent) { userText ->
                         voiceViewModel.sendText(userText)
                     }
-                }
+                },
+                voiceCallViewModel = voiceViewModel
             )
 
         }
