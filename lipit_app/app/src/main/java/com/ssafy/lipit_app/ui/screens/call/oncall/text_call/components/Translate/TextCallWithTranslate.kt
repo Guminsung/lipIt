@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,7 +25,8 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallState
 
 @Composable
 fun TextCallWithTranslate(state: TextCallState) {
-    val chatMessages = state.messages
+   // val chatMessages = state.messages
+    val chatMessages = remember(state.messages) { state.messages }
 
     // 일단 리스트로 구현했으나 백 연동 시 다시 고려
     LazyColumn(

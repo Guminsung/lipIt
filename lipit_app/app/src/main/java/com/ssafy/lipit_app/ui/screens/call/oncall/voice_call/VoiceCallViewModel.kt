@@ -46,6 +46,7 @@ class VoiceCallViewModel : ViewModel() {
     var currentMode by mutableStateOf("Voice") // or "Text"
     val chatMessages = mutableStateListOf<ChatMessage>()
 
+
     // 모드 변경 관련
     fun toggleMode() {
         _state.update { current ->
@@ -732,6 +733,13 @@ class VoiceCallViewModel : ViewModel() {
     fun clearSystemMessage() {
         systemMessage.value = null
     }
+
+    // 텍스트 모드에서 보내기
+    fun sendUserTextMessage(text: String) {
+        sendText(text)
+    }
+
+
 
 
 }

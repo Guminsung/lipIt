@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.call.oncall.text_call
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
@@ -26,13 +26,18 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.Translate
 
 @Composable
 fun TextCallScreen(
-    viewModel: TextCallViewModel = viewModel(),
+    viewModel: TextCallViewModel,
     onIntent: (TextCallIntent) -> Unit,
     navController: NavController,
     onModeToggle: () -> Unit
 ) {
     val state = viewModel.state.collectAsState().value
+    Log.d("TextCall", "📦 메시지 수: ${state.messages.size}")
 
+    Log.d("TextCall", "🧾 메시지 렌더링 시작 - 총 ${state.messages.size}개")
+    state.messages.forEachIndexed { i, m ->
+        Log.d("TextCall", "🔸 [$i] ${if (m.isFromUser) "USER" else "AI"}: ${m.text}")
+    }
 
     Box(
         modifier = Modifier
