@@ -19,4 +19,7 @@ public class UserVoiceResponseDto {
     
     @Schema(description = "음성 이미지 URL", example = "https://example.com/image.jpg")
     private String customImageUrl;
+    
+    @Schema(description = "음성 오디오 URL", example = "https://example.com/audio.mp3")
+    private String audioUrl;
 } 

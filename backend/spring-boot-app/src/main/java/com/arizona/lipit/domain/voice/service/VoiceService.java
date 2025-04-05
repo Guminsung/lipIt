@@ -44,6 +44,8 @@ public class VoiceService {
 	private List<Voice> findCelebVoices() {
 		log.info("🔍 Fetching celeb voices from DB");
 		List<Voice> voices = voiceRepository.findByType(VoiceType.CELEB);
+		voices.forEach(voice -> log.info("Voice: id={}, name={}, audioUrl={}", 
+			voice.getVoiceId(), voice.getVoiceName(), voice.getAudioUrl()));
 		if (voices.isEmpty()) {
 			throw new CustomException(ErrorCode.CELEB_VOICE_NOT_FOUND);
 		}
@@ -127,6 +129,8 @@ public class VoiceService {
 
 	private List<VoiceResponseDto> findAndMapCustomVoices(Long memberId) {
 		List<MemberVoice> memberVoices = memberVoiceRepository.findCustomVoicesByMemberId(memberId);
+		memberVoices.forEach(mv -> log.info("Custom Voice: id={}, name={}, audioUrl={}", 
+			mv.getVoice().getVoiceId(), mv.getVoice().getVoiceName(), mv.getVoice().getAudioUrl()));
 		if (memberVoices.isEmpty()) {
 			throw new CustomException(ErrorCode.VOICE_NOT_FOUND);
 		}

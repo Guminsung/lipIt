@@ -25,12 +25,14 @@ public interface VoiceMapper {
 	@Mapping(source = "voiceId", target = "voiceId")
 	@Mapping(source = "voiceName", target = "voiceName")
 	@Mapping(source = "imageUrl", target = "customImageUrl")
+	@Mapping(source = "audioUrl", target = "audioUrl")
 	VoiceResponseDto toVoiceResponseDto(Voice voice);
 
 	// MemberVoice → VoiceResponseDto 변환
 	@Mapping(source = "voice.voiceId", target = "voiceId")
 	@Mapping(source = "voice.voiceName", target = "voiceName")
 	@Mapping(source = "voice.imageUrl", target = "customImageUrl")
+	@Mapping(source = "voice.audioUrl", target = "audioUrl")
 	VoiceResponseDto toVoiceResponseDto(MemberVoice memberVoice);
 
 	// MemberVoice 리스트 → VoiceResponseDto 리스트 변환
@@ -40,12 +42,14 @@ public interface VoiceMapper {
 	@Mapping(source = "voice.voiceId", target = "voiceId")
 	@Mapping(source = "voice.voiceName", target = "voiceName")
 	@Mapping(source = "voice.imageUrl", target = "customImageUrl")
+	@Mapping(source = "voice.audioUrl", target = "audioUrl")
 	UserVoiceResponseDto toUserVoiceResponseDto(MemberVoice memberVoice);
 
 	// Voice → UserVoiceResponseDto 변환
 	@Mapping(source = "voiceId", target = "voiceId")
 	@Mapping(source = "voiceName", target = "voiceName")
 	@Mapping(source = "imageUrl", target = "customImageUrl")
+	@Mapping(source = "audioUrl", target = "audioUrl")
 	UserVoiceResponseDto toUserVoiceResponseDto(Voice voice);
 
 	// MemberVoice 리스트 → UserVoiceResponseDto 리스트 변환
@@ -55,6 +59,7 @@ public interface VoiceMapper {
 	@Mapping(source = "voice.voiceId", target = "voiceId")
 	@Mapping(source = "voice.voiceName", target = "voiceName")
 	@Mapping(source = "voice.imageUrl", target = "customImageUrl")
+	@Mapping(source = "voice.audioUrl", target = "audioUrl")
 	@Mapping(source = "activated", target = "activated")
 	CelebVoiceResponseDto toCelebVoiceResponseDto(Voice voice, boolean activated);
 

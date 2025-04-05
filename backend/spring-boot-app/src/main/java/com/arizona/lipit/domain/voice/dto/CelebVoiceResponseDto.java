@@ -20,6 +20,9 @@ public class CelebVoiceResponseDto {
     @Schema(description = "음성 이미지 URL", example = "https://example.com/image.jpg")
     private String customImageUrl;
     
+    @Schema(description = "음성 파일 URL", example = "https://example.com/audio.mp3")
+    private String audioUrl;
+    
     @Schema(description = "음성 활성화 여부", example = "true")
     private boolean activated;
 } 
