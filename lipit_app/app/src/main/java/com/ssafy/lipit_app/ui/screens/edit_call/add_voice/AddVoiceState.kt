@@ -35,14 +35,14 @@ enum class RecordingStatus {
 // 샘플 문장 목록 - 이 파일에 함께 정의
 val sampleSentences = listOf(
     "Hi",
-//    "Hi, I'm glad to meet you today.",
-//    "Can you hear me clearly?",
-//    "Let's get started with our conversation.",
-//    "The weather is really nice today, isn't it?",
-//    "I enjoy reading books and watching movies.",
-//    "What are your hobbies?",
-//    "Please repeat after me, slowly and clearly.",
-//    "This is how I usually talk every day.",
-//    "You can speak naturally and confidently.",
-//    "Thank you for listening to my voice!"
+//   "Hello, how are you doing today?""
+//   "I really enjoy reading books in the morning.",
+//    "The quick brown fox jumps over the lazy dog.",
+//    "Could you please repeat that one more time?",
+//    "It's a beautiful day to learn something new.",
+//    "Technology keeps changing the way we live.",
+//    "Sometimes silence speaks louder than words.",
+//    "What's your favorite kind of music to listen to?",
+//    "I can’t believe how fast time flies these days.",
+//    "Practice makes perfect, so never give up!"
 )

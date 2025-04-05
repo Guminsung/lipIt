@@ -312,10 +312,10 @@ class AddVoiceViewModel(context: Context) : ViewModel() {
                 val audioUrl = audioPresign.url.toString()
                 val imageUrl = imagePresign.url.toString()
 
-                // 3. 오디오 실제 업로드
+                // 3-1. 오디오 실제 업로드
                 voiceRepository.uploadToPresignedUrl(mergedFile, audioUrl).getOrThrow()
 
-                // 이미지 업로드 - 선택된 이미지가 있을 경우
+                // 3-2. 이미지 업로드 - 선택된 이미지가 있을 경우
                 current.selectedImageUri?.let { uri ->
                     try {
                         // URI에서 실제 파일 경로 얻기
@@ -329,9 +329,6 @@ class AddVoiceViewModel(context: Context) : ViewModel() {
                     }
                 }
 
-                //                // TODO 사용자가 직접 추가한 이미지파일로 넘겨야 함
-//                val imageFile = File(...) // 이미지 경로 필요
-//                voiceRepository.uploadToPresignedUrl(imageFile, imageUrl).getOrThrow()
 
                 // 4. Spring 서버에 저장 요청
                 val saveResult = voiceRepository.saveCustomVoice(
@@ -348,6 +345,16 @@ class AddVoiceViewModel(context: Context) : ViewModel() {
 //                }
                 if (saveResult.isSuccess) {
                     _state.update { it.copy(uploadSuccess = true, isUploading = false) }
+
+                    // 병합 성공 후, 오디오 임시 파일 삭제
+                    audioFiles.forEach { filePath ->
+                        try {
+                            File(filePath).delete()
+                            Log.d(TAG, "원본 오디오 파일 삭제: $filePath")
+                        } catch (e: Exception) {
+                            Log.e(TAG, "파일 삭제 실패: $filePath", e)
+                        }
+                    }
                 } else {
                     throw Exception("DB 저장 실패: ${saveResult.exceptionOrNull()?.message}")
                 }
@@ -478,13 +485,4 @@ class AddVoiceViewModel(context: Context) : ViewModel() {
             showErrorPopup = false
         )}
     }
-
-//    // Intent 처리 메서드 업데이트
-//    fun onIntent(intent: AddVoiceIntent) {
-//        when (intent) {
-//            // 기존 코드...
-//            is AddVoiceIntent.DismissErrorDialog -> dismissErrorDialog()
-//            // 다른 인텐트들...
-//        }
-//    }
 }
