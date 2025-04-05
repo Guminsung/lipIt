@@ -734,12 +734,30 @@ class VoiceCallViewModel : ViewModel() {
         systemMessage.value = null
     }
 
-    // 텍스트 모드에서 보내기
-    fun sendUserTextMessage(text: String) {
-        sendText(text)
+
+    // 텍스트 -> 보이스로 돌아올때 대화 싱크 맞추기
+    fun syncFromTextMessages(messages: List<ChatMessageText>) {
+        chatMessages.clear()
+        chatMessages.addAll(messages.map {
+            ChatMessage(
+                type = if (it.isFromUser) "user" else "ai",
+                message = it.text,
+                messageKor = it.translatedText
+            )
+        })
     }
 
-
+    fun getLastAiMessage(): ChatMessageText? {
+        return chatMessages
+            .lastOrNull { it.type == "ai" }
+            ?.let {
+                ChatMessageText(
+                    text = it.message,
+                    translatedText = it.messageKor ?: "",
+                    isFromUser = false
+                )
+            }
+    }
 
 
 }

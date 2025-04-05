@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -59,13 +58,21 @@ fun VoiceCallScreen(
 ) {
     val context = LocalContext.current
     val textState = remember { mutableStateOf("") }
-    val chatMessages = remember { mutableStateListOf<ChatMessage>() }
+    val chatMessages = viewModel.chatMessages
     val state by viewModel.state.collectAsState()
     val toastMessage = remember { mutableStateOf<String?>(null) }
 
     // 가장 먼저 Player 초기화
     LaunchedEffect(Unit) {
         viewModel.initPlayerIfNeeded(context)
+
+        textCallViewModel.setInitialMessages(viewModel.convertToTextMessages())
+
+        viewModel.getLastAiMessage()?.let { lastAi ->
+            onIntent(VoiceCallIntent.UpdateSubtitle(lastAi.text))
+            onIntent(VoiceCallIntent.UpdateTranslation(lastAi.translatedText))
+            Log.d("CallScreen", "🆕 보이스 모드 진입 시 마지막 AI 자막 갱신")
+        }
     }
 
 

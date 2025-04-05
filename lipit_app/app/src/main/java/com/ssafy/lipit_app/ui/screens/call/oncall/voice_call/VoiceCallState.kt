@@ -1,5 +1,7 @@
 package com.ssafy.lipit_app.ui.screens.call.oncall.voice_call
 
+import com.ssafy.lipit_app.data.model.ChatMessage
+
 data class VoiceCallState(
     val voiceName: String = "",
     val leftTime: String = "05:00",
@@ -17,6 +19,8 @@ data class VoiceCallState(
 
     // 타이머 관련
     var isLoading: Boolean = false,
-    val isFinished: Boolean = false
+    val isFinished: Boolean = false,
+
+    val chatMessages: List<ChatMessage> = emptyList()
 
 )

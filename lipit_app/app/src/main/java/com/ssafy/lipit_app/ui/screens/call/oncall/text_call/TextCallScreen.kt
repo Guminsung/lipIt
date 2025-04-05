@@ -43,18 +43,27 @@ fun TextCallScreen(
         val textMessages = voiceCallViewModel.convertToTextMessages()
         viewModel.setInitialMessages(textMessages)
         Log.d("TextCallScreen", "이전 대화 불러와서 TextViewModel에 설정 완료")
+
+
     }
 
     LaunchedEffect(voiceCallViewModel.aiMessage) {
         if (voiceCallViewModel.aiMessage.isNotBlank()) {
             Log.d("TextCallScreen", "📥 AI 메시지 수신: ${voiceCallViewModel.aiMessage}")
 
-            viewModel.addMessage(
-                ChatMessageText(
-                    text = voiceCallViewModel.aiMessage,
-                    translatedText = voiceCallViewModel.aiMessageKor,
-                    isFromUser = false
-                )
+            val newMessage = ChatMessageText(
+                text = voiceCallViewModel.aiMessage,
+                translatedText = voiceCallViewModel.aiMessageKor,
+                isFromUser = false
+            )
+
+            // 1. TextCallViewModel에 메시지 추가
+            viewModel.addMessage(newMessage, voiceCallViewModel)
+
+            // 2. VoiceCallViewModel에도 동기화
+            voiceCallViewModel.addAiMessage(
+                ai = newMessage.text,
+                kor = newMessage.translatedText
             )
 
             voiceCallViewModel.clearAiMessage()
@@ -91,7 +100,12 @@ fun TextCallScreen(
             // 모드 변경
             ModeChangeButton(
                 currentMode = state.currentMode,
-                onToggle = onModeToggle
+                onToggle = {
+                    // 모드 전환: 텍스트 → 보이스로 바꾸는 시점이면 chatMessages 동기화
+                    voiceCallViewModel.syncFromTextMessages(viewModel.getMessages())
+
+                    onModeToggle()
+                }
             )
 
             // 헤더 (VoiceName, 남은 시간, 끊기 버튼)
