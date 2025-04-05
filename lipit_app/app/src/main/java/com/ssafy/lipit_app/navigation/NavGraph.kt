@@ -31,7 +31,7 @@ import com.ssafy.lipit_app.ui.screens.call.incoming.IncomingCallScreen
 import com.ssafy.lipit_app.ui.screens.call.incoming.IncomingCallViewModel
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallViewModel
-import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallScreen
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.CallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
 import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceViewModel
@@ -227,17 +227,12 @@ fun NavGraph(
             )
         }
 
-        composable("call_screen") { // 전화 걸기
-            val viewModel = viewModel<VoiceCallViewModel>() // 보이스가 기본 모드
-            val state by viewModel.state.collectAsState()
-
-            VoiceCallScreen(
-                onIntent = { intent -> viewModel.onIntent(intent) },
-                viewModel,
-                navController
-            )
-
+        composable("call_screen") {
+            val viewModel = viewModel<VoiceCallViewModel>()
+            CallScreen(voiceViewModel = viewModel, navController = navController)
         }
+
+
 
         composable("my_voices") {
             Log.d(TAG, "my_voices 화면 구성")
@@ -292,25 +287,34 @@ fun NavGraph(
             val viewModel = viewModel<VoiceCallViewModel>()
             val state by viewModel.state.collectAsState()
 
-            VoiceCallScreen(
-                onIntent = { intent -> viewModel.onIntent(intent) },
-                viewModel,
-                navController
+            CallScreen(
+                voiceViewModel = viewModel,
+                navController = navController
             )
         }
 
         composable("onTextCall") {
             Log.d(TAG, "onTextCall 화면 구성")
+
             val viewModel = viewModel<TextCallViewModel>()
 
             TextCallScreen(
-                state = viewModel.state.collectAsState().value,
+                viewModel = viewModel,
                 onIntent = {
                     Log.d(TAG, "TextCall 인텐트 처리: $it")
                     viewModel.onIntent(it)
+                },
+                navController = navController,
+                onModeToggle = {
+                    navController.navigate("call_screen") {
+                        popUpTo("onTextCall") { inclusive = true } // 이전 스택 제거 (선택사항)
+                        launchSingleTop = true
+                    }
                 }
             )
+
         }
+
 
         composable("add_voice") {
             val context = LocalContext.current

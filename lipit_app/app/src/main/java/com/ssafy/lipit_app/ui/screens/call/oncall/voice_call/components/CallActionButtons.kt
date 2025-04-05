@@ -113,8 +113,7 @@ fun CallActionButtons(
                                     } else {
                                         onIntent(VoiceCallIntent.SubtitleOff(false))
                                     }
-                                }
-                            ,
+                                },
                             tint = Color(0xFFFDF8FF)
                         )
 
@@ -186,7 +185,9 @@ fun CallActionButtons(
                 .clickable {
                     // 전화 끊기
                     viewModel.sendEndCall() // 연결되어 있으면 종료 메시지 보내고
-                    Toast.makeText(context, "통화가 종료되어 메인으로 돌아갑니다.", Toast.LENGTH_SHORT).show()
+                    Toast
+                        .makeText(context, "통화가 종료되어 메인으로 돌아갑니다.", Toast.LENGTH_SHORT)
+                        .show()
                     navController.navigate("main") {
                         popUpTo("call_screen") { inclusive = true }
                     }
@@ -212,20 +213,43 @@ fun CallActionButtons(
                 .background(color = Color(0x1AFDF8FF))
                 // 보내기 버튼 클릭
                 .clickable {
-                    val message = textState.value.trim()
-                    if (message.isNotBlank()) {
-                        viewModel.sendUserSpeech(message)
-                        textState.value = ""
+                    // 보내기 한 번만 누르는 버전
+//                    val message = textState.value.trim()
+//                    if (message.isNotBlank()) {
+//                        viewModel.sendUserSpeech(message)
+//                        textState.value = ""
+//                    } else {
+//                        // 말 안 하면 showNoInputMessage()에서 처리됨
+//                        viewModel.startSpeechToText(context) { result ->
+//                            if (result.isNotBlank()) {
+//                                viewModel.sendUserSpeech(result)
+//                            } else {
+//                                viewModel.showNoInputMessage()
+//                            }
+//                        }
+//                    }
+
+                    // 보내기 두 번 누르는 버전
+                    if (!isRecording) {
+                        isRecording = true
+                        viewModel.fullSpeechBuffer.clear()
+                        viewModel.startSpeechToText(context) { /* 콜백 생략 가능 */ }
                     } else {
-                        // 말 안 하면 showNoInputMessage()에서 처리됨
-                        viewModel.startSpeechToText(context) { result ->
-                            if (result.isNotBlank()) {
-                                viewModel.sendUserSpeech(result)
-                            } else {
-                                viewModel.showNoInputMessage()
-                            }
+                        viewModel.stopSpeechToText()
+                        isRecording = false
+
+                        val finalMessage = viewModel.fullSpeechBuffer
+                            .toString()
+                            .trim()
+                        if (finalMessage.isNotBlank()) {
+                            viewModel.sendUserSpeech(finalMessage)
+                        } else {
+                            viewModel.showNoInputMessage()
                         }
+
+                        viewModel.fullSpeechBuffer.clear()
                     }
+
                 },
             contentAlignment = Alignment.Center
         ) {
