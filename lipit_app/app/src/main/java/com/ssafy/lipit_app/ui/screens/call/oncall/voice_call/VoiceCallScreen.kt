@@ -6,7 +6,6 @@ import android.content.pm.PackageManager
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,12 +29,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.ChatMessage
 import com.ssafy.lipit_app.data.model.ChatMessageText
@@ -48,6 +53,7 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.Subtitle
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.VoiceCallHeader
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.update
 
 @Composable
 fun VoiceCallScreen(
@@ -168,15 +174,26 @@ fun VoiceCallScreen(
         }
     }
 
-    // 통화 종료 후 메인으로 이동
+    // 통화 종료 후 이동
     LaunchedEffect(viewModel.isCallEnded) {
         if (viewModel.isCallEnded) {
-            navController.navigate("main") {
-                popUpTo("call_screen") { inclusive = true }
+            val totalChars = viewModel.chatMessages
+                .filter { it.type == "user" } // 사용자 입력만 카운트
+                .sumOf { it.message.length }
+
+            if (totalChars <= 100) { // 단어수가 100자가 안된다면
+                // 다이얼로그 띄우기 위한 상태값 업데이트
+                viewModel._state.update { it.copy(reportFailed = true) }
+            } else {
+                navController.navigate("report") {
+                    popUpTo("call_screen") { inclusive = true }
+                }
             }
+
             viewModel.sendEndCall()
         }
     }
+
 
     // 연결 오류 시 알림창 표시
     if (viewModel.connectionError.value && !viewModel.isCallEnded) {
@@ -198,15 +215,55 @@ fun VoiceCallScreen(
         )
     }
 
+    if (state.reportFailed) {
+        AlertDialog(
+            onDismissRequest = {
+                viewModel.resetCall()
+                navController.navigate("main") {
+                    popUpTo("call_screen") { inclusive = true }
+                }
+            },
+            title = { Text("Report 생성 실패", fontWeight = FontWeight.Bold) },
+            text = { Text("사용 글자 수가 100자 이하인 경우, 리포트가 생성되지 않습니다.") },
+            confirmButton = {
+                Text(
+                    "확인",
+                    modifier = Modifier.clickable {
+                        viewModel.resetCall()
+                        navController.navigate("main") {
+                            popUpTo("call_screen") { inclusive = true }
+                        }
+                    }
+                )
+            }
+        )
+    }
+
+
     // 리포트 생성 중 로딩 다이얼로그 표시
-    // todo: 디자인 변경
+    val composition by rememberLottieComposition(
+        LottieCompositionSpec.RawRes(R.raw.loader)
+    )
+
     if (state.isLoading) {
         Dialog(onDismissRequest = {}) {
-            Box(Modifier.background(Color.White)) {
-                Text("리포트 생성 중...")
+            Column(
+                modifier = Modifier
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                LottieAnimation(
+                    composition = composition,
+                    iterations = LottieConstants.IterateForever,
+                    modifier = Modifier.size(120.dp)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("리포트 생성 중...", color = Color.Black)
             }
         }
     }
+
 
     // 전체 레이아웃 구성
     Box(

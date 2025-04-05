@@ -22,6 +22,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.ssafy.lipit_app.base.SecureDataStore
+import com.ssafy.lipit_app.ui.components.TestLottieLoadingScreen
 import com.ssafy.lipit_app.ui.screens.auth.Login.LoginScreen
 import com.ssafy.lipit_app.ui.screens.auth.Login.LoginViewModel
 import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupScreen
@@ -134,6 +135,11 @@ fun NavGraph(
                 }
             )
         }
+
+        composable("test_loader") {
+            TestLottieLoadingScreen()
+        }
+
 
         composable("login") {
             Log.d(TAG, "login 화면 구성")
