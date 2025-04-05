@@ -41,7 +41,7 @@ import java.nio.ByteBuffer
 import java.util.ArrayDeque
 
 class VoiceCallViewModel : ViewModel() {
-    private val _state = MutableStateFlow(VoiceCallState())
+    val _state = MutableStateFlow(VoiceCallState())
     val state: StateFlow<VoiceCallState> = _state
     var currentMode by mutableStateOf("Voice") // or "Text"
     val chatMessages = mutableStateListOf<ChatMessage>()
