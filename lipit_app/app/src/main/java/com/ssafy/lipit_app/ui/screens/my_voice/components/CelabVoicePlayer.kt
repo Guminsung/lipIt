@@ -38,6 +38,7 @@ import com.ssafy.lipit_app.data.model.response_dto.myvoice.CelabResponse
 fun CelabVoicePlayer(
     videoUrl: String?,
     voice: CelabResponse,
+    selectedVoiceName: String,
     modifier: Modifier = Modifier,
     isLooping: Boolean = false,
     isVisible: Boolean = true,
@@ -109,7 +110,8 @@ fun CelabVoicePlayer(
                 if (voice.activated) {
                     Button(
                         onClick = { onVoiceChange(voice.voiceId) },
-                        colors = ButtonDefaults.buttonColors(Color.Transparent),
+                        enabled = selectedVoiceName != voice.voiceName,
+                        colors = ButtonDefaults.buttonColors( if(selectedVoiceName != voice.voiceName) Color.Transparent else Color.Gray),
                         border = BorderStroke(
                             width = 1.dp,
                             color = Color.White
@@ -117,7 +119,7 @@ fun CelabVoicePlayer(
                         shape = RoundedCornerShape(20.dp),
                         elevation = ButtonDefaults.elevation(0.dp),
                     ) {
-                        Text("선택", color = Color.White)
+                        Text("선택", color = if(selectedVoiceName != voice.voiceName) Color.Black else Color.White)
                     }
                 }
 

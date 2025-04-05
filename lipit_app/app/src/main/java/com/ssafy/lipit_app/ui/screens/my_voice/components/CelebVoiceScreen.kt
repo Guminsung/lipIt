@@ -45,6 +45,7 @@ import kotlin.math.absoluteValue
 fun CelebVoiceScreen(
     pagerState: PagerState,
     page: Int,
+    selectedVoiceName: String,
     voice: CelabResponse,
     onVoiceChange: (Long) -> Unit
 ) {
@@ -226,6 +227,7 @@ fun CelebVoiceScreen(
                                 videoUrl = voice.audioUrl,
                                 isLooping = true,
                                 voice = voice,
+                                selectedVoiceName = selectedVoiceName,
                                 isVisible = isBackVisible,
                                 modifier = Modifier.fillMaxWidth(),
                                 onVoiceChange = onVoiceChange
