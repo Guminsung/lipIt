@@ -3,6 +3,7 @@ package com.ssafy.lipit_app.ui.screens.my_voice.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,8 +21,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +41,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
+import com.airbnb.lottie.LottieProperty
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
+import com.airbnb.lottie.compose.rememberLottieDynamicProperties
+import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.CustomResponse
 
@@ -72,8 +89,9 @@ fun CustomVoiceScreen(
             ) {
                 // 커스텀 음성 목록 표시
                 items(customVoices) { voice ->
+
                     CustomColumn(
-                        voiceId = voice.voiceId,
+                        voices = voice,
                         imageUrl = voice.customImageUrl,
                         voiceName = voice.voiceName,
                         onVoiceChange = { onVoiceChange(voice.voiceId) }
@@ -91,11 +109,14 @@ fun CustomVoiceScreen(
 
 @Composable
 fun CustomColumn(
-    voiceId: Long,
+    voices: CustomResponse,
     imageUrl: String,
     voiceName: String,
     onVoiceChange: (Long) -> Unit
 ) {
+
+    var showPlayer by remember { mutableStateOf(false) }
+    var isPlaying by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
@@ -145,21 +166,55 @@ fun CustomColumn(
             )
         }
 
-        Button(
-            onClick = { onVoiceChange(voiceId) },
-            colors = ButtonDefaults.buttonColors(Color.Transparent),
-            border = BorderStroke(
-                width = 1.dp,
-                color = Color(0xffA37BBD)
-            ),
-            shape = RoundedCornerShape(20.dp),
-            elevation = ButtonDefaults.elevation(0.dp),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        //            Button(
+//                onClick = { onVoiceChange(voiceId) },
+//                colors = ButtonDefaults.buttonColors(Color.Transparent),
+//                border = BorderStroke(
+//                    width = 1.dp,
+//                    color = Color(0xffA37BBD)
+//                ),
+//                shape = RoundedCornerShape(20.dp),
+//                elevation = ButtonDefaults.elevation(0.dp),
+//                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+//            ) {
+//                Text(
+//                    "선택", fontWeight = FontWeight.Bold,
+//                    fontSize = 12.sp,
+//                    color = Color(0xffA37BBD)
+//                )
+//            }
+
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                "변경", fontWeight = FontWeight.Bold,
-                fontSize = 12.sp,
-                color = Color(0xffA37BBD)
+
+            Icon(
+                painter = painterResource(id = R.drawable.ic_play),
+                contentDescription = null,
+                tint = Color(0xffD09FE6),
+                modifier = Modifier.clickable {
+                    // 클릭 시 상태만 변경
+                    showPlayer = !showPlayer
+                    isPlaying = !isPlaying
+                }
+            )
+
+
+        }
+
+        if (showPlayer && voices.audioUrl != null) {
+            CustomVoicePlayer(
+                videoUrl = voices.audioUrl,
+                isLooping = false,
+                isVisible = showPlayer,
+                onPlayStateChanged = { playing ->
+                    isPlaying = playing
+                    if (!playing) {
+                        showPlayer = false
+                    }
+                }
             )
         }
 
