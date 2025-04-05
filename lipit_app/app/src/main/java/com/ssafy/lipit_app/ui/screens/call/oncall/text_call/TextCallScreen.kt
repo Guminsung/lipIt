@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,21 +19,48 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.data.model.ChatMessageText
 import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.TextCallFooter
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.TextCallHeader
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.Translate.TextCallWithTranslate
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.Translate.TextCallwithOriginalOnly
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
 
 @Composable
 fun TextCallScreen(
     viewModel: TextCallViewModel,
     onIntent: (TextCallIntent) -> Unit,
     navController: NavController,
-    onModeToggle: () -> Unit
+    onModeToggle: () -> Unit,
+    voiceCallViewModel: VoiceCallViewModel
 ) {
+
     val state = viewModel.state.collectAsState().value
     Log.d("TextCall", "📦 메시지 수: ${state.messages.size}")
+
+    LaunchedEffect(Unit) {
+        val textMessages = voiceCallViewModel.convertToTextMessages()
+        viewModel.setInitialMessages(textMessages)
+        Log.d("TextCallScreen", "이전 대화 불러와서 TextViewModel에 설정 완료")
+    }
+
+    LaunchedEffect(voiceCallViewModel.aiMessage) {
+        if (voiceCallViewModel.aiMessage.isNotBlank()) {
+            Log.d("TextCallScreen", "📥 AI 메시지 수신: ${voiceCallViewModel.aiMessage}")
+
+            viewModel.addMessage(
+                ChatMessageText(
+                    text = voiceCallViewModel.aiMessage,
+                    translatedText = voiceCallViewModel.aiMessageKor,
+                    isFromUser = false
+                )
+            )
+
+            voiceCallViewModel.clearAiMessage()
+        }
+    }
+
 
     Log.d("TextCall", "🧾 메시지 렌더링 시작 - 총 ${state.messages.size}개")
     state.messages.forEachIndexed { i, m ->
