@@ -400,12 +400,14 @@ fun EditVoiceScreenPreview() {
                 voiceId = 1L,
                 voiceName = "Harry Potter",
                 customImageUrl = "https://example.com/image1.jpg",
+                audioUrl = "https://example.com/image2.mp3",
                 activated = true
             ),
             CelabResponse(
                 voiceId = 2L,
                 voiceName = "Iron Man",
                 customImageUrl = "https://example.com/image2.jpg",
+                audioUrl = "https://example.com/image2.mp3",
                 activated = false
             )
         ),

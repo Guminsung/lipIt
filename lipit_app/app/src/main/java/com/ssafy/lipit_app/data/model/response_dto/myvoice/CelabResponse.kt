@@ -4,5 +4,6 @@ data class CelabResponse(
     val voiceId: Long,
     val voiceName: String,
     val customImageUrl: String,
+    val audioUrl: String,
     val activated: Boolean
 )
