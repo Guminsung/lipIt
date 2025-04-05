@@ -11,14 +11,13 @@ package com.ssafy.lipit_app.data.model.response_dto.schedule
  * val englishName = category?.name ?: "ETC"
  */
 enum class TopicCategory(val koreanName: String) {
-    MOVIE_BOOK("영화/도서"),
+    MOVIE_BOOK("영화/책"),
     TRIP("여행"),
     MUSIC("음악"),
     GAME("게임"),
     FOOD("음식"),
     SPORTS("스포츠"),
-    HEALTH("건강"),
-    ETC("기타");
+    HEALTH("건강");
 
     companion object {
         // 영어 → enum

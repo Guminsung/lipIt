@@ -22,7 +22,7 @@ fun WeeklySchedule(
         DayOfWeek(dayList)
 
         // 우측 요일별 스케줄 출력
-        thisWeekSchedules(
+        ThisWeekSchedules(
             dayList = dayList,
             callSchedules = callSchedules,
             onTapSchedule = onTapSchedule,

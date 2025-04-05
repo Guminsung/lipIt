@@ -24,6 +24,15 @@ object RetrofitUtil {
             .build()
     }
 
+    // OpenAI API용 Retrofit 인스턴스
+    private val openAIRetrofit: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl("https://api.openai.com/v1/")
+            .client(ApplicationClass.client)
+            .addConverterFactory(GsonConverterFactory.create(ApplicationClass.gson))
+            .build()
+    }
+
     val authService: AuthService by lazy {
         springRetrofit.create(AuthService::class.java)
     }
@@ -38,6 +47,16 @@ object RetrofitUtil {
 
     val reportService: ReportService by lazy {
         fastApiRetrofit.create(ReportService::class.java)
+    }
+
+    /************ CustomVoice 생성 관련 *************/
+    val whisperService: WhisperApiService by lazy {
+        openAIRetrofit.create(WhisperApiService::class.java)
+    }
+
+    val presignService: S3PresignService by lazy {
+        // FastAPI 를 통해 AWS S3 에 저장할 파일(음성, 이미지)의 저장 경로를 얻기 위함
+        fastApiRetrofit.create(S3PresignService::class.java)
     }
 
 }

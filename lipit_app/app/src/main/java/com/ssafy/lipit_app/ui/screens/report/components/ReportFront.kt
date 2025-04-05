@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,6 +21,7 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -42,11 +44,6 @@ fun ReportFront(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .border(
-                BorderStroke(1.dp, color = Color.White),
-                shape = RoundedCornerShape(25.dp)
-            )
-            .background(Color.Transparent, shape = RoundedCornerShape(25.dp))
             .paint(
                 painter = painterResource(id = R.drawable.bg_report),
                 contentScale = ContentScale.FillBounds
@@ -68,25 +65,37 @@ fun ReportFront(
                     fontWeight = FontWeight.Bold
                 )
 
-                Row(
-                    verticalAlignment = Alignment.Bottom,
-                    modifier = Modifier.clickable {
-                        onReportItemClick(report.reportId)
-                    }
+                Box(
+                    modifier = Modifier
+                        .border(
+                            1.dp,
+                            color = Color.White.copy(0.7f),
+                            shape = RoundedCornerShape(20.dp)
+                        )
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color.White.copy(0.1f), shape = RoundedCornerShape(20.dp))
+                        .clickable {
+                            onReportItemClick(report.reportId)
+                        }
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
-                    Text(
-                        "상세보기 ",
-                        color = Color.White.copy(0.3f),
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "상세보기 ",
+                            color = Color.White.copy(0.6f),
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Light
+                        )
 
-                    Image(
-                        painter = painterResource(id = R.drawable.btn_report_detail),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(18.dp)
-                    )
+                        Image(
+                            painter = painterResource(id = R.drawable.btn_report_detail),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(16.dp)
+                        )
+                    }
                 }
 
             }
@@ -95,6 +104,7 @@ fun ReportFront(
                 "착신 통화 ${formatSeconds(report.callDuration)}",
                 color = Color.White.copy(0.8f),
                 fontSize = 15.sp,
+                fontWeight = FontWeight.Light
             )
         }
 
@@ -111,7 +121,11 @@ fun ReportFront(
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "${report.wordCount}개", fontSize = 14.sp)
+                Text(
+                    text = "${report.wordCount}개",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Light
+                )
                 Text(
                     text = "말한 단어 수",
                     fontWeight = FontWeight.Bold,
@@ -131,7 +145,11 @@ fun ReportFront(
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "${report.sentenceCount}개", fontSize = 14.sp)
+                Text(
+                    text = "${report.sentenceCount}개",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Light
+                )
                 Text(
                     text = "말한 문장 수",
                     fontWeight = FontWeight.Bold,
@@ -153,12 +171,13 @@ fun ReportFront(
             Text(
                 text = report.communicationSummary,
                 color = Color.White.copy(0.8f),
-                fontSize = 14.sp,
+                fontWeight = FontWeight.Light,
+                fontSize = 15.sp,
                 lineHeight = 24.sp
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         Column {
             Text(
@@ -170,7 +189,8 @@ fun ReportFront(
             Text(
                 text = report.feedbackSummary,
                 color = Color.White.copy(0.8f),
-                fontSize = 14.sp,
+                fontWeight = FontWeight.Light,
+                fontSize = 15.sp,
                 lineHeight = 24.sp
             )
         }

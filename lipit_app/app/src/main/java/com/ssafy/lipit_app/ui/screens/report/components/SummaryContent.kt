@@ -85,7 +85,8 @@ fun ReportContent(summary: ReportSummary) {
                     Text(
                         "착신 통화 ${formatSeconds(summary.callDuration)}",
                         color = Color.White.copy(0.6f),
-                        fontSize = 15.sp
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Light
                     )
                 }
 
@@ -103,7 +104,11 @@ fun ReportContent(summary: ReportSummary) {
                         modifier = Modifier.weight(1f),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = "${summary.wordCount}개", fontSize = 14.sp)
+                        Text(
+                            text = "${summary.wordCount}개",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Light
+                        )
                         Text(
                             text = "말한 단어 수",
                             fontWeight = FontWeight.Bold,
@@ -123,7 +128,11 @@ fun ReportContent(summary: ReportSummary) {
                         modifier = Modifier.weight(1f),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = "${summary.sentenceCount}개", fontSize = 14.sp)
+                        Text(
+                            text = "${summary.sentenceCount}개",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Light
+                        )
                         Text(
                             text = "말한 문장 수",
                             fontWeight = FontWeight.Bold,
@@ -145,13 +154,13 @@ fun ReportContent(summary: ReportSummary) {
                     Text(
                         summary.communicationSummary,
                         color = Color.White.copy(0.6f),
-                        fontSize = 14.sp,
+                        fontSize = 15.sp,
                         lineHeight = 24.sp,
                         fontWeight = FontWeight.Light
                     )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Column {
                     Text(
@@ -163,7 +172,7 @@ fun ReportContent(summary: ReportSummary) {
                     Text(
                         summary.feedbackSummary,
                         color = Color.White.copy(0.6f),
-                        fontSize = 14.sp,
+                        fontSize = 15.sp,
                         lineHeight = 24.sp,
                         fontWeight = FontWeight.Light
                     )

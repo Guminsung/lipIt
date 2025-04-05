@@ -7,6 +7,7 @@ val localProperties = Properties().apply {
 }
 val serverUrl_spring = localProperties["SERVER_URL_SPRING"] as String
 val serverUrl_fastapi = localProperties["SERVER_URL_FASTAPI"] as String
+val open_ai_key = localProperties["OPEN_AI_KEY"] as String
 
 plugins {
     alias(libs.plugins.android.application)
@@ -37,10 +38,13 @@ android {
         getByName("debug") {
             buildConfigField("String", "SERVER_URL_SPRING", "\"$serverUrl_spring\"")
             buildConfigField("String", "SERVER_URL_FASTAPI", "\"$serverUrl_fastapi\"")
+            buildConfigField("String", "OPEN_AI_KEY", "\"$open_ai_key\"")
         }
+
         getByName("release") {
             buildConfigField("String", "SERVER_URL_SPRING", "\"$serverUrl_spring\"")
             buildConfigField("String", "SERVER_URL_FASTAPI", "\"$serverUrl_fastapi\"")
+            buildConfigField("String", "OPEN_AI_KEY", "\"$open_ai_key\"")
         }
 
         release {
@@ -61,14 +65,6 @@ android {
 
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.10"
-    }
-
-    packagingOptions {
-        resources.excludes.add("META-INF/*")
-    }
-
-    aaptOptions {
-        noCompress += "model-en-us"
     }
 
 }
@@ -184,8 +180,7 @@ dependencies {
     // WebSocket
     implementation("org.java-websocket:Java-WebSocket:1.5.3")
 
-    // Vosk API - call stt 관련
-    implementation("com.alphacephei:vosk-android:0.3.32")
-    implementation("net.java.dev.jna:jna:5.13.0@aar")
+    // 그리드 리스트 화면
+    implementation("com.cheonjaeung.compose.grid:grid:2.2.1")
 
 }

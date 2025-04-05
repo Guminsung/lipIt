@@ -98,20 +98,4 @@ class MyVoiceRepository {
         }
     }
 
-
-    // 커스텀 녹음 저장
-    suspend fun saveCustomVoice(voiceRequest: VoiceRequest)
-            : Result<VoiceResponse> {
-        return try {
-            val response = RetrofitUtil.myVoiceService.saveCustomVoice(voiceRequest)
-            if (response.isSuccessful) {
-                Log.d("MyVoiceRepository", "커스텀 음성 저장 성공: ${response.body()}")
-                Result.success(response)
-            }
-            handleResponse(response)
-        } catch (e: Exception) {
-            Log.e("MyVoiceRepository", "예외 발생: ${e.message}", e)
-            Result.failure(e)
-        }
-    }
 }
