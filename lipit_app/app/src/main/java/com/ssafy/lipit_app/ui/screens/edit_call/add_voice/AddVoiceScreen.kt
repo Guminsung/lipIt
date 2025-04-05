@@ -1,39 +1,28 @@
 package com.ssafy.lipit_app.ui.screens.edit_call.add_voice
 
-import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -42,23 +31,38 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.components.ErrorDialog
+import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.components.SuccessDialog
+import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.components.VoiceNameInputScreen
+
 @Composable
 fun AddVoiceScreen(
     state: AddVoiceState,
     onIntent: (AddVoiceIntent) -> Unit,
 ) {
+    // 기본 화면은 항상 보여줌 : 녹음하는 화면 or 녹음 완료 화면
+    when {
+        state.isAllSentencesRecorded -> {
+            VoiceNameInputScreen(state, onIntent)
+        }
+        else -> {
+            RecordingScreen(state, onIntent)
+        }
+    }
 
-    // 모든 문장 녹음 완료 후 이름 입력 화면
-    if (state.isAllSentencesRecorded) {
-        VoiceNameInputScreen(state, onIntent)
+    // 커스텀보이스 생성후 다이얼로그는 화면 위에 얹는 형태로 조건부 표시
+    if (state.uploadSuccess) {
+        SuccessDialog(
+            onDismiss = { onIntent(AddVoiceIntent.NavigateToMain) },
+            onConfirm = { onIntent(AddVoiceIntent.NavigateToMain) }
+        )
     }
-    // 업로드 성공 시 완료 팝업
-    else if (state.uploadSuccess) {
-        UploadSuccessScreen(onIntent)
-    }
-    // 녹음 화면
-    else {
-        RecordingScreen(state, onIntent)
+
+    if (state.showErrorPopup && state.errorMessage != null) {
+        ErrorDialog(
+            errorMessage = state.errorMessage,
+            onDismiss = { onIntent(AddVoiceIntent.DismissErrorDialog) }
+        )
     }
 }
 
@@ -105,15 +109,6 @@ fun RecordingScreen(
         )
 
         Spacer(modifier = Modifier.weight(0.3f))
-
-        if (state.errorMessage != null) {
-            Text(
-                text = state.errorMessage,
-                color = Color.Red,
-                fontSize = 14.sp,
-                modifier = Modifier.padding(horizontal = 24.dp)
-            )
-        }
 
         // 녹음 상태
         Text(
@@ -279,124 +274,8 @@ fun RecordingScreen(
 
         Spacer(modifier = Modifier.weight(0.5f))
     }
-}
+}// ...RecordingScreen()
 
-@Composable
-fun VoiceNameInputScreen(
-    state: AddVoiceState,
-    onIntent: (AddVoiceIntent) -> Unit
-) {
-    var voiceName by remember { mutableStateOf(state.voiceName) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFFDF8FF))
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "음성에 이름을 붙여주세요",
-            style = TextStyle(
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF222124)
-            )
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        OutlinedTextField(
-            value = voiceName,
-            onValueChange = {
-                voiceName = it
-                onIntent(AddVoiceIntent.SetVoiceName(it))
-            },
-            label = { Text("음성 이름") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Button(
-            onClick = { onIntent(AddVoiceIntent.SubmitVoice) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF9C27B0)
-            ),
-            enabled = !state.isUploading && voiceName.isNotBlank()
-        ) {
-            if (state.isUploading) {
-                CircularProgressIndicator(
-                    color = Color.White,
-                    modifier = Modifier.size(24.dp)
-                )
-            } else {
-                Text("저장하기")
-            }
-        }
-
-        // 오류 메시지 표시
-        state.errorMessage?.let { error ->
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = error,
-                color = Color.Red,
-                fontSize = 14.sp
-            )
-        }
-    }
-}
-
-@Composable
-fun UploadSuccessScreen(
-    onIntent: (AddVoiceIntent) -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFFDF8FF)),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                imageVector = Icons.Default.CheckCircle,
-                contentDescription = "성공",
-                tint = Color(0xFF4CAF50),
-                modifier = Modifier.size(64.dp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "음성이 성공적으로 저장되었습니다!",
-                style = TextStyle(
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF222124),
-                    textAlign = TextAlign.Center
-                )
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Button(
-                onClick = { onIntent(AddVoiceIntent.NavigateToMain) },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF9C27B0)
-                )
-            ) {
-                Text("홈으로 돌아가기")
-            }
-        }
-    }
-}
 
 @Preview(showBackground = true)
 @Composable
@@ -414,14 +293,23 @@ fun AddVoiceScreenPreview() {
         "Thank you for listening to my voice!"
     )
 
+    val dummyState = AddVoiceState(
+        voiceName = "MyVoice",
+        selectedImageUri = null,
+        isUploading = false,
+        currentSentenceIndex = 0,
+        sentenceList = sampleSentences,
+        recordingStatus = RecordingStatus.WAITING,
+        recognizedText = "",
+        accuracy = 0.0f,
+        showErrorPopup = false,
+        errorMessage = null,
+        isAllSentencesRecorded = false,
+        uploadSuccess = false
+    )
 
-//    AddVoiceScreen(
-//        state = AddVoiceState(
-//            secondsRemaining = 30,
-//            isRecording = false,
-//            currentSentenceIndex = 0,
-//            sentenceList = sampleSentences
-//        ),
-//        onIntent = {}
-//    )
+    AddVoiceScreen(
+        state = dummyState,
+        onIntent = {}
+    )
 }

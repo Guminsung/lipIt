@@ -19,6 +19,8 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Request
 import java.io.File
+import com.arthenica.ffmpegkit.FFmpegKit
+
 
 class CustomVoiceRepository {
     private val TAG = "VoiceRepository"
@@ -90,23 +92,80 @@ class CustomVoiceRepository {
     }
 
 
-    // TODO : 음성파일 하나로 압축하는 과정 필요
+    // 음성파일 하나만 보내던 기존 버전
+//    suspend fun mergeAudioFiles(audioFiles: List<String>, outputFileName: String): File {
+//        // 이 부분은 실제로 FFmpeg 등의 라이브러리를 이용해야 합니다
+//        // 여기서는 간단하게 첫 번째 파일만 반환하는 예시로 작성합니다
+//        Log.d(TAG, "음성 파일 병합 시작 (${audioFiles.size}개 파일)")
+//
+//        // 실제 구현이 필요한 부분입니다!
+//        // 예시로 첫 번째 파일을 사용
+//        val firstFile = File(audioFiles.first())
+//        val outputFile = File(firstFile.parent, "$outputFileName.mp3")
+//
+//        // 여기서 파일 병합 로직 구현 필요
+//        firstFile.copyTo(outputFile, overwrite = true)
+//
+//        Log.d(TAG, "음성 파일 병합 완료: ${outputFile.absolutePath}")
+//        return outputFile
+//    }
+
     suspend fun mergeAudioFiles(audioFiles: List<String>, outputFileName: String): File {
-        // 이 부분은 실제로 FFmpeg 등의 라이브러리를 이용해야 합니다
-        // 여기서는 간단하게 첫 번째 파일만 반환하는 예시로 작성합니다
         Log.d(TAG, "음성 파일 병합 시작 (${audioFiles.size}개 파일)")
+        Log.d(TAG, "mergeAudioFiles: ${audioFiles}")
 
-        // 실제 구현이 필요한 부분입니다!
-        // 예시로 첫 번째 파일을 사용
-        val firstFile = File(audioFiles.first())
-        val outputFile = File(firstFile.parent, "$outputFileName.mp3")
+        if (audioFiles.isEmpty()) {
+            throw IllegalArgumentException("병합할 오디오 파일이 없습니다.")
+        }
 
-        // 여기서 파일 병합 로직 구현 필요
-        firstFile.copyTo(outputFile, overwrite = true)
+        val outputDir = File(File(audioFiles.first()).parent)
+        val outputFile = File(outputDir, "$outputFileName.mp3")
+//        val outputFile = File(outputDir, "$outputFileName.wav")
 
-        Log.d(TAG, "음성 파일 병합 완료: ${outputFile.absolutePath}")
-        return outputFile
+        return withContext(Dispatchers.IO) {
+            try {
+                // 입력 파일 목록을 생성할 임시 파일
+                val fileListPath = File(outputDir, "filelist.txt").absolutePath
+
+                // 입력 파일 목록 생성
+                val fileListContent = audioFiles.joinToString("\n") { filePath ->
+                    "file '${filePath.replace("'", "\\'")}'"
+                }
+                File(fileListPath).writeText(fileListContent)
+
+                // 디버깅을 위해 파일 내용 로깅
+                Log.d(TAG, "filelist.txt 내용:\n${File(fileListPath).readText()}")
+
+                // FFmpeg 명령어 - 명시적으로 MP3 인코딩을 지정
+                // MP3
+                val ffmpegCommand = "-f concat -safe 0 -i $fileListPath -c:a libmp3lame -q:a 2 -y ${outputFile.absolutePath}"
+
+                // WAV
+//                val ffmpegCommand = "-f concat -safe 0 -i $fileListPath -c:a pcm_s16le -ar 44100 -y ${outputFile.absolutePath}"
+
+
+                Log.d(TAG, "FFmpeg 명령어: $ffmpegCommand")
+
+                val session = FFmpegKit.execute(ffmpegCommand)
+
+                // 임시 파일 삭제
+                File(fileListPath).delete()
+
+                if (session.returnCode.isValueSuccess) {
+                    Log.d(TAG, "음성 파일 병합 완료: ${outputFile.absolutePath}")
+                    return@withContext outputFile
+                } else {
+                    val errorMessage = "FFmpeg 명령어 실행 실패: ${session.allLogsAsString}"
+                    Log.e(TAG, errorMessage)
+                    throw Exception(errorMessage)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "오디오 파일 병합 중 오류 발생: ${e.message}", e)
+                throw e
+            }
+        }
     }
+
 
     // S3 에 저장하기 위한 주소를 얻어오는 과정
     suspend fun getPresignedUrl(fileName: String): Result<S3UploadResponse> {

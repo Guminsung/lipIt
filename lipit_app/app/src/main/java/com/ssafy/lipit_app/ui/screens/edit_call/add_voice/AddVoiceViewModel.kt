@@ -2,6 +2,7 @@ package com.ssafy.lipit_app.ui.screens.edit_call.add_voice
 
 import android.content.Context
 import android.media.MediaRecorder
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -19,9 +20,14 @@ import java.io.File
 import javax.inject.Inject
 
 
-class AddVoiceViewModel @Inject constructor(context: Context) : ViewModel() {
+
+class AddVoiceViewModel(context: Context) : ViewModel() {
     private val TAG = "AddVoiceViewModel"
+
+    // 내부 상태 Flow
     private val _state = MutableStateFlow(AddVoiceState())
+
+    // 외부에 노출되는 읽기 전용 상태 Flow
     val state: StateFlow<AddVoiceState> = _state
 
     private var recorder: MediaRecorder? = null
@@ -36,6 +42,27 @@ class AddVoiceViewModel @Inject constructor(context: Context) : ViewModel() {
     // Context 설정 메서드 (Activity나 Fragment에서 호출)
     fun setContext(context: Context) {
         appContext = context.applicationContext
+    }
+
+    // Intent 처리 메서드 - 모든 상태 변경은 이 메서드를 통해서만 이루어짐
+    @RequiresApi(Build.VERSION_CODES.S)
+    fun onIntent(intent: AddVoiceIntent) {
+        when (intent) {
+            is AddVoiceIntent.StartRecording -> startRecording()
+            is AddVoiceIntent.StopRecording -> stopRecording()
+            is AddVoiceIntent.NextSentence -> nextSentence()
+            is AddVoiceIntent.SetVoiceName -> {
+                _state.update { it.copy(voiceName = intent.name) }
+            }
+            is AddVoiceIntent.SetVoiceImage -> {
+                _state.update { it.copy(selectedImageUri = intent.uri) }
+            }
+            is AddVoiceIntent.SubmitVoice -> submitVoice()
+            is AddVoiceIntent.NavigateToMain -> {
+                // NavigateToMain은 NavGraph에서 처리되므로 여기서는 아무것도 하지 않음
+            }
+            is AddVoiceIntent.DismissErrorDialog -> dismissErrorDialog()
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -63,11 +90,14 @@ class AddVoiceViewModel @Inject constructor(context: Context) : ViewModel() {
 
                 Log.d(TAG, "녹음 시작됨: $currentFilePath")
             } catch (e: Exception) {
+//                Log.e(TAG, "녹음 시작 실패: ${e.message}")
+//                _state.update { it.copy(
+//                    recordingStatus = RecordingStatus.WAITING,
+//                    errorMessage = "녹음을 시작할 수 없습니다: ${e.message}"
+//                )}
                 Log.e(TAG, "녹음 시작 실패: ${e.message}")
-                _state.update { it.copy(
-                    recordingStatus = RecordingStatus.WAITING,
-                    errorMessage = "녹음을 시작할 수 없습니다: ${e.message}"
-                )}
+                _state.update { it.copy(recordingStatus = RecordingStatus.WAITING) }
+                showError("녹음을 시작할 수 없습니다: ${e.message}")
             }
         }
     }
@@ -98,19 +128,27 @@ class AddVoiceViewModel @Inject constructor(context: Context) : ViewModel() {
                     // 녹음 파일 분석 및 정확도 평가
                     processAudioWithWhisper(filePath)
 
-                } ?: run {
+                }
+//                    ?: run {
+//                    Log.e(TAG, "녹음 파일 경로가 없음")
+//                    _state.update { it.copy(
+//                        recordingStatus = RecordingStatus.WAITING,
+//                        errorMessage = "녹음 파일을 생성할 수 없습니다."
+//                    )}
+//                }
+                ?: run {
                     Log.e(TAG, "녹음 파일 경로가 없음")
-                    _state.update { it.copy(
-                        recordingStatus = RecordingStatus.WAITING,
-                        errorMessage = "녹음 파일을 생성할 수 없습니다."
-                    )}
+                    _state.update { it.copy(recordingStatus = RecordingStatus.WAITING) }
+                    showError("녹음 파일을 생성할 수 없습니다.")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "녹음 중지 실패: ${e.message}")
-                _state.update { it.copy(
-                    recordingStatus = RecordingStatus.WAITING,
-                    errorMessage = "녹음을 중지할 수 없습니다: ${e.message}"
-                )}
+//                _state.update { it.copy(
+//                    recordingStatus = RecordingStatus.WAITING,
+//                    errorMessage = "녹음을 중지할 수 없습니다: ${e.message}"
+//                )}
+                _state.update { it.copy(recordingStatus = RecordingStatus.WAITING) }
+                showError("녹음을 중지할 수 없습니다: ${e.message}")
             }
         }
     }
@@ -136,33 +174,55 @@ class AddVoiceViewModel @Inject constructor(context: Context) : ViewModel() {
                     val accuracy = calculateAccuracy(currentSentence, recognizedText)
 
                     // 분석 완료 후 상태 업데이트 - 정확도에 따라 COMPLETED 또는 FAILED로 설정
+//                    _state.update { it.copy(
+//                        recordingStatus = if (accuracy >= 0.8f) RecordingStatus.COMPLETED else RecordingStatus.FAILED,
+//                        recognizedText = recognizedText,
+//                        accuracy = accuracy,
+//                        errorMessage = if (accuracy < 0.8f) "정확도가 낮습니다. 다시 녹음해주세요." else null
+//                    )}
                     _state.update { it.copy(
                         recordingStatus = if (accuracy >= 0.8f) RecordingStatus.COMPLETED else RecordingStatus.FAILED,
                         recognizedText = recognizedText,
-                        accuracy = accuracy,
-                        errorMessage = if (accuracy < 0.8f) "정확도가 낮습니다. 다시 녹음해주세요." else null
+                        accuracy = accuracy
                     )}
 
-                    // 정확도가 충분하면 오디오 파일 목록에 추가
+                    // 정확도가 낮은 경우 에러 메시지 표시
+//                    if (accuracy < 0.8f) {
+//                        showError("정확도가 낮습니다. 다시 녹음해주세요.")
+//                    }
+//
+//                    // 정확도가 충분하면 오디오 파일 목록에 추가
+//                    if (accuracy >= 0.8f) {
+//                        audioFiles.add(filePath)
+//                    }
                     if (accuracy >= 0.8f) {
+                        // 정확도가 충분하면 오디오 파일 목록에 추가
                         audioFiles.add(filePath)
+                    } else {
+                        // 정확도가 낮은 경우 에러 메시지 표시
+                        showError("정확도가 낮습니다. 다시 녹음해주세요.")
                     }
+
                 } else {
                     // API 호출 실패
                     val exception = result.exceptionOrNull()
                     Log.e(TAG, "Whisper API 호출 실패: ${exception?.message}")
-                    _state.update { it.copy(
-                        recordingStatus = RecordingStatus.FAILED,
-                        errorMessage = "음성 인식에 실패했습니다: ${exception?.message}"
-                    )}
+//                    _state.update { it.copy(
+//                        recordingStatus = RecordingStatus.FAILED,
+//                        errorMessage = "음성 인식에 실패했습니다: ${exception?.message}"
+//                    )}
+                    _state.update { it.copy(recordingStatus = RecordingStatus.FAILED) }
+                    showError("음성 인식에 실패했습니다: ${exception?.message}")
                 }
 
             } catch (e: Exception) {
                 Log.e(TAG, "Whisper API 분석 실패: ${e.message}", e)
-                _state.update { it.copy(
-                    recordingStatus = RecordingStatus.FAILED,
-                    errorMessage = "음성 인식에 실패했습니다: ${e.message}"
-                )}
+//                _state.update { it.copy(
+//                    recordingStatus = RecordingStatus.FAILED,
+//                    errorMessage = "음성 인식에 실패했습니다: ${e.message}"
+//                )}
+                _state.update { it.copy(recordingStatus = RecordingStatus.FAILED) }
+                showError("음성 인식에 실패했습니다: ${e.message}")
             }
         }
     }
@@ -202,8 +262,12 @@ class AddVoiceViewModel @Inject constructor(context: Context) : ViewModel() {
         val current = _state.value
 
         // 정확도가 80% 미만이면 다음으로 넘어갈 수 없음
+//        if (current.accuracy < 0.8f) {
+//            _state.update { it.copy(errorMessage = "정확도가 낮습니다. 다시 녹음해주세요.") }
+//            return
+//        }
         if (current.accuracy < 0.8f) {
-            _state.update { it.copy(errorMessage = "정확도가 낮습니다. 다시 녹음해주세요.") }
+            showError("정확도가 낮습니다. 다시 녹음해주세요.")
             return
         }
 
@@ -223,70 +287,6 @@ class AddVoiceViewModel @Inject constructor(context: Context) : ViewModel() {
             )}
         }
     }
-
-    fun setVoiceName(name: String) {
-        _state.update { it.copy(voiceName = name) }
-    }
-
-//    fun submitVoice() {
-//        val current = _state.value
-//        if (current.voiceName.isBlank()) {
-//            _state.update { it.copy(errorMessage = "음성 이름을 입력해주세요.") }
-//            return
-//        }
-//
-//        viewModelScope.launch {
-//            try {
-//                _state.update { it.copy(isUploading = true, errorMessage = null) }
-//
-//                // 1. 오디오 파일 병합
-//                val mergedFile = withContext(Dispatchers.IO) {
-//                    voiceRepository.mergeAudioFiles(audioFiles, current.voiceName)
-//                }
-//
-//                // 2. S3에 음성 파일 업로드
-//                val s3Result = voiceRepository.uploadVoiceToS3(mergedFile, current.voiceName)
-//
-//                if (s3Result.isSuccess) {
-//                    val s3Response = s3Result.getOrThrow()
-//                    val voiceUrl = s3Response.cdnUrl
-//
-//                    // 3. 백엔드 서버에 음성 정보 저장
-////                    memberId: Long,
-////                    voiceName: String,
-////                    audioUrl: String,
-////                    imageUrl: String = ""
-//                    val memberId = SharedPreferenceUtils.getMemberId()
-//                    val saveResult = voiceRepository.saveCustomVoice(memberId, current.voiceName, voiceUrl, "")
-//
-//                    if (saveResult.isSuccess) {
-//                        // 모든 과정 성공
-//                        _state.update { it.copy(
-//                            isUploading = false,
-//                            uploadSuccess = true,
-//                            errorMessage = null
-//                        )}
-//                    } else {
-//                        // 백엔드 서버 저장 실패
-//                        val exception = saveResult.exceptionOrNull()
-//                        throw Exception("음성 정보 저장 실패: ${exception?.message}")
-//                    }
-//                } else {
-//                    // S3 업로드 실패
-//                    val exception = s3Result.exceptionOrNull()
-//                    throw Exception("S3 업로드 실패: ${exception?.message}")
-//                }
-//            } catch (e: Exception) {
-//                Log.e(TAG, "음성 업로드 실패: ${e.message}", e)
-//                _state.update {
-//                    it.copy(
-//                        isUploading = false,
-//                        errorMessage = "음성 업로드 중 오류가 발생했습니다: ${e.message}"
-//                    )
-//                }
-//            }
-//        }
-//    }
 
     fun submitVoice() {
         val current = _state.value
@@ -312,12 +312,23 @@ class AddVoiceViewModel @Inject constructor(context: Context) : ViewModel() {
                 val audioUrl = audioPresign.url.toString()
                 val imageUrl = imagePresign.url.toString()
 
-                // 3. 실제 업로드
+                // 3-1. 오디오 실제 업로드
                 voiceRepository.uploadToPresignedUrl(mergedFile, audioUrl).getOrThrow()
 
-                // TODO 사용자가 직접 추가한 이미지파일로 넘겨야 함
-//                val imageFile = File(...) // 이미지 경로 필요
-//                voiceRepository.uploadToPresignedUrl(imageFile, imageUrl).getOrThrow()
+                // 3-2. 이미지 업로드 - 선택된 이미지가 있을 경우
+                current.selectedImageUri?.let { uri ->
+                    try {
+                        // URI에서 실제 파일 경로 얻기
+                        val imageFile = getFileFromUri(uri)
+
+                        // 이미지 파일 업로드
+                        voiceRepository.uploadToPresignedUrl(imageFile, imageUrl).getOrThrow()
+                    } catch (e: Exception) {
+                        Log.e(TAG, "이미지 업로드 실패: ${e.message}", e)
+                        // 이미지 업로드 실패해도 계속 진행 (기본 이미지 사용)
+                    }
+                }
+
 
                 // 4. Spring 서버에 저장 요청
                 val saveResult = voiceRepository.saveCustomVoice(
@@ -327,19 +338,49 @@ class AddVoiceViewModel @Inject constructor(context: Context) : ViewModel() {
                     imageUrl = imagePresign.cdnUrl
                 )
 
+//                if (saveResult.isSuccess) {
+//                    _state.update { it.copy(uploadSuccess = true, isUploading = false) }
+//                } else {
+//                    throw Exception("DB 저장 실패: ${saveResult.exceptionOrNull()?.message}")
+//                }
                 if (saveResult.isSuccess) {
                     _state.update { it.copy(uploadSuccess = true, isUploading = false) }
+
+                    // 병합 성공 후, 오디오 임시 파일 삭제
+                    audioFiles.forEach { filePath ->
+                        try {
+                            File(filePath).delete()
+                            Log.d(TAG, "원본 오디오 파일 삭제: $filePath")
+                        } catch (e: Exception) {
+                            Log.e(TAG, "파일 삭제 실패: $filePath", e)
+                        }
+                    }
                 } else {
                     throw Exception("DB 저장 실패: ${saveResult.exceptionOrNull()?.message}")
                 }
 
             } catch (e: Exception) {
                 Log.e(TAG, "submitVoice 실패: ${e.message}", e)
-                _state.update { it.copy(isUploading = false, errorMessage = e.message) }
+//                _state.update { it.copy(isUploading = false, errorMessage = e.message) }
+                _state.update { it.copy(isUploading = false) }
+                showError("음성 저장에 실패했습니다: ${e.message}")
             }
         }
     }
 
+    // URI로부터 File 객체를 얻는 헬퍼 메서드
+    private fun getFileFromUri(uri: Uri): File {
+        val inputStream = appContext.contentResolver.openInputStream(uri)
+        val tempFile = File.createTempFile("upload_image", ".png", appContext.cacheDir)
+
+        inputStream?.use { input ->
+            tempFile.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+
+        return tempFile
+    }
 
     // 개선된 STT 정확도 계산 함수
     private fun calculateAccuracy(original: String, recognized: String): Float {
@@ -423,21 +464,25 @@ class AddVoiceViewModel @Inject constructor(context: Context) : ViewModel() {
         return dp[m][n]
     }
 
-    @RequiresApi(Build.VERSION_CODES.S)
-    fun onIntent(intent: AddVoiceIntent) {
-        when (intent) {
-            is AddVoiceIntent.StartRecording -> startRecording()
-            is AddVoiceIntent.StopRecording -> stopRecording()
-            is AddVoiceIntent.NextSentence -> nextSentence()
-            is AddVoiceIntent.SetVoiceName -> setVoiceName(intent.name)
-            is AddVoiceIntent.SubmitVoice -> submitVoice()
-            is AddVoiceIntent.NavigateToMain -> {} // NavGraph에서 처리
-        }
-    }
-
     override fun onCleared() {
         super.onCleared()
         recorder?.release()
         recorder = null
+    }
+
+    /********************************* [ Error 처리용 팝업 ] ******************************/
+    // 에러 발생 시 호출하는 헬퍼 메서드
+    private fun showError(message: String) {
+        _state.update { it.copy(
+            errorMessage = message,
+            showErrorPopup = true  // 팝업 표시 활성화
+        )}
+    }
+
+    // 팝업 닫기 처리
+    private fun dismissErrorDialog() {
+        _state.update { it.copy(
+            showErrorPopup = false
+        )}
     }
 }
