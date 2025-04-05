@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.main
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Build
 import android.util.Log
@@ -9,6 +10,8 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,10 +23,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,9 +40,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,7 +53,6 @@ import com.ssafy.lipit_app.ui.screens.auth.components.MypagePopup
 import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceState
 import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallScreen
-import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallState
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsIntent
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsScreen
 import com.ssafy.lipit_app.ui.screens.main.components.NextLevel
@@ -186,48 +192,34 @@ fun MainScreen(
 
                         BottomSheetContent.RESCHEDULE_CALL -> {
                             val schedule = state.selectedSchedule
-                            Log.d("TAG", "MainScreen 시간: ${schedule!!.scheduledTime}")
                             EditCallScreen(
-                                schedule = schedule,
-                                state = EditCallState(
-                                    isFreeModeSelected = false,
-                                    isCategoryModeSelected = false,
-                                    callScheduleId = schedule!!.callScheduleId,
-                                    scheduledTime = schedule.scheduledTime,
-                                    selectedCategory = schedule.topicCategory,
-                                ),
-                                onIntent = { intent ->
-                                    // 인텐트 처리
-                                    Log.d("TAG", "MainScreen: 수정에서 이벤트 밠ㅇ")
-                                },
+                                schedule = schedule!!,
                                 onBack = {
-//                                    onIntent(MainIntent.ShowWeeklyCallScreen)
                                     onIntent(MainIntent.ShowWeeklyCallsScreen)
                                 },
-                                onSuccess = {
-                                    onIntent(MainIntent.ScheduleChanged)
+                                onSuccess = { updatedSchedule, isEditMode ->
+                                    // 알람 수정, 삭제 작업이 성공적으로 완료되면 이쪽으로 onSuccess 응답이 온다.
+                                    Log.d(
+                                        "MainScreen",
+                                        "Plan ${if (isEditMode) "수정" else "추가"} OK: $updatedSchedule"
+                                    )
+
+                                    // 바텀시트 닫고 다시 열기 (데이터 내용 갱신)
                                     onIntent(MainIntent.OnCloseSettingsSheet)
+                                    android.os.Handler().postDelayed({
+                                        onIntent(MainIntent.OnSettingsClicked)
+                                    }, 300) // 300ms 지연
                                 }
                             )
                         }
 
                         BottomSheetContent.MY_VOICES -> {
                             EditVoiceScreen(
-                                state = EditVoiceState(
-                                    selectedVoiceName = "Gandalf",
-                                    selectedVoiceUrl = "https://example.com/gandalf.mp3",
-                                    celebrityVoices = listOf(/* ... */),
-                                    myCustomVoices = listOf(/* ... */)
-                                ), // MainState에서 정의된 값
-                                onIntent = { intent ->
-                                    // 필요하면 MainIntent로 감싸서 위임할 수도 있음
-                                    // ex) onIntent(MainIntent.SomeIntent(intent))
-                                },
                                 onBack = {
                                     onIntent(MainIntent.OnCloseSettingsSheet)
                                 },
-                                onClickAddVoice = {
-//                                    onIntent(MainIntent.OnAddVoiceClicked)
+                                onNavigateToAddVoice = {
+                                    onIntent(MainIntent.NavigateToAddVoice)
                                 }
                             )
                         }
@@ -238,14 +230,14 @@ fun MainScreen(
     ) {
         // ***** 기존 MainScreen UI
         var selectedDay by remember { mutableStateOf(state.selectedDay) }
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFFDF8FF))
-                .padding(start = 20.dp, end = 20.dp, top = 40.dp)
-        ) {
-            var selectedDay by remember { mutableStateOf(state.selectedDay) }
-        }
+//        Column(
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .background(Color(0xFFFDF8FF))
+//                .padding(start = 20.dp, end = 20.dp, top = 40.dp)
+//        ) {
+//            var selectedDay by remember { mutableStateOf(state.selectedDay) }
+//        }
 
         Column(
             modifier = Modifier
@@ -303,6 +295,7 @@ fun CallButton(onIntent: (MainIntent) -> Unit) {
         contentDescription = "전화 걸기",
         modifier = Modifier
             .size(70.dp)
+            .clip(CircleShape)
             .clickable { // 화면 이동
                 onIntent(MainIntent.NavigateToCallScreen)
             }
@@ -321,49 +314,74 @@ fun UserInfoSection(
     var showPopup by remember { mutableStateOf(false) } // 로그아웃 팝업 관련
 
     Row(
+        modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            // 누르면 팝업으로 로그아웃 버튼 (추후 다른 버튼도 추가하던지..)
-            .clickable {
-                showPopup = true
-            }
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        //  사용자 이름
-        Text(
-            text = "Hello, $userName",
-            style = androidx.compose.ui.text.TextStyle(
-                fontSize = 20.sp,
-                lineHeight = 50.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFF000000),
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                // 누르면 팝업으로 로그아웃 버튼 (추후 다른 버튼도 추가하던지..)
+                .clickable(
+                    indication = null,
+                    interactionSource = remember {
+                        MutableInteractionSource()
+                    }
+                ) {
+                    showPopup = true
+                }
+        ) {
+            //  사용자 이름
+            Text(
+                text = "Hello, $userName",
+                style = TextStyle(
+                    fontSize = 24.sp,
+                    lineHeight = 50.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF000000),
+                )
             )
-        )
 
-        Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
-        // 사용자 등급
-        Image(
-            painter = painterResource(id = getLevelIcon(level)),
-            contentDescription = "사용자 등급",
-            modifier = Modifier.size(26.dp)
-        )
-
-        // 로그아웃 팝업 관련
-        if (showPopup) {
-            MypagePopup(
-                onDismissRequest = { showPopup = false },
-                onConfirmation = {
-                    showPopup = false
-                    // 로그아웃 로직 처리
-                    onIntent(MainIntent.OnLogoutClicked)
-                },
-                dialogTitle = "로그아웃 하시겠습니까?",
-                dialogText = "로그아웃하고 앱에서 나가기.. "
+            // 사용자 등급
+            Image(
+                painter = painterResource(id = getLevelIcon(level)),
+                contentDescription = "사용자 등급",
+                modifier = Modifier.size(26.dp)
             )
+
+            // 로그아웃 팝업 관련
+            if (showPopup) {
+                MypagePopup(
+                    onDismissRequest = { showPopup = false },
+                    onConfirmation = {
+                        showPopup = false
+                        // 로그아웃 로직 처리
+                        onIntent(MainIntent.OnLogoutClicked)
+                    },
+                    dialogTitle = "로그아웃 하시겠습니까?",
+                    dialogText = "로그아웃하고 앱에서 나가기"
+                )
+            }
         }
+
+        Image(
+            painter = painterResource(id = R.drawable.ic_logout),
+            contentDescription = null,
+            modifier = Modifier
+                .size(22.dp)
+                .clickable(
+                    indication = null,
+                    interactionSource = remember {
+                        MutableInteractionSource()
+                    }
+                ) {
+                    showPopup = true
+                }
+        )
     }
 }
-
 
 
 // 레벨 등급에 따른 아이콘 매핑

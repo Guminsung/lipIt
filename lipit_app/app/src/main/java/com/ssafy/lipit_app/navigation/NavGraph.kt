@@ -1,20 +1,25 @@
 package com.ssafy.lipit_app.navigation
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.ssafy.lipit_app.base.SecureDataStore
 import com.ssafy.lipit_app.ui.screens.auth.Login.LoginScreen
@@ -22,53 +27,116 @@ import com.ssafy.lipit_app.ui.screens.auth.Login.LoginViewModel
 import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupScreen
 import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupViewModel
 import com.ssafy.lipit_app.ui.screens.auth.components.AuthStartScreen
+import com.ssafy.lipit_app.ui.screens.call.incoming.IncomingCallScreen
+import com.ssafy.lipit_app.ui.screens.call.incoming.IncomingCallViewModel
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallViewModel
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
 import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceViewModel
+import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsViewModel
-import com.ssafy.lipit_app.ui.screens.main.CallItem
 import com.ssafy.lipit_app.ui.screens.main.MainIntent
 import com.ssafy.lipit_app.ui.screens.main.MainScreen
-import com.ssafy.lipit_app.ui.screens.main.MainState
 import com.ssafy.lipit_app.ui.screens.main.MainViewModel
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceIntent
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceScreen
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceViewModel
-import com.ssafy.lipit_app.ui.screens.report.ReportDetailScreen
-import com.ssafy.lipit_app.ui.screens.report.ReportDetailViewModel
 import com.ssafy.lipit_app.ui.screens.report.ReportIntent
 import com.ssafy.lipit_app.ui.screens.report.ReportScreen
 import com.ssafy.lipit_app.ui.screens.report.ReportViewModel
+import com.ssafy.lipit_app.ui.screens.report.report_detail.ReportDetailScreen
+import com.ssafy.lipit_app.ui.screens.report.report_detail.ReportDetailViewModel
 import kotlinx.coroutines.launch
+
+private const val TAG = "NavGraph"
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun NavGraph(
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController,
+    initialDestination: String? = null
 ) {
 
 
     val context = LocalContext.current
     val secureDataStore = SecureDataStore.getInstance(context)
-    val startDestination = if (secureDataStore.hasAccessTokenSync()) "main" else "auth_start"
+
+    val isInitialized = remember { mutableStateOf(false) }
+    // NavGraph 초기화 (한 번만 실행되도록)
+    if (!isInitialized.value) {
+        Log.d(
+            TAG,
+            "NavGraph 초기화: initialDestination=$initialDestination, hasToken=${secureDataStore.hasAccessTokenSync()}"
+        )
+        isInitialized.value = true
+    }
+
+    val startDestination = when {
+        initialDestination == "onVoiceCall" -> {
+            Log.d(TAG, "통화 화면으로 직접 이동")
+            "onVoiceCall"
+        }
+
+        initialDestination == "inComingCall" -> {
+            "inComingCall"
+        }
+
+        secureDataStore.hasAccessTokenSync() -> {
+            Log.d(TAG, "토큰 있음: 메인 화면으로 이동")
+            "main"
+        }
+
+        else -> {
+            Log.d(TAG, "토큰 없음: 로그인 화면으로 이동")
+            "auth_start"
+        }
+    }
+
+    DisposableEffect(navController) {
+        val callback = NavController.OnDestinationChangedListener { controller, destination, _ ->
+            val route = destination.route
+            Log.d(TAG, "네비게이션 변경: $route (기대 시작 화면: $startDestination)")
+
+            if (route == "main" && startDestination == "onVoiceCall") {
+                Log.d(TAG, "main으로 자동 이동 감지, onVoiceCall로 다시 이동")
+                controller.navigate("onVoiceCall") {
+                    popUpTo("main") { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+        }
+
+        navController.addOnDestinationChangedListener(callback)
+
+        onDispose {
+            navController.removeOnDestinationChangedListener(callback)
+        }
+    }
+
+
     NavHost(
         navController = navController,
-        // 이미 토큰이 있다면 -> 로그인을 한 적이 있다면 메인으로 바로 이동
-        startDestination = startDestination // 첫 진입 화면
+        startDestination = startDestination
     ) {
 
         composable("auth_start") {
             AuthStartScreen(
-                onLoginClick = { navController.navigate("login") },
-                onSignupClick = { navController.navigate("join") }
+                onLoginClick = {
+                    Log.d(TAG, "로그인 화면으로 이동 요청")
+                    navController.navigate("login")
+                },
+                onSignupClick = {
+                    Log.d(TAG, "회원가입 화면으로 이동 요청")
+                    navController.navigate("join")
+                }
             )
         }
 
         composable("login") {
+            Log.d(TAG, "login 화면 구성")
             val viewModel: LoginViewModel = viewModel(
                 factory = object : ViewModelProvider.Factory {
                     @Suppress("UNCHECKED_CAST")
@@ -82,8 +150,9 @@ fun NavGraph(
                 state = state,
                 onIntent = { viewModel.onIntent(it) },
                 onSuccess = {
+                    Log.d(TAG, "로그인 성공: 메인 화면으로 이동 요청")
                     navController.navigate("main") {
-                        popUpTo("login") { inclusive = true } // login 화면 제거
+                        popUpTo("login") { inclusive = true }
                         launchSingleTop = true
                     }
                 }
@@ -91,18 +160,22 @@ fun NavGraph(
         }
 
         composable("join") {
+            Log.d(TAG, "join 화면 구성")
             val viewModel = viewModel<SignupViewModel>()
             val state by viewModel.state.collectAsState()
             SignupScreen(
                 state = state,
                 onIntent = { viewModel.onIntent(it) },
-                onSuccess = { navController.navigate("login") }
+                onSuccess = {
+                    Log.d(TAG, "회원가입 성공: 로그인 화면으로 이동 요청")
+                    navController.navigate("login")
+                }
             )
         }
 
 
         composable("main") {
-            // val viewModel = viewModel<MainViewModel>()
+            Log.d(TAG, "main 화면 구성")
             val viewModel: MainViewModel = viewModel(
                 factory = object : ViewModelProvider.Factory {
                     @Suppress("UNCHECKED_CAST")
@@ -120,16 +193,34 @@ fun NavGraph(
 
                     // Intent 유형에 따라 네비게이션 처리
                     when (intent) {
-                        is MainIntent.NavigateToReports -> navController.navigate("reports")
-                        is MainIntent.NavigateToMyVoices -> navController.navigate("my_voices")
-                        is MainIntent.NavigateToCallScreen -> navController.navigate("call_screen")
-                        else -> { /* 다른 Intent 유형은 ViewModel에서 처리 */
+                        is MainIntent.NavigateToReports -> {
+                            Log.d(TAG, "메인에서 레포트 화면으로 이동 요청")
+                            navController.navigate("reports")
+                        }
+
+                        is MainIntent.NavigateToMyVoices -> {
+                            Log.d(TAG, "메인에서 내 목소리 화면으로 이동 요청")
+                            navController.navigate("my_voices")
+                        }
+
+                        is MainIntent.NavigateToCallScreen -> {
+                            Log.d(TAG, "메인에서 통화 화면으로 이동 요청:  onVoiceCall")
+                            navController.navigate("onVoiceCall")
+                        }
+
+                        is MainIntent.NavigateToAddVoice -> {
+                            navController.navigate("add_voice")
+                        }
+
+                        else -> {
                         }
                     }
-                }, viewModel,
+                },
+                viewModel = viewModel,
                 onSuccess = {
-                    navController.navigate("auth_start") { // 처음 화면으로 돌아감
-                        popUpTo("main") { inclusive = true } // main 화면 제거
+                    Log.d(TAG, "로그아웃: 시작 화면으로 이동 요청")
+                    navController.navigate("auth_start") {
+                        popUpTo("main") { inclusive = true }
                         launchSingleTop = true
                     }
                 }
@@ -141,7 +232,6 @@ fun NavGraph(
             val state by viewModel.state.collectAsState()
 
             VoiceCallScreen(
-                state = state,
                 onIntent = { intent -> viewModel.onIntent(intent) },
                 viewModel,
                 navController
@@ -150,6 +240,7 @@ fun NavGraph(
         }
 
         composable("my_voices") {
+            Log.d(TAG, "my_voices 화면 구성")
             val viewModel = viewModel<MyVoiceViewModel>()
             val state by viewModel.state.collectAsState()
 
@@ -158,10 +249,12 @@ fun NavGraph(
                 onIntent = { intent ->
                     when (intent) {
                         is MyVoiceIntent.NavigateToAddVoice -> {
+                            Log.d(TAG, "목소리 추가 화면으로 이동 요청")
                             navController.navigate("add_voice")
                         }
 
                         else -> {
+                            Log.d(TAG, "MyVoice 인텐트 처리: $intent")
                             viewModel.onIntent(intent)
                         }
                     }
@@ -170,22 +263,36 @@ fun NavGraph(
         }
 
         composable("editWeeklyCalls") {
+            Log.d(TAG, "editWeeklyCalls 화면 구성")
             val viewModel = viewModel<WeeklyCallsViewModel>()
             val state by viewModel.state.collectAsState()
 
             WeeklyCallsScreen(
                 state = state.weeklyState,
-                onIntent = { viewModel.onIntent(it) },
+                onIntent = {
+                    Log.d(TAG, "WeeklyCalls 인텐트 처리")
+                    viewModel.onIntent(it)
+                },
                 onMainIntent = {}
             )
         }
 
+        composable("inComingCall") {
+
+            val viewModel = viewModel<IncomingCallViewModel>()
+            val state by viewModel.state.collectAsState()
+
+            IncomingCallScreen(state = state,
+                onIntent = { viewModel.onIntent(it) })
+        }
+
         composable("onVoiceCall") {
+            Log.d(TAG, "onVoiceCall 화면 구성")
+
             val viewModel = viewModel<VoiceCallViewModel>()
             val state by viewModel.state.collectAsState()
 
             VoiceCallScreen(
-                state = state,
                 onIntent = { intent -> viewModel.onIntent(intent) },
                 viewModel,
                 navController
@@ -193,27 +300,59 @@ fun NavGraph(
         }
 
         composable("onTextCall") {
+            Log.d(TAG, "onTextCall 화면 구성")
             val viewModel = viewModel<TextCallViewModel>()
 
             TextCallScreen(
                 state = viewModel.state.collectAsState().value,
-                onIntent = viewModel::onIntent
+                onIntent = {
+                    Log.d(TAG, "TextCall 인텐트 처리: $it")
+                    viewModel.onIntent(it)
+                }
             )
         }
 
         composable("add_voice") {
-            val viewModel = viewModel<AddVoiceViewModel>()
+            val context = LocalContext.current
+            val viewModel: AddVoiceViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    @Suppress("UNCHECKED_CAST")
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return AddVoiceViewModel(context) as T
+                    }
+                }
+            )
+
+            // LaunchedEffect로 Context 초기화하기
+            LaunchedEffect(key1 = Unit) {
+                viewModel.setContext(context)
+            }
 
             AddVoiceScreen(
                 state = viewModel.state.collectAsState().value,
-                onIntent = viewModel::onIntent
+                onIntent = {
+                    Log.d(TAG, "AddVoice 인텐트 처리: $it")
+                    viewModel.onIntent(it)
+                }
             )
         }
 
+        composable(route = "edit_voice") {
+            EditVoiceScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToAddVoice = {
+                    Log.d(TAG, "add_voice로 네비게이션 시도")
+                    navController.navigate("add_voice") {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            )
+        }
 
         // 레포트 관련 화면들
         composable("reports") {
-
+            Log.d(TAG, "reports 화면 구성")
             val viewModel = viewModel<ReportViewModel>()
             ReportScreen(
                 state = viewModel.state.collectAsState().value,
@@ -221,10 +360,12 @@ fun NavGraph(
                     when (intent) {
                         is ReportIntent.NavigateToReportDetail -> {
                             val reportId = intent.reportId
+                            Log.d(TAG, "레포트 상세 화면으로 이동 요청: reportId=$reportId")
                             navController.navigate("report_detail_screen/$reportId")
                         }
 
                         else -> {
+                            Log.d(TAG, "Report 인텐트 처리: $intent")
                             viewModel.onIntent(intent)
                         }
                     }
@@ -236,8 +377,10 @@ fun NavGraph(
             route = "report_detail_screen/{reportId}",
             arguments = listOf(navArgument("reportId") { type = NavType.LongType })
         ) { backStackEntry ->
-
+            Log.d(TAG, "report_detail_screen 화면 구성")
             val reportId = backStackEntry.arguments?.getLong("reportId") ?: -1L
+            Log.d(TAG, "레포트 상세 화면 ID: $reportId")
+
             val viewModel: ReportDetailViewModel = viewModel(
                 factory = object : ViewModelProvider.Factory {
                     @Suppress("UNCHECKED_CAST")
@@ -250,28 +393,11 @@ fun NavGraph(
             ReportDetailScreen(
                 reportId = reportId,
                 state = viewModel.state.collectAsState().value,
-                onIntent = viewModel::onIntent
+                onIntent = {
+                    Log.d(TAG, "ReportDetail 인텐트 처리: $it")
+                    viewModel.onIntent(it)
+                }
             )
         }
-
     }
-
-// 임시 더미 상태
-    val dummyState = MainState(
-        userName = "Sarah",
-        isLoading = false,
-        selectedDay = "월",
-        callItems = listOf(
-            CallItem(
-                1,
-                "Harry Potter",
-                "자유주제",
-                "08:00",
-                "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png",
-                "월"
-            )
-        ),
-        reportPercent = 50,
-        callPercent = 120
-    )
 }

@@ -25,7 +25,7 @@ fun sortSchedulesByDay(scheduleList: List<CallSchedule>): List<CallSchedule> {
                 memberId = -1,
                 scheduleDay = day,
                 scheduledTime = "", // or "00:00:00"
-                topicCategory = "EMPTY" // UI에서 처리용
+                topicCategory = null // UI에서 처리용
             )
         )
     }

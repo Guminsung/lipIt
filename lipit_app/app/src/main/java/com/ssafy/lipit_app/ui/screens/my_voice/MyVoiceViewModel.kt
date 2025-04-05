@@ -3,8 +3,6 @@ package com.ssafy.lipit_app.ui.screens.my_voice
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssafy.lipit_app.base.SecureDataStore
-import com.ssafy.lipit_app.base.SecureDataStore.Companion.MEMBER_ID_KEY
 import com.ssafy.lipit_app.domain.repository.MyVoiceRepository
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,7 +10,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.properties.Delegates
 
 class MyVoiceViewModel() : ViewModel() {
 
@@ -20,6 +17,9 @@ class MyVoiceViewModel() : ViewModel() {
     val state: StateFlow<MyVoiceState> = _state.asStateFlow()
 
     private val voiceRepository by lazy { MyVoiceRepository() }
+
+    private val _toastMessage = MutableStateFlow<String?>(null)
+    val toastMessage: StateFlow<String?> = _toastMessage.asStateFlow()
 
     // 멤버 ID 가져오기
     private val memberId: Long by lazy {
@@ -85,6 +85,20 @@ class MyVoiceViewModel() : ViewModel() {
                             selectedVoiceUrl = voice[0].customImageUrl
                         )
                     }
+                }.onFailure { e ->
+                    Log.e("MyVoiceViewModel", "음성 불러오기 실패: ${e.message}")
+
+                    // 기본 보이스 지정
+                    _state.update { currentState ->
+                        currentState.copy(
+                            selectedVoiceName = "Benedict",
+                            selectedVoiceUrl = "default",
+                            errorMessage = "기본 보이스로 설정되었습니다."
+                        )
+                    }
+
+                    // 토스트로 사용자에게 안내 (Context 필요)
+                    _toastMessage.value = "서버 오류로 기본 보이스로 설정되었어요."
                 }
 
                 // 3. 초기 탭에 따라 적절한 데이터 로드

@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,6 +19,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,7 +47,6 @@ import com.ssafy.lipit_app.util.SharedPreferenceUtils
 
 @Composable
 fun VoiceCallScreen(
-    state: VoiceCallState,
     onIntent: (VoiceCallIntent) -> Unit,
     viewModel: VoiceCallViewModel,
     navController: NavController
@@ -52,11 +54,31 @@ fun VoiceCallScreen(
     val context = LocalContext.current
     val textState = remember { mutableStateOf("") }
     val chatMessages = remember { mutableStateListOf<ChatMessage>() }
+    val state by viewModel.state.collectAsState()
+    val toastMessage = remember { mutableStateOf<String?>(null) }
 
+    // 가장 먼저 Player 초기화
     LaunchedEffect(Unit) {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
+        viewModel.initPlayerIfNeeded(context)
+    }
+
+
+    // 토스트 메시지 표시
+    LaunchedEffect(toastMessage.value) {
+        toastMessage.value?.let { msg ->
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            toastMessage.value = null
+        }
+    }
+
+    // VoiceName 상태 변경 로그 출력
+    LaunchedEffect(state.voiceName) {
+        Log.d("VoiceCallScreen", "📣 state.voiceName 변경됨: ${state.voiceName}")
+    }
+
+    // 퍼미션 체크
+    LaunchedEffect(Unit) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             if (context is Activity) {
                 ActivityCompat.requestPermissions(
                     context,
@@ -65,9 +87,9 @@ fun VoiceCallScreen(
                 )
             }
         }
-
     }
 
+    // 시스템 메시지 수신 시 UI에 반영
     LaunchedEffect(viewModel.systemMessage.value) {
         viewModel.systemMessage.value?.let { msg ->
             chatMessages.add(ChatMessage("system", msg))
@@ -75,19 +97,20 @@ fun VoiceCallScreen(
         }
     }
 
+    // 초기화 로직 수행
     LaunchedEffect(Unit) {
         val memberId = SharedPreferenceUtils.getMemberId()
-        viewModel.loadVoiceName(memberId = memberId) // 통화 보이스 이름 불러오기
-        Log.d("VoiceCallScreen", "📣 state.voiceName 변경됨: ${state.voiceName}")
-
-        viewModel.initializePlayer(context) //exo player 초기화
-        viewModel.sendStartCall(memberId = memberId, topic = null)
+        viewModel.loadVoiceName(memberId = memberId)
+//        viewModel.sendStartCall(memberId = memberId, topic = null)
         viewModel.startCountdown()
         chatMessages.clear()
     }
 
+    // AI 응답 수신 처리
     LaunchedEffect(viewModel.aiMessage) {
         if (viewModel.aiMessage.isNotBlank()) {
+            Log.d("VoiceCallScreen", "🤖 AI: ${viewModel.aiMessage}")
+
             chatMessages.add(
                 ChatMessage(
                     type = "ai",
@@ -96,19 +119,22 @@ fun VoiceCallScreen(
                 )
             )
 
-            // 자막 켜짐 업뎃
-            viewModel.onIntent(VoiceCallIntent.UpdateSubtitle(viewModel.aiMessage))
-
-            // 번역 켜짐 업뎃
-            viewModel.onIntent(VoiceCallIntent.UpdateTranslation(viewModel.aiMessageKor))
-
-            Log.d("VoiceCallScreen", "🤖 AI: ${viewModel.aiMessage}")
+            onIntent(VoiceCallIntent.UpdateSubtitle(viewModel.aiMessage))
+            onIntent(VoiceCallIntent.UpdateTranslation(viewModel.aiMessageKor))
 
             viewModel.clearAiMessage()
         }
     }
-    
-    // 전화 끊어짐 감지 후 메인으로 이동
+
+    // 유저 음성 인식 결과 로그 출력
+    LaunchedEffect(viewModel.latestSpeechResult) {
+        if (viewModel.latestSpeechResult.isNotBlank()) {
+            Log.d("VoiceCallScreen", "🗣️ User(STT): ${viewModel.latestSpeechResult}")
+            viewModel.clearLatestSpeechResult()
+        }
+    }
+
+    // 통화 종료 후 메인으로 이동
     LaunchedEffect(viewModel.isCallEnded) {
         if (viewModel.isCallEnded) {
             navController.navigate("main") {
@@ -117,10 +143,11 @@ fun VoiceCallScreen(
         }
     }
 
-    if (viewModel.connectionError.value) {
+    // 연결 오류 시 알림창 표시
+    if (viewModel.connectionError.value && !viewModel.isCallEnded) {
         AlertDialog(
             onDismissRequest = { viewModel.connectionError.value = false },
-            title = { Text("⚠️ 서버 연결 실패") },
+            title = { Text("⚠\uFE0F 서버 연결 실패") },
             text = { Text("서버와의 연결에 실패했습니다. 인터넷을 확인하거나 서버 상태를 확인해주세요.") },
             confirmButton = {
                 Text(
@@ -136,8 +163,8 @@ fun VoiceCallScreen(
         )
     }
 
-
-
+    // 리포트 생성 중 로딩 다이얼로그 표시
+    // todo: 디자인 변경
     if (state.isLoading) {
         Dialog(onDismissRequest = {}) {
             Box(Modifier.background(Color.White)) {
@@ -146,17 +173,20 @@ fun VoiceCallScreen(
         }
     }
 
+    // 전체 레이아웃 구성
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
+        // 배경 이미지
         Image(
-            painterResource(id = R.drawable.incoming_call_background),
+            painter = painterResource(id = R.drawable.incoming_call_background),
             contentDescription = "배경",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
 
+        // 상단 영역: 헤더 + 자막
         Box(
             modifier = Modifier
                 .padding(top = 55.dp, start = 20.dp, end = 20.dp)
@@ -169,6 +199,7 @@ fun VoiceCallScreen(
                 VoiceVersionCall(state, onIntent)
             }
 
+            // 하단 영역: 버튼
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.BottomCenter
@@ -183,7 +214,7 @@ fun VoiceCallScreen(
 fun VoiceVersionCall(state: VoiceCallState, onIntent: (VoiceCallIntent) -> Unit) {
     when {
         state.showSubtitle && state.showTranslation -> CallWithSubtitleAndTranslate(state)
-        state.showSubtitle && !state.showTranslation -> CallWithSubtitleOriginalOnly(state)
+        state.showSubtitle -> CallWithSubtitleOriginalOnly(state)
         else -> CallWithoutSubtitle()
     }
 }

@@ -20,6 +20,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.ssafy.lipit_app.domain.repository.MyVoiceRepository
+import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import com.ssafy.lipit_app.util.WebSocketHeartbeat
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -39,6 +40,15 @@ import java.util.ArrayDeque
 class VoiceCallViewModel : ViewModel() {
     private val _state = MutableStateFlow(VoiceCallState())
     val state: StateFlow<VoiceCallState> = _state
+
+    fun setDefaultVoice() {
+        _state.update {
+            it.copy(
+                voiceName = "Benedict"
+            )
+        }
+    }
+
 
     // 남은 시간 카운트 관련
     private var timerJob: Job? = null
@@ -120,8 +130,6 @@ class VoiceCallViewModel : ViewModel() {
     }
 
 
-
-
     // ===================================================================
 
     // websocket 관련 코드
@@ -188,20 +196,35 @@ class VoiceCallViewModel : ViewModel() {
     }
 
     // 웹 소켓 채팅 관련
+
+    fun initPlayerIfNeeded(context: Context) {
+        if (exoPlayer == null) {
+            initializePlayer(context)
+        }
+    }
+
     /** ExoPlayer 초기화 */
     /** ExoPlayer 초기화 */
     fun initializePlayer(context: Context) {
         if (exoPlayer == null) {
-            exoPlayer = ExoPlayer.Builder(context).build()
-            exoPlayer?.addListener(object : Player.Listener {
-                override fun onPlaybackStateChanged(playbackState: Int) {
-                    if (playbackState == Player.STATE_ENDED) {
-                        playNextFromQueue()
+            Log.d("ExoPlayer", "🎬 ViewModel에서 초기화 시작")
+
+            exoPlayer = ExoPlayer.Builder(context).build().also {
+                it.addListener(object : Player.Listener {
+                    override fun onPlaybackStateChanged(playbackState: Int) {
+                        if (playbackState == Player.STATE_ENDED) {
+                            playNextFromQueue()
+                        }
                     }
-                }
-            })
+                })
+            }
+
+            Log.d("ExoPlayer", "✅ ExoPlayer 초기화 완료")
+        } else {
+            Log.d("ExoPlayer", "✅ ExoPlayer 이미 초기화되어 있음")
         }
     }
+
 
     /** ExoPlayer 종료 */
     fun releasePlayer() {
@@ -223,6 +246,8 @@ class VoiceCallViewModel : ViewModel() {
             /** 연결 성공 시 */
             override fun onOpen(handshakedata: ServerHandshake?) {
                 mainHandler.post {
+                    onWebSocketOpened()
+
                     isConnected = true
                     isConnecting = false
                     connectionStatusText = "✅ 연결됨"
@@ -369,6 +394,8 @@ class VoiceCallViewModel : ViewModel() {
 
     /** 수신된 오디오 저장 후 재생 큐에 추가 */
     private fun enqueueAndPlay(buffer: ByteBuffer) {
+        Log.d("ExoPlayer", "✅ enqueueAndPlay() 실행됨")
+
         val tempFile = File.createTempFile("tts_", ".wav")
         FileOutputStream(tempFile).use { out ->
             val bytes = ByteArray(buffer.remaining())
@@ -376,30 +403,39 @@ class VoiceCallViewModel : ViewModel() {
             out.write(bytes)
         }
 
+        Log.d("ExoPlayer", "📥 오디오 파일 저장 완료: ${tempFile.absolutePath}, size=${tempFile.length()}")
+
         audioQueue.add(tempFile)
-        isWaitingResponse = true
 
         if (exoPlayer?.isPlaying != true && exoPlayer?.playbackState != ExoPlayer.STATE_BUFFERING) {
+            Log.d("ExoPlayer", "▶️ playNextFromQueue() 호출 조건 만족")
             playNextFromQueue()
+        } else {
+            Log.d("ExoPlayer", "⏸️ 재생 중이거나 버퍼링 상태로 대기 중")
         }
     }
+
 
     /** 큐에서 다음 오디오 재생 */
     private fun playNextFromQueue() {
         val next = audioQueue.poll() ?: run {
+            Log.d("ExoPlayer", "❌ 큐 비어있음 - 재생 안함")
             isWaitingResponse = false
             return
         }
+
+        Log.d("ExoPlayer", "🎧 재생 시도 - 파일: ${next.absolutePath}, size=${next.length()}")
 
         try {
             exoPlayer?.setMediaItem(MediaItem.fromUri(Uri.fromFile(next)))
             exoPlayer?.prepare()
             exoPlayer?.play()
+            Log.d("ExoPlayer", "▶️ 재생 시작됨")
         } catch (e: Exception) {
-            Log.e("websocket", "❌ exoPlayer 재생 실패: ${e.message}")
+            Log.e("ExoPlayer", "❌ 재생 실패: ${e.message}")
         }
-
     }
+
 
     override fun onCleared() {
         super.onCleared()
@@ -510,7 +546,22 @@ class VoiceCallViewModel : ViewModel() {
     fun resetCall() {
         callId = null
         isCallEnded = false
+        audioQueue.clear() // 통화 연속 시도 시 이전 기록 비우기
     }
+
+    private fun onWebSocketOpened() {
+        isConnected = true
+        isConnecting = false
+        connectionStatusText = "✅ 연결됨"
+
+        heartbeat = WebSocketHeartbeat(ws!!)
+        heartbeat?.start()
+
+        // 연결 후 바로 통화 시작 요청
+        val memberId = SharedPreferenceUtils.getMemberId()
+        sendStartCall(memberId = memberId, topic = null)
+    }
+
 
 
     // ===================================================================

@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -46,6 +47,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import coil.compose.rememberAsyncImagePainter
+import com.airbnb.lottie.compose.LottieAnimatable
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.CelabResponse
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceViewModel
@@ -81,15 +88,17 @@ fun CelebVoiceScreen(
         fraction = 1f - pageOffset.coerceIn(0f, 1f)
     )
 
+    val scale = lerp(0.80f, 1f, 1f - pageOffset)
 
     Column {
 
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(350.dp)
+                .height(400.dp)
                 .padding(horizontal = 16.dp, vertical = 24.dp)
+                .clip(RoundedCornerShape(32.dp))
                 .clickable {
                     isFlipped = !isFlipped
                 },
@@ -100,16 +109,15 @@ fun CelebVoiceScreen(
                 Modifier
                     .fillMaxWidth()
                     .graphicsLayer {
-                        // 페이저 효과와 뒤집기 효과 결합
-                        alpha = if (rotation < 90f) pageAlpha else 0f
+                        alpha = lerp(0.5f, 1f, 1f - pageOffset)
                         rotationY = rotation
                         cameraDistance = 12f * density // 카메라 거리 설정 추가
-                        // 회전 중에 약간 축소하여 짤림 방지
-                        scaleX =
-                            0.9f + (0.1f * (1f - (rotation / 90f).absoluteValue.coerceIn(0f, 1f)))
-                        scaleY =
-                            0.9f + (0.1f * (1f - (rotation / 90f).absoluteValue.coerceIn(0f, 1f)))
+                        scaleX = scale
+                        scaleY = scale
                     }
+                    .then(
+                        if (rotation < 90f) Modifier.pointerInput(Unit) {} else Modifier // 앞면일 땐 뒷면 클릭 막기
+                    )
                     .clip(RoundedCornerShape(32.dp))
                     .border(
                         width = 1.dp,
@@ -197,16 +205,8 @@ fun CelebVoiceScreen(
                         alpha = if (rotation >= 90f) pageAlpha else 0f
                         cameraDistance = 12f * density // 카메라 거리 설정 추가
                         // 회전 중에 약간 축소하여 짤림 방지
-                        scaleX =
-                            0.9f + (0.1f * (1f - ((rotation - 180f) / 90f).absoluteValue.coerceIn(
-                                0f,
-                                1f
-                            )))
-                        scaleY =
-                            0.9f + (0.1f * (1f - ((rotation - 180f) / 90f).absoluteValue.coerceIn(
-                                0f,
-                                1f
-                            )))
+                        scaleX = scale
+                        scaleY = scale
                     }
                     .clip(RoundedCornerShape(32.dp))
                     .border(
@@ -236,11 +236,15 @@ fun CelebVoiceScreen(
                             .padding(32.dp)
                     ) {
 
-                        Text(
-                            text = voice.voiceName,
-                            color = Color.White,
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold
+                        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.voice_celeb_loading))
+                        val progress by animateLottieCompositionAsState(
+                            composition,
+                            iterations = LottieConstants.IterateForever
+                        )
+                        LottieAnimation(
+                            composition = composition,
+                            progress = { progress },
+                            modifier = Modifier.size(150.dp)
                         )
 
                         Spacer(modifier = Modifier.height(24.dp))
@@ -255,7 +259,7 @@ fun CelebVoiceScreen(
                             elevation = ButtonDefaults.elevation(0.dp),
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
 
-                        ) {
+                            ) {
                             Text("변경")
                         }
 

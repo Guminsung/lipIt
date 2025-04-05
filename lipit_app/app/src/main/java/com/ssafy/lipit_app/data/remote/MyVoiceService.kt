@@ -1,7 +1,9 @@
 package com.ssafy.lipit_app.data.remote
 
+import com.ssafy.lipit_app.data.model.request_dto.custom_voice.SaveCustomVoiceRequest
 import com.ssafy.lipit_app.data.model.request_dto.myvoice.VoiceRequest
 import com.ssafy.lipit_app.data.model.response_dto.BaseResponse
+import com.ssafy.lipit_app.data.model.response_dto.custom_vocie.SaveCustomVoiceResponse
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.CelabResponse
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.CustomResponse
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.VoiceResponse
@@ -45,10 +47,10 @@ interface MyVoiceService {
     ): Response<BaseResponse<VoiceTakeResponse>>
 
 
-    // 커스텀 녹음 저장
+    // 커스텀 보이스 저장
     @POST("voices/recording")
     suspend fun saveCustomVoice(
-        @Body voiceRequest: VoiceRequest
-    ): Response<BaseResponse<VoiceResponse>>
-
+        @Query("memberId") memberId: Long,
+        @Body request: SaveCustomVoiceRequest
+    ): Response<BaseResponse<SaveCustomVoiceResponse>>
 }

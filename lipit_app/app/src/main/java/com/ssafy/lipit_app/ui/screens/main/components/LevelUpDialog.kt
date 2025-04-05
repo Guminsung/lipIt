@@ -29,7 +29,7 @@ fun LevelUpDialog(onDismissRequest: () -> Unit) {
             Box(
                 modifier = Modifier
                     .width(dialogWidth)
-                    .padding(horizontal = 12.dp)
+                    .padding(horizontal = 12.dp, vertical = 12.dp)
             ) {
                 Column(
                     modifier = Modifier
@@ -53,15 +53,13 @@ fun LevelUpDialog(onDismissRequest: () -> Unit) {
                     Text(
                         text = "레벨은 아래 두 항목의 달성률에 따라 결정돼요.",
                         style = TextStyle(
-                            fontSize = 12.sp,
+                            fontSize = 13.sp,
                             fontWeight = FontWeight(400),
                             color = Color(0xFF000000),
-
-                            )
+                        )
                     )
                     Spacer(modifier = Modifier.height(15.dp))
 
-                    // 테두리 박스 영역 (퍼센트 종류별 설명 부분)
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -70,22 +68,23 @@ fun LevelUpDialog(onDismissRequest: () -> Unit) {
                                 color = Color(0xFFD3A9FF),
                                 shape = RoundedCornerShape(16.dp)
                             )
-                            .background(Color.White)
+                            .background(Color.White, shape = RoundedCornerShape(16.dp))
                             .padding(16.dp)
                     ) {
                         Text(
                             text = "🧵 Number of Reports",
                             style = TextStyle(
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight(510),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
                                 color = Color(0xFF000000),
                             )
                         )
+                        Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             text = "레벨업을 위해 작성한 리포트 수",
                             style = TextStyle(
                                 fontSize = 13.sp,
-                                fontWeight = FontWeight(400),
+                                fontWeight = FontWeight.Light,
                                 color = Color(0xFF000000),
                             )
                         )
@@ -95,16 +94,17 @@ fun LevelUpDialog(onDismissRequest: () -> Unit) {
                         Text(
                             text = "📞 Call Time",
                             style = TextStyle(
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight(510),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
                                 color = Color(0xFF000000),
                             )
                         )
+                        Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             text = "누적 통화 시간",
                             style = TextStyle(
                                 fontSize = 13.sp,
-                                fontWeight = FontWeight(400),
+                                fontWeight = FontWeight.Light,
                                 color = Color(0xFF000000),
                             )
                         )
@@ -118,7 +118,7 @@ fun LevelUpDialog(onDismissRequest: () -> Unit) {
                                 "조금씩 쌓이는 노력은 레벨 업으로 이어져요.\n" +
                                 "오늘도 한 걸음 성장해보세요 \uD83C\uDF31",
                         style = TextStyle(
-                            fontSize = 12.sp,
+                            fontSize = 13.sp,
                             fontWeight = FontWeight(400),
                             color = Color(0xFF000000),
                         )
