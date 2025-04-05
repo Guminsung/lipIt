@@ -216,6 +216,7 @@ fun MainScreen(
                         BottomSheetContent.MY_VOICES -> {
                             EditVoiceScreen(
                                 onBack = {
+                                    onIntent(MainIntent.RefreshAfterVoiceChange)
                                     onIntent(MainIntent.OnCloseSettingsSheet)
                                 },
                                 onNavigateToAddVoice = {
