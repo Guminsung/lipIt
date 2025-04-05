@@ -5,8 +5,12 @@ import java.net.URL;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import com.arizona.lipit.domain.member.entity.Member;
 import com.arizona.lipit.domain.member.repository.MemberRepository;
@@ -33,24 +37,41 @@ public class VoiceService {
 	private final MemberVoiceRepository memberVoiceRepository;
 	private final VoiceRepository voiceRepository;
 	private final VoiceMapper voiceMapper;
+	private final RedisTemplate<String, Object> redisTemplate;
+	private final CacheManager cacheManager;
+
+	@Cacheable(value = "celebVoices", key = "'all'")
+	private List<Voice> findCelebVoices() {
+		log.info("🔍 Fetching celeb voices from DB");
+		List<Voice> voices = voiceRepository.findByType(VoiceType.CELEB);
+		if (voices.isEmpty()) {
+			throw new CustomException(ErrorCode.CELEB_VOICE_NOT_FOUND);
+		}
+		return voices;
+	}
 
 	@Transactional(readOnly = true)
 	public List<CelebVoiceResponseDto> getCelebVoicesByMemberId(Long memberId) {
+		log.info("🔍 Getting celeb voices for memberId: {}", memberId);
 		validateMemberId(memberId);
 		Member member = findMemberById(memberId);
 		List<Voice> celebVoices = findCelebVoices();
 		return mapToCelebVoiceResponseDtos(celebVoices, member.getLevel());
 	}
 
+	@Cacheable(value = "customVoices", key = "#memberId")
 	@Transactional(readOnly = true)
 	public List<VoiceResponseDto> getCustomVoicesByMemberId(Long memberId) {
+		log.info("🔍 Fetching custom voices for memberId: {}", memberId);
 		validateMemberId(memberId);
 		findMemberById(memberId);
 		return findAndMapCustomVoices(memberId);
 	}
 
+	@Cacheable(value = "selectedVoice", key = "#memberId")
 	@Transactional(readOnly = true)
 	public List<UserVoiceResponseDto> getAllVoicesByMemberId(Long memberId) {
+		log.info("🔍 Fetching all voices for memberId: {}", memberId);
 		validateMemberId(memberId);
 		Member member = findMemberById(memberId);
 		
@@ -62,8 +83,10 @@ public class VoiceService {
 		return List.of(voiceMapper.toUserVoiceResponseDto(selectedVoice));
 	}
 
+	@CacheEvict(value = {"selectedVoice", "customVoices"}, key = "#memberId")
 	@Transactional
 	public SelectVoiceResponseDto selectVoice(Long memberId, SelectVoiceRequestDto requestDto) {
+		log.info("💾 Updating voice selection for memberId: {}", memberId);
 		validateVoiceRequest(requestDto);
 		Member member = findMemberById(memberId);
 		Voice selectedVoice = findVoiceById(requestDto.getVoiceId());
@@ -76,8 +99,10 @@ public class VoiceService {
 		return voiceMapper.toSelectVoiceResponseDto(member, selectedVoice);
 	}
 
+	@CacheEvict(value = "customVoices", key = "#memberId")
 	@Transactional
 	public RecordingVoiceResponseDto saveRecordingVoice(RecordingVoiceRequestDto requestDto, Long memberId) {
+		log.info("💾 Saving recording voice for memberId: {}", memberId);
 		validateRecordingRequest(requestDto, memberId);
 		Member member = findMemberById(memberId);
 		validateDuplicateVoiceName(memberId, requestDto.getVoiceName());
@@ -98,14 +123,6 @@ public class VoiceService {
 	private Member findMemberById(Long memberId) {
 		return memberRepository.findById(memberId)
 			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_ID_NOT_FOUND));
-	}
-
-	private List<Voice> findCelebVoices() {
-		List<Voice> voices = voiceRepository.findByType(VoiceType.CELEB);
-		if (voices.isEmpty()) {
-			throw new CustomException(ErrorCode.CELEB_VOICE_NOT_FOUND);
-		}
-		return voices;
 	}
 
 	private List<VoiceResponseDto> findAndMapCustomVoices(Long memberId) {
