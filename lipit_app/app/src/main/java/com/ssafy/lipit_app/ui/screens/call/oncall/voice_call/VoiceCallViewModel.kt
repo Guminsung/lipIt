@@ -12,6 +12,7 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -19,6 +20,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import com.ssafy.lipit_app.data.model.ChatMessage
+import com.ssafy.lipit_app.data.model.ChatMessageText
 import com.ssafy.lipit_app.domain.repository.MyVoiceRepository
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import com.ssafy.lipit_app.util.WebSocketHeartbeat
@@ -40,13 +43,39 @@ import java.util.ArrayDeque
 class VoiceCallViewModel : ViewModel() {
     private val _state = MutableStateFlow(VoiceCallState())
     val state: StateFlow<VoiceCallState> = _state
+    var currentMode by mutableStateOf("Voice") // or "Text"
+    val chatMessages = mutableStateListOf<ChatMessage>()
 
-    fun setDefaultVoice() {
-        _state.update {
-            it.copy(
-                voiceName = "Benedict"
+    // 모드 변경 관련
+    fun toggleMode() {
+        _state.update { current ->
+            current.copy(
+                currentMode = if (current.currentMode == "Text") "Voice" else "Text"
             )
         }
+    }
+
+
+    fun convertToTextMessages(): List<ChatMessageText> {
+        return chatMessages.map { msg ->
+            ChatMessageText(
+                text = msg.message,
+                translatedText = msg.messageKor ?: "",
+                isFromUser = msg.type == "user"
+            )
+        }
+    }
+
+    fun addAiMessage(ai: String, kor: String) {
+        chatMessages.add(
+            ChatMessage(type = "ai", message = ai, messageKor = kor)
+        )
+    }
+
+    fun addUserMessage(text: String) {
+        chatMessages.add(
+            ChatMessage(type = "user", message = text)
+        )
     }
 
 
@@ -563,7 +592,6 @@ class VoiceCallViewModel : ViewModel() {
     }
 
 
-
     // ===================================================================
 
     // STT 관련 함수
@@ -575,6 +603,7 @@ class VoiceCallViewModel : ViewModel() {
     private var isListening = false
     var latestSpeechResult by mutableStateOf("")
     val systemMessage = mutableStateOf<String?>(null)
+    var fullSpeechBuffer = StringBuilder()
 
     fun setContext(context: Context) {
         appContext = context.applicationContext
@@ -606,18 +635,31 @@ class VoiceCallViewModel : ViewModel() {
         }
 
         speechRecognizer?.setRecognitionListener(object : RecognitionListener {
-            override fun onResults(results: Bundle?) {
-                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                val result = matches?.firstOrNull()
-
-                if (!result.isNullOrBlank()) {
-                    Log.d("STT", "✅ 결과 있음: $result")
-                    onResult(result)
-                    stopSpeechToText()
-                } else {
-                    Log.w("STT", "⚠️ 인식된 결과 없음, 다시 STT 시작")
-                    startSpeechToText(context, onResult) // 다시 STT 시작
+            override fun onPartialResults(partialResults: Bundle?) {
+                val partial =
+                    partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                        ?.firstOrNull()
+                if (!partial.isNullOrBlank()) {
+                    Log.d("STT", "✍️ Partial: $partial")
+                    latestSpeechResult = partial
+                    fullSpeechBuffer = StringBuilder(partial) // 덮어쓰기 (or append 해도 됨)
                 }
+            }
+
+            override fun onResults(results: Bundle?) {
+                val result =
+                    results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()
+                if (!result.isNullOrBlank()) {
+                    Log.d("STT", "✅ 최종 결과: $result")
+                    fullSpeechBuffer = StringBuilder(result)
+                }
+
+                stopSpeechToText()
+
+                // 자동으로 다시 듣기
+                Handler(Looper.getMainLooper()).postDelayed({
+                    startSpeechToText(context, onResult)
+                }, 500)
             }
 
             override fun onEndOfSpeech() {
@@ -628,7 +670,7 @@ class VoiceCallViewModel : ViewModel() {
                 Log.e("STT", "❌ 인식 오류: $error")
 
                 if (error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT) {
-                    // restartSpeechToText(context, onResult)
+                    restartSpeechToText(context, onResult)
                     showNoInputMessage()
 
                 } else {
@@ -640,7 +682,6 @@ class VoiceCallViewModel : ViewModel() {
             override fun onBeginningOfSpeech() {}
             override fun onRmsChanged(rmsdB: Float) {}
             override fun onBufferReceived(buffer: ByteArray?) {}
-            override fun onPartialResults(partialResults: Bundle?) {}
             override fun onEvent(eventType: Int, params: Bundle?) {}
         })
 
@@ -659,7 +700,8 @@ class VoiceCallViewModel : ViewModel() {
 
 
     fun stopSpeechToText() {
-        isListening = false // 안해주면 계속 듣고 있다고 판단함
+        if (!isListening) return
+        isListening = false
 
         Log.d("STT", "🛑 STT 수동 종료")
         speechRecognizer?.stopListening()

@@ -34,10 +34,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.ChatMessage
 import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
+import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallScreen
+import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallViewModel
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.CallActionButtons
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.Subtitle.CallWithSubtitleAndTranslate
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.Subtitle.CallWithSubtitleOriginalOnly
@@ -109,6 +112,8 @@ fun VoiceCallScreen(
     // AI 응답 수신 처리
     LaunchedEffect(viewModel.aiMessage) {
         if (viewModel.aiMessage.isNotBlank()) {
+            viewModel.addAiMessage(viewModel.aiMessage, viewModel.aiMessageKor)
+
             Log.d("VoiceCallScreen", "🤖 AI: ${viewModel.aiMessage}")
 
             chatMessages.add(
@@ -140,6 +145,7 @@ fun VoiceCallScreen(
             navController.navigate("main") {
                 popUpTo("call_screen") { inclusive = true }
             }
+            viewModel.sendEndCall()
         }
     }
 
@@ -193,7 +199,14 @@ fun VoiceCallScreen(
                 .fillMaxSize()
         ) {
             Column {
-                ModeChangeButton(state.currentMode)
+                ModeChangeButton(
+                    currentMode = state.currentMode,
+                    onToggle = {
+                        viewModel.toggleMode()
+                    }
+                )
+
+
                 VoiceCallHeader(state.leftTime, viewModel, state.voiceName)
                 Spacer(modifier = Modifier.height(28.dp))
                 VoiceVersionCall(state, onIntent)
@@ -208,6 +221,7 @@ fun VoiceCallScreen(
             }
         }
     }
+
 }
 
 @Composable
@@ -218,3 +232,32 @@ fun VoiceVersionCall(state: VoiceCallState, onIntent: (VoiceCallIntent) -> Unit)
         else -> CallWithoutSubtitle()
     }
 }
+
+@Composable
+fun CallScreen(voiceViewModel: VoiceCallViewModel, navController: NavController) {
+    val currentMode by voiceViewModel.state.collectAsState()
+    val textViewModel: TextCallViewModel = viewModel()
+    Log.d("DEBUG", "CallScreen recomposed - currentMode: ${currentMode.currentMode}")
+
+    when (currentMode.currentMode) {
+        "Voice" -> VoiceCallScreen(
+            onIntent = { voiceViewModel.onIntent(it) },
+            viewModel = voiceViewModel,
+            navController = navController
+        )
+        "Text" -> {
+            LaunchedEffect(Unit) {
+                textViewModel.setInitialMessages(voiceViewModel.convertToTextMessages())
+            }
+
+            TextCallScreen(
+                viewModel = textViewModel,
+                onIntent = { textViewModel.onIntent(it) },
+                navController = navController,
+                onModeToggle = { voiceViewModel.toggleMode() }
+            )
+        }
+    }
+}
+
+
