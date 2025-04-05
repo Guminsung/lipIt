@@ -8,9 +8,16 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.arizona.lipit.domain.member.entity.Level;
 import com.arizona.lipit.domain.member.entity.Member;
 import com.arizona.lipit.domain.member.repository.MemberRepository;
-import com.arizona.lipit.domain.voice.dto.*;
+import com.arizona.lipit.domain.voice.dto.CelebVoiceResponseDto;
+import com.arizona.lipit.domain.voice.dto.RecordingVoiceRequestDto;
+import com.arizona.lipit.domain.voice.dto.RecordingVoiceResponseDto;
+import com.arizona.lipit.domain.voice.dto.SelectVoiceRequestDto;
+import com.arizona.lipit.domain.voice.dto.SelectVoiceResponseDto;
+import com.arizona.lipit.domain.voice.dto.UserVoiceResponseDto;
+import com.arizona.lipit.domain.voice.dto.VoiceResponseDto;
 import com.arizona.lipit.domain.voice.entity.MemberVoice;
 import com.arizona.lipit.domain.voice.entity.Voice;
 import com.arizona.lipit.domain.voice.entity.VoiceType;
@@ -19,7 +26,6 @@ import com.arizona.lipit.domain.voice.repository.MemberVoiceRepository;
 import com.arizona.lipit.domain.voice.repository.VoiceRepository;
 import com.arizona.lipit.global.exception.CustomException;
 import com.arizona.lipit.global.exception.ErrorCode;
-import com.arizona.lipit.domain.member.entity.Level;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +61,7 @@ public class VoiceService {
 		log.info("🔍 Fetching all voices for memberId: {}", memberId);
 		validateMemberId(memberId);
 		Member member = findMemberById(memberId);
-		
+
 		if (member.getSelectedVoiceId() == null) {
 			return List.of();
 		}
@@ -70,12 +76,12 @@ public class VoiceService {
 		validateVoiceRequest(requestDto);
 		Member member = findMemberById(memberId);
 		Voice selectedVoice = findVoiceById(requestDto.getVoiceId());
-		
+
 		validateVoiceOwnership(memberId, selectedVoice);
-		
+
 		member.setSelectedVoiceId(selectedVoice.getVoiceId());
 		memberRepository.save(member);
-		
+
 		return voiceMapper.toSelectVoiceResponseDto(member, selectedVoice);
 	}
 
@@ -88,8 +94,15 @@ public class VoiceService {
 
 		Voice savedVoice = saveNewVoice(requestDto);
 		MemberVoice savedMemberVoice = saveMemberVoice(member, savedVoice);
-		
+
 		return voiceMapper.toRecordingVoiceResponseDto(savedMemberVoice);
+	}
+
+	@Transactional
+	public void saveDefaultCelebVoice(Long memberId) {
+		Member member = findMemberById(memberId);
+		Voice defaultCelebVoice = findVoiceById(1L);
+		MemberVoice savedMemberVoice = saveMemberVoice(member, defaultCelebVoice);
 	}
 
 	// Private helper methods
@@ -106,7 +119,7 @@ public class VoiceService {
 
 	private List<VoiceResponseDto> findAndMapCustomVoices(Long memberId) {
 		List<MemberVoice> memberVoices = memberVoiceRepository.findCustomVoicesByMemberId(memberId);
-		memberVoices.forEach(mv -> log.info("Custom Voice: id={}, name={}, audioUrl={}", 
+		memberVoices.forEach(mv -> log.info("Custom Voice: id={}, name={}, audioUrl={}",
 			mv.getVoice().getVoiceId(), mv.getVoice().getVoiceName(), mv.getVoice().getAudioUrl()));
 		if (memberVoices.isEmpty()) {
 			throw new CustomException(ErrorCode.VOICE_NOT_FOUND);
@@ -129,7 +142,7 @@ public class VoiceService {
 		if (voice.getType() == VoiceType.CUSTOM) {
 			boolean isOwnVoice = memberVoiceRepository.findAllVoicesByMemberId(memberId).stream()
 				.anyMatch(mv -> mv.getVoice().getVoiceId().equals(voice.getVoiceId()));
-			
+
 			if (!isOwnVoice) {
 				throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
 			}
@@ -150,7 +163,7 @@ public class VoiceService {
 
 	private boolean isInvalidRequiredFields(RecordingVoiceRequestDto requestDto) {
 		return requestDto.getVoiceName() == null || requestDto.getVoiceName().trim().isEmpty() ||
-			   requestDto.getAudioUrl() == null || requestDto.getAudioUrl().trim().isEmpty();
+			requestDto.getAudioUrl() == null || requestDto.getAudioUrl().trim().isEmpty();
 	}
 
 	private void validateUrls(RecordingVoiceRequestDto requestDto) {
@@ -180,7 +193,7 @@ public class VoiceService {
 			.imageUrl(requestDto.getImageUrl() != null ? requestDto.getImageUrl().trim() : null)
 			.type(VoiceType.CUSTOM)
 			.build();
-		
+
 		return voiceRepository.save(voice);
 	}
 
@@ -189,13 +202,13 @@ public class VoiceService {
 			.member(member)
 			.voice(voice)
 			.build();
-		
+
 		return memberVoiceRepository.save(memberVoice);
 	}
 
 	private List<CelebVoiceResponseDto> mapToCelebVoiceResponseDtos(List<Voice> celebVoices, Level memberLevel) {
 		int currentLevel = memberLevel != null ? memberLevel.getLevel() : 0;
-		
+
 		return celebVoices.stream()
 			.map(voice -> {
 				boolean activated = determineVoiceActivation(voice.getVoiceName(), currentLevel);
@@ -206,11 +219,11 @@ public class VoiceService {
 
 	private boolean determineVoiceActivation(String voiceName, int currentLevel) {
 		return switch (voiceName) {
-			case "스윙스" -> currentLevel >= 1;
-			case "아리아나 그란데" -> currentLevel >= 2;
-			case "베네딕트 컴버배치" -> currentLevel >= 3;
-			case "마이클잭슨" -> currentLevel >= 4;
-			case "MIJI" -> currentLevel >= 5;
+			case "Benedict" -> currentLevel >= 1;
+			case "Ariana" -> currentLevel >= 2;
+			case "Leonardo" -> currentLevel >= 3;
+			case "Taylor" -> currentLevel >= 4;
+			case "Jennie" -> currentLevel >= 5;
 			default -> false;
 		};
 	}

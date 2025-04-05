@@ -11,6 +11,7 @@ import com.arizona.lipit.domain.member.entity.Member;
 import com.arizona.lipit.domain.member.mapper.MemberMapper;
 import com.arizona.lipit.domain.member.repository.LevelRepository;
 import com.arizona.lipit.domain.member.repository.MemberRepository;
+import com.arizona.lipit.domain.voice.service.VoiceService;
 import com.arizona.lipit.global.exception.CustomException;
 import com.arizona.lipit.global.exception.ErrorCode;
 
@@ -24,6 +25,8 @@ public class SignupService {
 	private final MemberMapper memberMapper;
 
 	private final LevelRepository levelRepository;
+
+	private final VoiceService voiceService;
 
 	private final PasswordEncoder passwordEncoder;
 
@@ -56,10 +59,14 @@ public class SignupService {
 			.name(request.getName())
 			.gender(request.getGender())
 			.level(defaultLevel)
+			.selectedVoiceId(1L)
 			.build();
 
 		// DB 저장
 		memberRepository.save(member);
+
+		// 기본 셀럽 음성 추가
+		voiceService.saveDefaultCelebVoice(member.getMemberId());
 
 		// 엔티티 → DTO 변환 후 반환
 		return memberMapper.toDto(member);
