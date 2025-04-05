@@ -21,7 +21,7 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
 
 // 대화하는 AI 정보 (이름, 남은 시간)
 @Composable
-fun VoiceCallHeader(voiceName: String, leftTime: String, viewModel: VoiceCallViewModel) {
+fun VoiceCallHeader(leftTime: String, viewModel: VoiceCallViewModel, voiceName: String) {
     val state by viewModel.state.collectAsState()
 
     Column(
@@ -32,7 +32,7 @@ fun VoiceCallHeader(voiceName: String, leftTime: String, viewModel: VoiceCallVie
     ) {
         // 보이스 이름
         Text(
-            text = voiceName,
+            text = if (voiceName.isNotBlank()) voiceName else "로딩 중...",
             style = TextStyle(
                 fontSize = 40.sp,
                 lineHeight = 15.sp,

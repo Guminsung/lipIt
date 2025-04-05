@@ -73,13 +73,13 @@ fun VoiceCallScreen(
         }
     }
 
-    val memberId: Long by lazy {
-        SharedPreferenceUtils.getMemberId()
-    }
-
     LaunchedEffect(Unit) {
+        val memberId = SharedPreferenceUtils.getMemberId()
+        viewModel.loadVoiceName(memberId = memberId) // 통화 보이스 이름 불러오기
+        Log.d("VoiceCallScreen", "📣 state.voiceName 변경됨: ${state.voiceName}")
+
         viewModel.initializePlayer(context) //exo player 초기화
-        viewModel.sendStartCall(memberId = 6, topic = null)
+        viewModel.sendStartCall(memberId = memberId, topic = null)
         viewModel.startCountdown()
         chatMessages.clear()
     }
@@ -140,7 +140,7 @@ fun VoiceCallScreen(
         ) {
             Column {
                 ModeChangeButton(state.currentMode)
-                VoiceCallHeader(state.voiceName, state.leftTime, viewModel)
+                VoiceCallHeader(state.leftTime, viewModel, state.voiceName)
                 Spacer(modifier = Modifier.height(28.dp))
                 VoiceVersionCall(state, onIntent)
             }

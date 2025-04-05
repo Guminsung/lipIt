@@ -1,7 +1,7 @@
 package com.ssafy.lipit_app.ui.screens.call.oncall.voice_call
 
 data class VoiceCallState(
-    val voiceName: String = "Harry Potter",
+    val voiceName: String = "",
     val leftTime: String = "05:00",
 
     // 모드 변경 버튼 - Voice / Text mode

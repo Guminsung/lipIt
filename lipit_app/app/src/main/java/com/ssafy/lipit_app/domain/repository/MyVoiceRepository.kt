@@ -32,6 +32,7 @@ class MyVoiceRepository {
         return try {
             val response = RetrofitUtil.myVoiceService.getCustomVoices(memberId)
             if (response.isSuccessful) {
+
                 Log.d("MyVoiceRepository", "커스텀 음성 목록 조회: ${response.body()}")
             }
             handleResponse(response)
@@ -47,9 +48,35 @@ class MyVoiceRepository {
         return try {
             val response = RetrofitUtil.myVoiceService.getVoice(memberId)
             if (response.isSuccessful) {
+                val voiceName =
+                    response.body()?.data?.firstOrNull()?.voiceName ?: "SSAFY"
+                Result.success(voiceName)
+
                 Log.d("MyVoiceRepository", "선택한 음성 조회: ${response.body()}")
+
             }
             handleResponse(response)
+        } catch (e: Exception) {
+            Log.e("MyVoiceRepository", "예외 발생: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
+    // 선택한 음성 이름 조회
+    suspend fun getVoiceName(memberId: Long)
+            : Result<String> {
+        Log.d("MyVoiceRepository", "🟩 getVoiceName 진입 - memberId: $memberId")
+
+        return try {
+            val response = RetrofitUtil.myVoiceService.getVoice(memberId)
+            Log.d("MyVoiceRepository", "📦 응답 수신: isSuccessful=${response.isSuccessful}, code=${response.code()}")
+
+            if (response.isSuccessful) {
+                val voiceName = response.body()?.data?.firstOrNull()?.voiceName ?: "SSAFY"
+                Log.d("MyVoiceRepository", "음성 이름: $voiceName")
+                return Result.success(voiceName)
+            }
+            Result.failure(Exception("음성 조회 실패"))
         } catch (e: Exception) {
             Log.e("MyVoiceRepository", "예외 발생: ${e.message}", e)
             Result.failure(e)
