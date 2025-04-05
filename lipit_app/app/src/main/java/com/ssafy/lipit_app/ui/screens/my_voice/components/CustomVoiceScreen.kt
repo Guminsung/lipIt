@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -115,7 +116,6 @@ fun CustomColumn(
     onVoiceChange: (Long) -> Unit
 ) {
 
-    var showPlayer by remember { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(false) }
 
     Row(
@@ -185,35 +185,28 @@ fun CustomColumn(
 //            }
 
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(5.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Icon(
+            painter = painterResource(
+                id = if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
+            ),
+            contentDescription = null,
+            tint = Color(0xffD09FE6),
+            modifier = Modifier.clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null  // 클릭 효과(리플 효과) 제거
+            ) {
+                // 클릭 시 상태만 변경
+                isPlaying = !isPlaying
+            }
+        )
 
-            Icon(
-                painter = painterResource(id = R.drawable.ic_play),
-                contentDescription = null,
-                tint = Color(0xffD09FE6),
-                modifier = Modifier.clickable {
-                    // 클릭 시 상태만 변경
-                    showPlayer = !showPlayer
-                    isPlaying = !isPlaying
-                }
-            )
 
-
-        }
-
-        if (showPlayer && voices.audioUrl != null) {
+        if (isPlaying && voices.audioUrl != null) {
             CustomVoicePlayer(
                 videoUrl = voices.audioUrl,
                 isLooping = false,
-                isVisible = showPlayer,
                 onPlayStateChanged = { playing ->
                     isPlaying = playing
-                    if (!playing) {
-                        showPlayer = false
-                    }
                 }
             )
         }
