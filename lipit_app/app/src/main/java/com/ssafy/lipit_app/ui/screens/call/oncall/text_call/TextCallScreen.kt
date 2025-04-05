@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -38,6 +39,8 @@ fun TextCallScreen(
 
     val state = viewModel.state.collectAsState().value
     Log.d("TextCall", "📦 메시지 수: ${state.messages.size}")
+    
+    val voiceCallState by voiceCallViewModel.state.collectAsState() // time 동기화를 위해 가져옴
 
     LaunchedEffect(Unit) {
         val textMessages = voiceCallViewModel.convertToTextMessages()
@@ -110,8 +113,8 @@ fun TextCallScreen(
 
             // 헤더 (VoiceName, 남은 시간, 끊기 버튼)
             TextCallHeader(
-                voiceName = state.voiceName,
-                leftTime = state.leftTime
+                voiceName = voiceCallState.voiceName,
+                leftTime = voiceCallState.leftTime
             )
 
             // 대화 내역(채팅 ver.)
