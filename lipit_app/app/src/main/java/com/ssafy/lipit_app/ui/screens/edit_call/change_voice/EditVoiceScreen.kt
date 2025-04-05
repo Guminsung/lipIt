@@ -321,7 +321,6 @@ fun VoiceItem(
                     ambientColor = Color(0xFF9C27B0),
                     spotColor = Color(0xFF9C27B0)
                 )
-
                 .background(
                     color = if (isSelected) Color(0x33D372FF) else Color.Transparent,
                     shape = CircleShape
@@ -415,7 +414,8 @@ fun EditVoiceScreenPreview() {
             CustomResponse(
                 voiceId = 3L,
                 voiceName = "My Voice",
-                customImageUrl = "https://example.com/image3.jpg"
+                customImageUrl = "https://example.com/image3.jpg",
+                audioUrl = "https://example.com/image3.mp3"
             )
         )
     )
