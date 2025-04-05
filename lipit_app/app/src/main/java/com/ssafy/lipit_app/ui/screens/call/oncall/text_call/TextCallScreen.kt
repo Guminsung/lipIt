@@ -26,7 +26,7 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.Translate
 
 @Composable
 fun TextCallScreen(
-    state:TextCallState,
+    state: TextCallState,
     onIntent: (TextCallIntent) -> Unit
 ) {
     val viewModel: TextCallViewModel = viewModel()
@@ -35,7 +35,7 @@ fun TextCallScreen(
         modifier = Modifier
             .fillMaxWidth(),
         contentAlignment = Alignment.TopCenter
-    ){
+    ) {
         // 배경
         Image(
             painterResource(
@@ -56,11 +56,15 @@ fun TextCallScreen(
             ModeChangeButton(state.currentMode)
 
             // 헤더 (VoiceName, 남은 시간, 끊기 버튼)
-            TextCallHeader(state.voiceName, state.leftTime)
+            TextCallHeader(
+                voiceName = state.voiceName,
+                leftTime = state.leftTime
+            )
 
             // 대화 내역(채팅 ver.)
             Box(
-                modifier = Modifier.weight(1f)) {
+                modifier = Modifier.weight(1f)
+            ) {
                 TextVersionCall(state, onIntent)
             }
 
@@ -75,7 +79,7 @@ fun TextCallScreen(
 @Composable
 fun TextVersionCall(state: TextCallState, onIntent: (TextCallIntent) -> Unit) {
     // 번역 여부에 따라 UI 달라짐
-    when{
+    when {
         state.showTranslation -> TextCallWithTranslate(state)
         else -> TextCallwithOriginalOnly(state)
     }
@@ -84,7 +88,7 @@ fun TextVersionCall(state: TextCallState, onIntent: (TextCallIntent) -> Unit) {
 
 @Preview(showBackground = true)
 @Composable
-fun TextCallScreenPreview(){
+fun TextCallScreenPreview() {
 // 테스트용 chat 리스트 -> 기능 구현 시 삭제하기!
     val sampleChatMessages = listOf(
         ChatMessage(
@@ -121,7 +125,7 @@ fun TextCallScreenPreview(){
             currentMode = "Text",
             messages = sampleChatMessages,
             inputText = "",
-             showTranslation = true
+            showTranslation = true
         ),
         onIntent = {}
     )

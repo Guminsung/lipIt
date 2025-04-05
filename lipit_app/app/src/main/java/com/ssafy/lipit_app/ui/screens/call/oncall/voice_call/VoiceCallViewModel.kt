@@ -42,6 +42,7 @@ class VoiceCallViewModel : ViewModel() {
 
     // 남은 시간 카운트 관련
     private var timerJob: Job? = null
+    val connectionError = mutableStateOf(false) // 통화 시 서버 연결 안되었을 때 활용
 
     fun onIntent(intent: VoiceCallIntent) {
         when (intent) {
@@ -319,6 +320,8 @@ class VoiceCallViewModel : ViewModel() {
 
             /** 연결 종료 */
             override fun onClose(code: Int, reason: String?, remote: Boolean) {
+                connectionError.value = true // 연결 실패 알림용
+
                 Log.d("WebSocket", "🔌 onClose: code=$code, reason=$reason")
                 mainHandler.post {
                     isConnected = false
@@ -336,6 +339,8 @@ class VoiceCallViewModel : ViewModel() {
             /** 오류 발생 */
             override fun onError(ex: Exception?) {
                 Log.e("WebSocket", "🔥 onError: ${ex?.message}", ex)
+                connectionError.value = true // 연결 실패 알림용
+
                 mainHandler.post {
                     isConnected = false
                     isConnecting = false
@@ -445,7 +450,7 @@ class VoiceCallViewModel : ViewModel() {
         Log.d("VoiceCall", "📤 sendStartCall 호출됨!")
 
         if (!isConnected) {
-            Log.d("VoiceCall", "🕐 연결 안됨. 대화 시작 대기열에 저장됨")
+            Log.d("VoiceCall", "🕐 연결 안됨. 대화 시작 대기열에 저장됨. 서버 켜져 있는지 확인 필요!")
             pendingCallId = null // callId는 아직 없음
             pendingText = null   // 메시지 아님, start 요청이니까
             // 대기열에 저장
@@ -478,11 +483,21 @@ class VoiceCallViewModel : ViewModel() {
      * 대화 종료 요청
      */
     fun sendEndCall() {
+        if (ws == null || !isConnected) {
+            Log.w("WebSocket", "❌ WebSocket 연결 안 되어 있음 - 종료 메시지 전송 생략")
+            return
+        }
+
         val json = JSONObject().apply {
             put("action", "end")
         }
-        ws?.send(json.toString())
+        try {
+            ws?.send(json.toString())
+        } catch (e: Exception) {
+            Log.e("WebSocket", "❌ 종료 메시지 전송 실패: ${e.message}", e)
+        }
     }
+
 
     /**
      * 초기화 함수

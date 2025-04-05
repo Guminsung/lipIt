@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components
 
+import android.widget.Toast
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -184,11 +185,11 @@ fun CallActionButtons(
                 .background(color = Color(0xFFFE3B31))
                 .clickable {
                     // 전화 끊기
-                    viewModel.sendEndCall() // 통화 종료 요청
+                    viewModel.sendEndCall() // 연결되어 있으면 종료 메시지 보내고
+                    Toast.makeText(context, "통화가 종료되어 메인으로 돌아갑니다.", Toast.LENGTH_SHORT).show()
                     navController.navigate("main") {
                         popUpTo("call_screen") { inclusive = true }
                     }
-
                 },
             contentAlignment = Alignment.Center
         ) {
