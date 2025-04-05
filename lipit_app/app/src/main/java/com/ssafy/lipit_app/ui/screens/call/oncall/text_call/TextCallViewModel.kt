@@ -3,6 +3,7 @@ package com.ssafy.lipit_app.ui.screens.call.oncall.text_call
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.ssafy.lipit_app.data.model.ChatMessageText
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -16,14 +17,20 @@ class TextCallViewModel : ViewModel() {
 
     }
 
-    fun addMessage(message: ChatMessageText) {
+    fun addMessage(message: ChatMessageText, voiceViewModel: VoiceCallViewModel? = null) {
         Log.d("TextCall", "📥 ViewModel에 메시지 추가됨: $message")
 
         _state.update { current ->
             current.copy(messages = current.messages + message)
         }
+
+        // VoiceCallViewModel에도 즉시 동기화
+        voiceViewModel?.addAiMessage(message.text, message.translatedText)
     }
 
+    fun getMessages(): List<ChatMessageText> {
+        return state.value.messages
+    }
 
 
     fun onIntent(intent: TextCallIntent, onSendToServer: (String) -> Unit = {}) {
