@@ -56,6 +56,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.CelabResponse
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceViewModel
+import com.ssafy.lipit_app.ui.screens.report.components.VideoPlayer
 import kotlin.math.absoluteValue
 
 @Composable
@@ -74,6 +75,8 @@ fun CelebVoiceScreen(
         animationSpec = tween(durationMillis = 400),
         label = "card_rotation"
     )
+
+    val isBackVisible = rotation > 90f
 
     // 페이저 기반 애니메이션 효과 계산
     val pageOffset = (
@@ -236,31 +239,15 @@ fun CelebVoiceScreen(
                             .padding(32.dp)
                     ) {
 
-                        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.voice_celeb_loading))
-                        val progress by animateLottieCompositionAsState(
-                            composition,
-                            iterations = LottieConstants.IterateForever
-                        )
-                        LottieAnimation(
-                            composition = composition,
-                            progress = { progress },
-                            modifier = Modifier.size(150.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Button(
-                            onClick = { onVoiceChange(voice.voiceId) },
-                            colors = ButtonDefaults.buttonColors(Color.Transparent),
-                            border = BorderStroke(
-                                width = 1.dp,
-                                color = Color.White
-                            ),
-                            shape = RoundedCornerShape(20.dp),
-                            elevation = ButtonDefaults.elevation(0.dp),
-                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-
-                            ) {
-                            Text("변경")
+                        if (voice.audioUrl != null) {
+                            VoicePlayer(
+                                videoUrl = voice.audioUrl,
+                                isLooping = true,
+                                voice = voice,
+                                isVisible = isBackVisible,
+                                modifier = Modifier.fillMaxWidth(),
+                                onVoiceChange = onVoiceChange
+                            )
                         }
 
                     }
