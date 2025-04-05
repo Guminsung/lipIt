@@ -1,6 +1,7 @@
 package com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,7 +27,19 @@ import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
 
 @Composable
-fun TextCallHeader(voiceName: String, leftTime: String) {
+fun TextCallHeader(
+    voiceName: String,
+    leftTime: String
+) {
+
+//    LaunchedEffect(viewModel.isCallEnded) {
+//        if (viewModel.isCallEnded) {
+//            navController.navigate("main") {
+//                popUpTo("call_screen") { inclusive = true }
+//            }
+//        }
+//    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -67,10 +80,13 @@ fun TextCallHeader(voiceName: String, leftTime: String) {
             modifier = Modifier
                 .clip(shape = CircleShape)
                 .background(Color(0xFFFE4239))
-        ){
+                .clickable {
+                    //viewModel.sendEndCall()
+                }
+        ) {
             Icon(
                 painterResource(id = R.drawable.oncall_hangup_icon),
-                    contentDescription = "전화 끊기",
+                contentDescription = "전화 끊기",
                 tint = Color(0xFFFDF8FF),
                 modifier = Modifier
                     .size(40.dp)

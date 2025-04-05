@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -105,14 +107,36 @@ fun VoiceCallScreen(
             viewModel.clearAiMessage()
         }
     }
-
-    LaunchedEffect(state.isFinished) {
-        if (state.isFinished) {
+    
+    // 전화 끊어짐 감지 후 메인으로 이동
+    LaunchedEffect(viewModel.isCallEnded) {
+        if (viewModel.isCallEnded) {
             navController.navigate("main") {
                 popUpTo("call_screen") { inclusive = true }
             }
         }
     }
+
+    if (viewModel.connectionError.value) {
+        AlertDialog(
+            onDismissRequest = { viewModel.connectionError.value = false },
+            title = { Text("⚠️ 서버 연결 실패") },
+            text = { Text("서버와의 연결에 실패했습니다. 인터넷을 확인하거나 서버 상태를 확인해주세요.") },
+            confirmButton = {
+                Text(
+                    "확인",
+                    modifier = Modifier.clickable {
+                        viewModel.connectionError.value = false
+                        navController.navigate("main") {
+                            popUpTo("call_screen") { inclusive = true }
+                        }
+                    }
+                )
+            }
+        )
+    }
+
+
 
     if (state.isLoading) {
         Dialog(onDismissRequest = {}) {
