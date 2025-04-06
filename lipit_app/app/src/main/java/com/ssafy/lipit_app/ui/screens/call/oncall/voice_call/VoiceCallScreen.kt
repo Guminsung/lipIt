@@ -86,13 +86,15 @@ fun VoiceCallScreen(
     // 가장 먼저 Player 초기화
     LaunchedEffect(Unit) {
         viewModel.initPlayerIfNeeded(context)
-
         textCallViewModel.setInitialMessages(viewModel.convertToTextMessages())
+
+        if (!viewModel.isCountdownRunning()) {
+            viewModel.startCountdown()
+        }
 
         viewModel.getLastAiMessage()?.let { lastAi ->
             onIntent(VoiceCallIntent.UpdateSubtitle(lastAi.text))
             onIntent(VoiceCallIntent.UpdateTranslation(lastAi.translatedText))
-            Log.d("CallScreen", "🆕 보이스 모드 진입 시 마지막 AI 자막 갱신")
         }
     }
 
@@ -138,7 +140,6 @@ fun VoiceCallScreen(
     // 초기화 로직 수행
     LaunchedEffect(Unit) {
         viewModel.loadVoiceName(memberId = SharedPreferenceUtils.getMemberId())
-        viewModel.startCountdown()
     }
 
     // AI 응답 수신 처리

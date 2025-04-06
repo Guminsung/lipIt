@@ -46,6 +46,7 @@ class VoiceCallViewModel : ViewModel() {
     val state: StateFlow<VoiceCallState> = _state
     var currentMode by mutableStateOf("Voice") // or "Text"
     val chatMessages = mutableStateListOf<ChatMessage>()
+    private var remainingSeconds: Int = 300 // 남은 시간 카운트 (5분)
 
 
     // 모드 변경 관련
@@ -203,28 +204,37 @@ class VoiceCallViewModel : ViewModel() {
         timerJob?.cancel() // 기존에 타이머가 있다면 정지시킴
 
         timerJob = viewModelScope.launch {
-            var remaining = initialSeconds
-            while (remaining >= 0) {
-                val minutes = remaining / 60
-                val seconds = remaining % 60
+            remainingSeconds = initialSeconds  // 텍스트 모드와의 연동을 위해 저장된 값에서 시작
+            while (remainingSeconds  >= 0) {
+                val minutes = remainingSeconds  / 60
+                val seconds = remainingSeconds  % 60
                 val timeString = String.format("%02d:%02d", minutes, seconds)
 
                 _state.update { it.copy(leftTime = timeString) }
 
                 delay(1000L) // 1초 기다리고 text에 반영
-                remaining--
+                remainingSeconds --
 
-                // 5분이 종료되면 로딩 화면 출력(리포트 생성 중.. or 리포트 생성 실패!) 후 Main으로 돌아가기
-                if (remaining == 0) {
+                // 5분이 종료되면 로딩 화면 출력(리포트 생성 중.. or 리포트 생성 실패!) 후 
+                // main으로 돌아가거니 아님 레포트로 이동
+                if (remainingSeconds  == 0) {
                     onIntent(VoiceCallIntent.timerIsOver)
                 }
             }
         }
     }
 
+    // 남은 시간 카운트 되고 있는지 여부 체크
+    fun isCountdownRunning(): Boolean {
+        return timerJob?.isActive == true
+    }
+
+
     fun stopCountdown() {
         timerJob?.cancel()
+        timerJob = null // remainingSeconds는 유지 (초기화 X)
     }
+
 
     // 웹 소켓 채팅 관련
 
@@ -714,10 +724,11 @@ class VoiceCallViewModel : ViewModel() {
                 when (error) {
                     SpeechRecognizer.ERROR_SPEECH_TIMEOUT,
                     SpeechRecognizer.ERROR_NO_MATCH -> {
-                       // restartSpeechToText(context, onResult)
+                        // restartSpeechToText(context, onResult)
                         stopSpeechToText()
                         showNoInputMessage()
                     }
+
                     else -> {
                         stopSpeechToText()
                     }
