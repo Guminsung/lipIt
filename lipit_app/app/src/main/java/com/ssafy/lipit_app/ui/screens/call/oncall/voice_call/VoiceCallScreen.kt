@@ -62,7 +62,7 @@ fun VoiceCallScreen(
     val state by viewModel.state.collectAsState()
     val toastMessage = remember { mutableStateOf<String?>(null) }
 
-    // 서버 꺼져있을 때 다이얼로그 띄우기
+    // 서버 연결 에러 날 때 다이얼로그 띄우기
     if (viewModel.connectionError.value && !viewModel.isCallEnded) {
         AlertDialog(
             onDismissRequest = { viewModel.connectionError.value = false },
