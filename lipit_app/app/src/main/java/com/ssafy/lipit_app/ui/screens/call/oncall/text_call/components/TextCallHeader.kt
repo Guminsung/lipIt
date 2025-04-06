@@ -29,7 +29,8 @@ import com.ssafy.lipit_app.R
 @Composable
 fun TextCallHeader(
     voiceName: String,
-    leftTime: String
+    leftTime: String,
+    onHangUp: () -> Unit
 ) {
 
 //    LaunchedEffect(viewModel.isCallEnded) {
