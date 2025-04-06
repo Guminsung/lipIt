@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -93,16 +94,15 @@ fun ReportScreen(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Top
                 ) {
-                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.height(40.dp))
 
                     Box(
                         modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.TopCenter
                     ) {
                         Text(
-                            "생성된 리포트가 없습니다.",
-                            color = Color.White,
-                            fontSize = 16.sp
+                            "아직 리포트가 없어요! \uD83D\uDC23",
+                            style = TextStyle(fontSize = 14.sp, color = Color.White)
                         )
                     }
 

@@ -7,32 +7,29 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import com.ssafy.lipit_app.base.ApplicationClass
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
+import com.ssafy.lipit_app.base.ApplicationClass
 import com.ssafy.lipit_app.navigation.NavGraph
 import com.ssafy.lipit_app.theme.LipItTheme
+import com.ssafy.lipit_app.ui.components.TransparentStatusBar
 import com.ssafy.lipit_app.ui.screens.call.alarm.AlarmScheduler
 import com.ssafy.lipit_app.ui.screens.call.alarm.CallNotificationHelper
-import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.components.LockedProfileImage
 
 private const val TAG = "MainActivity"
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
 
     // 알람 스케줄러 인스턴스
     private lateinit var alarmScheduler: AlarmScheduler
@@ -41,6 +38,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ApplicationClass.init(applicationContext)
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         // 알림 채널 생성
         CallNotificationHelper.createCallNotificationChannel(this)
@@ -51,6 +50,8 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "Initial destination: $initialDestination")
 
         setContent {
+            // 상태바 & 네비게이션 바 투명하게
+            TransparentStatusBar()
 
             val navController = rememberNavController()
 
@@ -79,6 +80,8 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+
+
 
             LipItTheme {
                 Surface(
