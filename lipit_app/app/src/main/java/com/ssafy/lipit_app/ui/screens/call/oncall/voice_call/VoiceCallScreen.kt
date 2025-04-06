@@ -179,7 +179,7 @@ fun VoiceCallScreen(
                 // 다이얼로그 띄우기 위한 상태값 업데이트
                 viewModel._state.update { it.copy(reportFailed = true) }
             } else {
-                navController.navigate("report") {
+                navController.navigate("reports") {
                     popUpTo("call_screen") { inclusive = true }
                 }
             }

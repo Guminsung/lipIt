@@ -33,13 +33,6 @@ fun TextCallHeader(
     onHangUp: () -> Unit
 ) {
 
-//    LaunchedEffect(viewModel.isCallEnded) {
-//        if (viewModel.isCallEnded) {
-//            navController.navigate("main") {
-//                popUpTo("call_screen") { inclusive = true }
-//            }
-//        }
-//    }
 
     Row(
         modifier = Modifier
@@ -82,7 +75,7 @@ fun TextCallHeader(
                 .clip(shape = CircleShape)
                 .background(Color(0xFFFE4239))
                 .clickable {
-                    //viewModel.sendEndCall()
+                    onHangUp()
                 }
         ) {
             Icon(
