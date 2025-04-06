@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -37,6 +39,7 @@ fun TextCallScreen(
     onModeToggle: () -> Unit,
     voiceCallViewModel: VoiceCallViewModel
 ) {
+    val listState = rememberLazyListState()
 
     val state = viewModel.state.collectAsState().value
     Log.d("TextCall", "📦 메시지 수: ${state.messages.size}")
@@ -70,28 +73,9 @@ fun TextCallScreen(
         TestLottieLoadingScreen("리포트 생성 중...")
     }
 
-
-//    LaunchedEffect(voiceCallViewModel.aiMessage) {
-//        if (voiceCallViewModel.aiMessage.isNotBlank()) {
-//            Log.d("TextCallScreen", "📥 AI 메시지 수신: ${voiceCallViewModel.aiMessage}")
-//
-//            val newMessage = ChatMessageText(
-//                text = voiceCallViewModel.aiMessage,
-//                translatedText = voiceCallViewModel.aiMessageKor,
-//                isFromUser = false
-//            )
-//
-//            // TextCallViewModel에 메시지 추가
-//            viewModel.addMessage(newMessage)
-//
-//            voiceCallViewModel.clearAiMessage()
-//        }
-//    }
-
-
-    Log.d("TextCall", "🧾 메시지 렌더링 시작 - 총 ${state.messages.size}개")
-    state.messages.forEachIndexed { i, m ->
-        Log.d("TextCall", "🔸 [$i] ${if (m.isFromUser) "USER" else "AI"}: ${m.text}")
+    // 대화 내역이 바뀌면 마지막으로 스크롤
+    LaunchedEffect(state.messages.size) {
+        listState.animateScrollToItem(state.messages.size)
     }
 
     Box(
@@ -139,7 +123,7 @@ fun TextCallScreen(
             Box(
                 modifier = Modifier.weight(1f)
             ) {
-                TextVersionCall(state, onIntent)
+                TextVersionCall(state, onIntent, listState)
             }
 
             Spacer(modifier = Modifier.height(18.dp))
@@ -151,10 +135,14 @@ fun TextCallScreen(
 }
 
 @Composable
-fun TextVersionCall(state: TextCallState, onIntent: (TextCallIntent) -> Unit) {
+fun TextVersionCall(
+    state: TextCallState,
+    onIntent: (TextCallIntent) -> Unit,
+    listState: LazyListState
+) {
     // 번역 여부에 따라 UI 달라짐
     when {
-        state.showTranslation -> TextCallWithTranslate(state)
+        state.showTranslation -> TextCallWithTranslate(state, listState)
         else -> TextCallwithOriginalOnly(state)
     }
 }
