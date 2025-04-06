@@ -734,18 +734,26 @@ class VoiceCallViewModel : ViewModel() {
 
 
     fun sendUserSpeech(text: String, textCallViewModel: TextCallViewModel? = null) {
+        // 이미 마지막 메시지가 동일하면 추가 X - 중복 방지
+        if (chatMessages.lastOrNull()?.message == text && chatMessages.lastOrNull()?.type == "user") {
+            Log.d("VoiceCall", "⚠️ 중복 유저 메시지 감지 - 전송 생략: $text")
+            return
+        }
+
         sendText(text) // 기존 웹소켓 전송 함수 재활용
 
-        chatMessages.add(ChatMessage(type = "user", message = text)) // 내부 리스트에도 추가
+        chatMessages.add(ChatMessage(type = "user", message = text))
 
-        // 텍스트 모드에서의 ViewModel에도 동기화
-        textCallViewModel?.addMessage(
-            ChatMessageText(
-                text = text,
-                translatedText = "",
-                isFromUser = true
+        // 조건: 현재 모드가 텍스트일 때만 텍스트 쪽에도 추가
+        if (state.value.currentMode == "Text") {
+            textCallViewModel?.addMessage(
+                ChatMessageText(
+                    text = text,
+                    translatedText = "",
+                    isFromUser = true
+                )
             )
-        )
+        }
     }
 
     fun clearLatestSpeechResult() {
