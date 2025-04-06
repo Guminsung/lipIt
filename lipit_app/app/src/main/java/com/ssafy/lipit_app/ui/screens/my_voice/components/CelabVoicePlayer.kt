@@ -2,15 +2,10 @@ package com.ssafy.lipit_app.ui.screens.my_voice.components
 
 import androidx.annotation.OptIn
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,13 +18,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -44,9 +35,10 @@ import com.ssafy.lipit_app.data.model.response_dto.myvoice.CelabResponse
 
 @OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
-fun VoicePlayer(
+fun CelabVoicePlayer(
     videoUrl: String?,
     voice: CelabResponse,
+    selectedVoiceName: String,
     modifier: Modifier = Modifier,
     isLooping: Boolean = false,
     isVisible: Boolean = true,
@@ -118,7 +110,8 @@ fun VoicePlayer(
                 if (voice.activated) {
                     Button(
                         onClick = { onVoiceChange(voice.voiceId) },
-                        colors = ButtonDefaults.buttonColors(Color.Transparent),
+                        enabled = selectedVoiceName != voice.voiceName,
+                        colors = ButtonDefaults.buttonColors( if(selectedVoiceName != voice.voiceName) Color.Transparent else Color.Gray),
                         border = BorderStroke(
                             width = 1.dp,
                             color = Color.White
@@ -126,7 +119,7 @@ fun VoicePlayer(
                         shape = RoundedCornerShape(20.dp),
                         elevation = ButtonDefaults.elevation(0.dp),
                     ) {
-                        Text("선택", color = Color.White)
+                        Text("선택", color = if(selectedVoiceName != voice.voiceName) Color.Black else Color.White)
                     }
                 }
 
