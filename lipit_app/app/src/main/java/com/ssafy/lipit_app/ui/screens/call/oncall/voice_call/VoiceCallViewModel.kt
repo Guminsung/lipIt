@@ -650,7 +650,7 @@ class VoiceCallViewModel : ViewModel() {
     // 보내기 버튼으로 녹음을 멈추기 위해서 전역으로 수정
     private var appContext: Context? = null
     private var speechRecognizer: SpeechRecognizer? = null
-    private var isListening = false
+    var isListening = false
     var latestSpeechResult by mutableStateOf("")
     val systemMessage = mutableStateOf<String?>(null)
     var fullSpeechBuffer = StringBuilder()
