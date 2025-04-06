@@ -68,6 +68,27 @@ fun VoiceCallScreen(
     val state by viewModel.state.collectAsState()
     val toastMessage = remember { mutableStateOf<String?>(null) }
 
+    // 서버 꺼져있을 때 다이얼로그 띄우기
+    if (viewModel.connectionError.value && !viewModel.isCallEnded) {
+        AlertDialog(
+            onDismissRequest = { viewModel.connectionError.value = false },
+            title = { Text("⚠️ 서버 연결 실패") },
+            text = { Text("서버와의 연결에 실패했습니다. 인터넷을 확인하거나 서버 상태를 확인해주세요.") },
+            confirmButton = {
+                Text(
+                    "확인",
+                    modifier = Modifier.clickable {
+                        viewModel.connectionError.value = false
+                        navController.navigate("main") {
+                            popUpTo("call_screen") { inclusive = true }
+                        }
+                    }
+                )
+            }
+        )
+    }
+
+    
     // 가장 먼저 Player 초기화
     LaunchedEffect(Unit) {
         viewModel.initPlayerIfNeeded(context)
@@ -192,27 +213,6 @@ fun VoiceCallScreen(
 
             viewModel.sendEndCall()
         }
-    }
-
-
-    // 연결 오류 시 알림창 표시
-    if (viewModel.connectionError.value && !viewModel.isCallEnded) {
-        AlertDialog(
-            onDismissRequest = { viewModel.connectionError.value = false },
-            title = { Text("⚠\uFE0F 서버 연결 실패") },
-            text = { Text("서버와의 연결에 실패했습니다. 인터넷을 확인하거나 서버 상태를 확인해주세요.") },
-            confirmButton = {
-                Text(
-                    "확인",
-                    modifier = Modifier.clickable {
-                        viewModel.connectionError.value = false
-                        navController.navigate("main") {
-                            popUpTo("call_screen") { inclusive = true }
-                        }
-                    }
-                )
-            }
-        )
     }
 
     if (state.reportFailed) {
