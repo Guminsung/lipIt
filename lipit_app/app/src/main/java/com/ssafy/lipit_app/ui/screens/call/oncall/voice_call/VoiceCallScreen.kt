@@ -37,6 +37,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.ChatMessage
+import com.ssafy.lipit_app.ui.components.ListeningUi
 import com.ssafy.lipit_app.ui.components.TestLottieLoadingScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallScreen
@@ -252,16 +253,34 @@ fun VoiceCallScreen(
 
                 VoiceCallHeader(state.leftTime, viewModel, state.voiceName)
                 Spacer(modifier = Modifier.height(28.dp))
+
                 VoiceVersionCall(state, onIntent)
             }
 
-            // 하단 영역: 버튼
+            /// 하단 영역: 버튼
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.BottomCenter
             ) {
-                CallActionButtons(state, onIntent, viewModel, navController, textState,  textCallViewModel)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    if (viewModel.isListening) {
+                        ListeningUi()
+                    }
+
+                    CallActionButtons(
+                        state = state,
+                        onIntent = onIntent,
+                        viewModel = viewModel,
+                        navController = navController,
+                        textState = textState,
+                        textCallViewModel = textCallViewModel
+                    )
+                }
             }
+
         }
     }
 
