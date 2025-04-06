@@ -137,11 +137,8 @@ fun VoiceCallScreen(
 
     // 초기화 로직 수행
     LaunchedEffect(Unit) {
-        val memberId = SharedPreferenceUtils.getMemberId()
-        viewModel.loadVoiceName(memberId = memberId)
-//        viewModel.sendStartCall(memberId = memberId, topic = null)
+        viewModel.loadVoiceName(memberId = SharedPreferenceUtils.getMemberId())
         viewModel.startCountdown()
-        chatMessages.clear()
     }
 
     // AI 응답 수신 처리
