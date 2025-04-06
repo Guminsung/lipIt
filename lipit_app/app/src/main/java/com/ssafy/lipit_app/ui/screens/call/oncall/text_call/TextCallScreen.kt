@@ -47,28 +47,30 @@ fun TextCallScreen(
     val voiceCallState by voiceCallViewModel.state.collectAsState() // time 동기화를 위해 가져옴
 
 
-    LaunchedEffect(voiceCallViewModel.isCallEnded) {
-        if (voiceCallViewModel.isCallEnded) {
+    LaunchedEffect(voiceCallState.isCallEnded) {
+        if (voiceCallState.isCallEnded) {
             val totalChars = voiceCallViewModel.chatMessages
                 .filter { it.type == "user" }
                 .sumOf { it.message.length }
 
             if (totalChars <= 100) {
                 voiceCallViewModel._state.update { it.copy(reportFailed = true) }
+                navController.navigate("main") {
+                    popUpTo("onTextCall") { inclusive = true }
+                }
             } else {
-                // 리포트 생성 중 상태 표시
                 voiceCallViewModel._state.update { it.copy(isLoading = true) }
 
-                // 약간의 딜레이 후 리포트 화면으로 이동
                 kotlinx.coroutines.delay(2000L)
-                voiceCallViewModel._state.update { it.copy(isLoading = false) }
 
+                voiceCallViewModel._state.update { it.copy(isLoading = false) }
                 navController.navigate("report") {
-                    popUpTo("call_screen") { inclusive = true }
+                    popUpTo("onTextCall") { inclusive = true }
                 }
             }
         }
     }
+    
     if (voiceCallState.isLoading) {
         TestLottieLoadingScreen("리포트 생성 중...")
     }
@@ -115,9 +117,12 @@ fun TextCallScreen(
                 voiceName = voiceCallState.voiceName,
                 leftTime = voiceCallState.leftTime,
                 onHangUp = {
+                    Log.d("TextCall", "🛑 끊기 버튼 눌림")
                     voiceCallViewModel.sendEndCall()
+                    voiceCallViewModel._state.update { it.copy(isCallEnded = true) }
                 }
             )
+
 
             // 대화 내역(채팅 ver.)
             Box(
