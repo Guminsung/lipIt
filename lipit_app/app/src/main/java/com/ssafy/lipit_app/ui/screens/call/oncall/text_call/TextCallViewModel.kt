@@ -1,60 +1,82 @@
 package com.ssafy.lipit_app.ui.screens.call.oncall.text_call
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.ChatMessage
+import com.ssafy.lipit_app.data.model.ChatMessageText
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 
 class TextCallViewModel : ViewModel() {
-    val sampleChatMessages = listOf(
-        ChatMessage(
-            text = "Hey! Long time no see! How have you been?",
-            translatedText = "오! 오랜만이야! 잘 지냈어?",
-            isFromUser = false
-        ),
-        ChatMessage(
-            text = "Yeah! I’ve been good. I recently started reading a new book.",
-            translatedText = "응! 잘 지냈어. 최근에 새 책 읽기 시작했어.",
-            isFromUser = true
-        ),
-        ChatMessage(
-            text = "Sounds interesting! What book is it?",
-            translatedText = "재미있겠다! 무슨 책이야?",
-            isFromUser = false
-        ),
-        ChatMessage(
-            text = "It’s called 'The Night Circus'. The story is magical!",
-            translatedText = "『나이트 서커스』라는 책이야. 정말 마법 같은 이야기야!",
-            isFromUser = true
-        ),
-        ChatMessage(
-            text = "Nice! I’ll check it out later.",
-            translatedText = "좋아! 나중에 꼭 읽어볼게.",
-            isFromUser = false
-        )
-    )
-
-
-    private val _state = MutableStateFlow(
-        TextCallState(
-            voiceName = "Harry Potter",
-            leftTime = "04:50",
-            currentMode = "Text",
-            messages = sampleChatMessages,
-            inputText = "",
-            showTranslation = true
-        )
-    )
-
+    private val _state = MutableStateFlow(TextCallState())
     val state: StateFlow<TextCallState> = _state
 
-    fun onIntent(intent: TextCallIntent) {
-        when (intent) {
-            is TextCallIntent.ToggleTranslation -> {
-                _state.value = _state.value.copy(
-                    showTranslation = !_state.value.showTranslation
-                )
-            }
+    fun toggleMode() {
+        _state.update { it.copy(currentMode = if (it.currentMode == "Text") "Voice" else "Text") }
+
+    }
+
+    fun addMessage(message: ChatMessageText) {
+        if (state.value.messages.any { it.text == message.text && !it.isFromUser }) {
+            Log.d("TextCall", "❗ 중복 메시지 감지, 추가 생략: ${message.text}")
+            return
+        }
+
+        _state.update { current ->
+            current.copy(messages = current.messages + message)
         }
     }
+
+    fun getMessages(): List<ChatMessageText> {
+        return state.value.messages
+    }
+
+
+    fun onIntent(intent: TextCallIntent, onSendToServer: (String) -> Unit = {}) {
+        when (intent) {
+            // 번역 켜고 끄기
+            is TextCallIntent.ToggleTranslation -> {
+                _state.update { it.copy(showTranslation = intent.show) }
+            }
+
+            // 사용자 입력 반영
+            is TextCallIntent.UpdateInputText -> {
+                _state.update { it.copy(inputText = intent.text) }
+            }
+
+            // 입력된 메시지 보내기
+            is TextCallIntent.SendMessage -> {
+                val currentText = _state.value.inputText
+                if (currentText.isNotBlank()) {
+                    val newMessage = ChatMessageText(
+                        text = currentText,
+                        isFromUser = true
+                    )
+
+                    Log.d("TextCallVM", "🧍‍♂️ 사용자 메시지 추가됨: $newMessage")
+
+                    _state.update {
+                        it.copy(
+                            messages = it.messages + newMessage,
+                            inputText = "" // 전송 후 텍스트 초기화
+                        )
+                    }
+
+                    onSendToServer(currentText)
+
+                }
+            }
+
+        }
+    }
+
+    fun setInitialMessages(initialMessages: List<ChatMessageText>) {
+        _state.update { it.copy(messages = initialMessages) }
+    }
+
+    // 사용자 텍스트 입력 관련
+    fun onTextInputChanged(newInput: String) {
+        _state.update { it.copy(inputText = newInput) }
+    }
+
 }
