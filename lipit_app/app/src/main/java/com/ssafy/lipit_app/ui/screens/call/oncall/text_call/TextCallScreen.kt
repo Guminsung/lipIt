@@ -20,7 +20,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
-import com.ssafy.lipit_app.data.model.ChatMessageText
 import com.ssafy.lipit_app.ui.components.TestLottieLoadingScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.TextCallFooter
@@ -46,9 +45,10 @@ fun TextCallScreen(
 
     LaunchedEffect(Unit) {
         val textMessages = voiceCallViewModel.convertToTextMessages()
-        viewModel.setInitialMessages(textMessages)
+        textMessages.forEach { viewModel.addMessage(it) }
         Log.d("TextCallScreen", "이전 대화 불러와서 TextViewModel에 설정 완료")
     }
+
 
     LaunchedEffect(voiceCallViewModel.isCallEnded) {
         if (voiceCallViewModel.isCallEnded) {
@@ -77,28 +77,22 @@ fun TextCallScreen(
     }
 
 
-    LaunchedEffect(voiceCallViewModel.aiMessage) {
-        if (voiceCallViewModel.aiMessage.isNotBlank()) {
-            Log.d("TextCallScreen", "📥 AI 메시지 수신: ${voiceCallViewModel.aiMessage}")
-
-            val newMessage = ChatMessageText(
-                text = voiceCallViewModel.aiMessage,
-                translatedText = voiceCallViewModel.aiMessageKor,
-                isFromUser = false
-            )
-
-            // 1. TextCallViewModel에 메시지 추가
-            viewModel.addMessage(newMessage, voiceCallViewModel)
-
-            // 2. VoiceCallViewModel에도 동기화
-            voiceCallViewModel.addAiMessage(
-                ai = newMessage.text,
-                kor = newMessage.translatedText
-            )
-
-            voiceCallViewModel.clearAiMessage()
-        }
-    }
+//    LaunchedEffect(voiceCallViewModel.aiMessage) {
+//        if (voiceCallViewModel.aiMessage.isNotBlank()) {
+//            Log.d("TextCallScreen", "📥 AI 메시지 수신: ${voiceCallViewModel.aiMessage}")
+//
+//            val newMessage = ChatMessageText(
+//                text = voiceCallViewModel.aiMessage,
+//                translatedText = voiceCallViewModel.aiMessageKor,
+//                isFromUser = false
+//            )
+//
+//            // TextCallViewModel에 메시지 추가
+//            viewModel.addMessage(newMessage)
+//
+//            voiceCallViewModel.clearAiMessage()
+//        }
+//    }
 
 
     Log.d("TextCall", "🧾 메시지 렌더링 시작 - 총 ${state.messages.size}개")

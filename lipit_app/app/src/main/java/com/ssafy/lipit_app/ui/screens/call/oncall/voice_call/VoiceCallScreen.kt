@@ -37,7 +37,6 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.ChatMessage
-import com.ssafy.lipit_app.data.model.ChatMessageText
 import com.ssafy.lipit_app.ui.components.TestLottieLoadingScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallScreen
@@ -48,7 +47,6 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.Subtitle
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.Subtitle.CallWithoutSubtitle
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.VoiceCallHeader
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 
 @Composable
@@ -154,26 +152,6 @@ fun VoiceCallScreen(
             Log.d("VoiceCallScreen", "🤖 AI: ${viewModel.aiMessage}")
             Log.d("VoiceCallScreen", "🤖 currentMode: ${state.currentMode}")
 
-            chatMessages.add(
-                ChatMessage(
-                    type = "ai",
-                    message = viewModel.aiMessage,
-                    messageKor = viewModel.aiMessageKor
-                )
-            )
-
-            // TextCall에도 메시지 추가
-            if (state.currentMode == "Text") {
-                delay(100)
-
-                textCallViewModel.addMessage(
-                    ChatMessageText(
-                        text = viewModel.aiMessage,
-                        translatedText = viewModel.aiMessageKor,
-                        isFromUser = false
-                    )
-                )
-            }
             
             // 자막용 업뎃
             onIntent(VoiceCallIntent.UpdateSubtitle(viewModel.aiMessage))
@@ -318,19 +296,6 @@ fun CallScreen(voiceViewModel: VoiceCallViewModel, navController: NavController)
             LaunchedEffect(Unit) {
                 textViewModel.setInitialMessages(voiceViewModel.convertToTextMessages())
 
-                // 보이스에서 텍스트 바로 전환 시 ai message가 넘어오지 않는 현상 방지를 위해
-                // 한 번 더 넣어줌
-                if (voiceViewModel.aiMessage.isNotBlank()) {
-                    Log.d("CallScreen", "🆕 진입 시 aiMessage 반영: ${voiceViewModel.aiMessage}")
-                    textViewModel.addMessage(
-                        ChatMessageText(
-                            text = voiceViewModel.aiMessage,
-                            translatedText = voiceViewModel.aiMessageKor,
-                            isFromUser = false
-                        )
-                    )
-                    voiceViewModel.clearAiMessage()
-                }
             }
 
             TextCallScreen(
