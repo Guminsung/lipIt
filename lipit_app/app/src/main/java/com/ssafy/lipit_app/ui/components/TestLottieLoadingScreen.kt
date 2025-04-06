@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
@@ -20,7 +21,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.ssafy.lipit_app.R
 
 @Composable
-fun TestLottieLoadingScreen() {
+fun TestLottieLoadingScreen(text: String = "로딩 중...") {
     val composition by rememberLottieComposition(
         LottieCompositionSpec.RawRes(R.raw.loader)
     )
@@ -40,8 +41,10 @@ fun TestLottieLoadingScreen() {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "리포트 생성 중...",
-                color = Color.Black
+                text = text,
+                color = Color(0xFF444444),
+                fontSize = 18.sp,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
             )
         }
     }

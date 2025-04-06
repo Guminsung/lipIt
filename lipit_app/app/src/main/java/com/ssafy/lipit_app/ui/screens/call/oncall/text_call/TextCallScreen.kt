@@ -21,12 +21,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.ChatMessageText
+import com.ssafy.lipit_app.ui.components.TestLottieLoadingScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.TextCallFooter
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.TextCallHeader
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.Translate.TextCallWithTranslate
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.Translate.TextCallwithOriginalOnly
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
+import kotlinx.coroutines.flow.update
 
 @Composable
 fun TextCallScreen(
@@ -39,16 +41,41 @@ fun TextCallScreen(
 
     val state = viewModel.state.collectAsState().value
     Log.d("TextCall", "📦 메시지 수: ${state.messages.size}")
-    
+
     val voiceCallState by voiceCallViewModel.state.collectAsState() // time 동기화를 위해 가져옴
 
     LaunchedEffect(Unit) {
         val textMessages = voiceCallViewModel.convertToTextMessages()
         viewModel.setInitialMessages(textMessages)
         Log.d("TextCallScreen", "이전 대화 불러와서 TextViewModel에 설정 완료")
-
-
     }
+
+    LaunchedEffect(voiceCallViewModel.isCallEnded) {
+        if (voiceCallViewModel.isCallEnded) {
+            val totalChars = voiceCallViewModel.chatMessages
+                .filter { it.type == "user" }
+                .sumOf { it.message.length }
+
+            if (totalChars <= 100) {
+                voiceCallViewModel._state.update { it.copy(reportFailed = true) }
+            } else {
+                // 리포트 생성 중 상태 표시
+                voiceCallViewModel._state.update { it.copy(isLoading = true) }
+
+                // 약간의 딜레이 후 리포트 화면으로 이동
+                kotlinx.coroutines.delay(2000L)
+                voiceCallViewModel._state.update { it.copy(isLoading = false) }
+
+                navController.navigate("report") {
+                    popUpTo("call_screen") { inclusive = true }
+                }
+            }
+        }
+    }
+    if (voiceCallState.isLoading) {
+        TestLottieLoadingScreen("리포트 생성 중...")
+    }
+
 
     LaunchedEffect(voiceCallViewModel.aiMessage) {
         if (voiceCallViewModel.aiMessage.isNotBlank()) {
@@ -114,7 +141,10 @@ fun TextCallScreen(
             // 헤더 (VoiceName, 남은 시간, 끊기 버튼)
             TextCallHeader(
                 voiceName = voiceCallState.voiceName,
-                leftTime = voiceCallState.leftTime
+                leftTime = voiceCallState.leftTime,
+                onHangUp = {
+                    voiceCallViewModel.sendEndCall()
+                }
             )
 
             // 대화 내역(채팅 ver.)
@@ -142,47 +172,3 @@ fun TextVersionCall(state: TextCallState, onIntent: (TextCallIntent) -> Unit) {
 }
 
 
-//@Preview(showBackground = true)
-//@Composable
-//fun TextCallScreenPreview() {
-//// 테스트용 chat 리스트 -> 기능 구현 시 삭제하기!
-//    val sampleChatMessages = listOf(
-//        ChatMessage(
-//            text = "Hey! Long time no see! How have you been?",
-//            translatedText = "오! 오랜만이야! 잘 지냈어?",
-//            isFromUser = false
-//        ),
-//        ChatMessage(
-//            text = "Yeah! I’ve been good. I recently started reading a new book.",
-//            translatedText = "응! 잘 지냈어. 최근에 새 책 읽기 시작했어.",
-//            isFromUser = true
-//        ),
-//        ChatMessage(
-//            text = "Sounds interesting! What book is it?",
-//            translatedText = "재미있겠다! 무슨 책이야?",
-//            isFromUser = false
-//        ),
-//        ChatMessage(
-//            text = "It’s called 'The Night Circus'. The story is magical!",
-//            translatedText = "『나이트 서커스』라는 책이야. 정말 마법 같은 이야기야!",
-//            isFromUser = true
-//        ),
-//        ChatMessage(
-//            text = "Nice! I’ll check it out later.",
-//            translatedText = "좋아! 나중에 꼭 읽어볼게.",
-//            isFromUser = false
-//        )
-//    )
-//
-//    TextCallScreen(
-//        state = TextCallState(
-//            voiceName = "Harry Potter",
-//            leftTime = "04:50",
-//            currentMode = "Text",
-//            messages = sampleChatMessages,
-//            inputText = "",
-//            showTranslation = true
-//        ),
-//        onIntent = {}
-//    )
-//}
