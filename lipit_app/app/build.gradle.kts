@@ -183,7 +183,11 @@ dependencies {
     // 그리드 리스트 화면
     implementation("com.cheonjaeung.compose.grid:grid:2.2.1")
 
+    // 로딩화면 관련
     implementation("com.airbnb.android:lottie-compose:6.0.0")
+    
+    // 상태바 색상 변경 관련
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.31.3-beta")
 
 
 }
