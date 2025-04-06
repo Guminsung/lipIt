@@ -17,13 +17,15 @@ sealed class AddVoiceIntent {
     data class SetVoiceName(val name: String) : AddVoiceIntent()
     data class SetVoiceImage(val uri: Uri) : AddVoiceIntent()
 
-
     // 음성 제출(저장) Intent
     object SubmitVoice : AddVoiceIntent()
 
     // 메인 화면으로 이동 Intent
-    object NavigateToMain : AddVoiceIntent()
+//    object NavigateToMain : AddVoiceIntent()
+    object NavigateBackToMyVoices : AddVoiceIntent()
 
     // Error 처리용 팝업 Intent
     object DismissErrorDialog: AddVoiceIntent()
+
+
 }

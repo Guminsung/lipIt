@@ -34,6 +34,7 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallViewModel
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.CallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
+import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceIntent
 import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceViewModel
 import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceScreen
@@ -341,9 +342,17 @@ fun NavGraph(
 
             AddVoiceScreen(
                 state = viewModel.state.collectAsState().value,
-                onIntent = {
-                    Log.d(TAG, "AddVoice 인텐트 처리: $it")
-                    viewModel.onIntent(it)
+                onIntent = { intent ->
+                    Log.d(TAG, "AddVoice 인텐트 처리: $intent")
+                    when (intent) {
+                        is AddVoiceIntent.NavigateBackToMyVoices -> {
+                            // 메인으로 돌아가는 네비게이션 처리
+                            navController.navigate("main") {
+                                popUpTo("add_voice") { inclusive = true }
+                            }
+                        }
+                        else -> viewModel.onIntent(intent)
+                    }
                 }
             )
         }
