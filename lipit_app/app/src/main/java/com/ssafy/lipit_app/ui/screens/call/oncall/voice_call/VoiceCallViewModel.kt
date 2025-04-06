@@ -352,6 +352,16 @@ class VoiceCallViewModel : ViewModel() {
                                     aiMessageKor = data.getString("aiMessageKor")
                                 }
 
+                                // 서버로부터 end 수신 후 WebSocket 닫기
+                                try {
+                                    Log.d("WebSocket", "🔒 서버 end 수신 후 클라이언트 ws.close() 실행")
+                                    ws?.close()
+                                    isConnected = false
+                                    isConnecting = false
+                                } catch (e: Exception) {
+                                    Log.e("WebSocket", "❌ onMessage-end 내 닫기 실패: ${e.message}")
+                                }
+
                                 isWaitingResponse = false
                                 isCallEnded = true
                             }
@@ -568,7 +578,12 @@ class VoiceCallViewModel : ViewModel() {
         stopSpeechToText()  // 음성 인식 종료
         stopCountdown()  // 타이머 종료
         releasePlayer()  // 플레이어 해제
+
+        // 전화 종료 후 목소리 즉시 멈추기
+        exoPlayer?.stop()
         audioQueue.clear() //  남은 오디오 큐 비우기
+
+        releasePlayer() // 플레이어 완전 해제는 나중에 해도 OK
 
         if (ws == null || !isConnected) {
             Log.w("WebSocket", "❌ WebSocket 연결 안 되어 있음 - 종료 메시지 전송 생략")
@@ -579,10 +594,10 @@ class VoiceCallViewModel : ViewModel() {
             put("action", "end")
         }
         try {
+            Log.d("WebSocket", "📤 서버에 end 메시지 전송")
+
             ws?.send(json.toString())
-            ws?.close()                 // WebSocket 강제 종료
-            isConnected = false
-            isConnecting = false
+            // close()는 서버가 "end" 보내고 나서하는 것으로 수정함 -> onMessage에서 확인 가능
         } catch (e: Exception) {
             Log.e("WebSocket", "❌ 종료 메시지 전송 실패: ${e.message}", e)
         }
@@ -699,7 +714,8 @@ class VoiceCallViewModel : ViewModel() {
                 when (error) {
                     SpeechRecognizer.ERROR_SPEECH_TIMEOUT,
                     SpeechRecognizer.ERROR_NO_MATCH -> {
-                        restartSpeechToText(context, onResult)
+                       // restartSpeechToText(context, onResult)
+                        stopSpeechToText()
                         showNoInputMessage()
                     }
                     else -> {

@@ -43,11 +43,11 @@ fun TextCallScreen(
 
     val voiceCallState by voiceCallViewModel.state.collectAsState() // time 동기화를 위해 가져옴
 
-    LaunchedEffect(Unit) {
-        val textMessages = voiceCallViewModel.convertToTextMessages()
-        textMessages.forEach { viewModel.addMessage(it) }
-        Log.d("TextCallScreen", "이전 대화 불러와서 TextViewModel에 설정 완료")
-    }
+//    LaunchedEffect(Unit) {
+//        val textMessages = voiceCallViewModel.convertToTextMessages()
+//        textMessages.forEach { viewModel.addMessage(it) }
+//        Log.d("TextCallScreen", "이전 대화 불러와서 TextViewModel에 설정 완료")
+//    }
 
 
     LaunchedEffect(voiceCallViewModel.isCallEnded) {
