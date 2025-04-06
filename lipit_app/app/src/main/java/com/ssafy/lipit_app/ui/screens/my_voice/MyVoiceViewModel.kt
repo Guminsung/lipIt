@@ -33,6 +33,7 @@ class MyVoiceViewModel() : ViewModel() {
     fun onIntent(intent: MyVoiceIntent) {
         when (intent) {
             is MyVoiceIntent.SelectVoice -> {
+                SharedPreferenceUtils.saveSelectedVoiceName(intent.voiceName)
                 _state.update { currentState ->
                     currentState.copy(
                         selectedVoiceName = intent.voiceName,
@@ -62,7 +63,10 @@ class MyVoiceViewModel() : ViewModel() {
                 }
             }
 
-            is MyVoiceIntent.ChangeVoice -> changeVoice(intent.voiceId)
+            is MyVoiceIntent.ChangeVoice -> {
+                Log.d("MyVoiceViewModel", "changeVoice 호출")
+                changeVoice(intent.voiceId)
+            }
             is MyVoiceIntent.NavigateToAddVoice -> {}
         }
     }
@@ -85,6 +89,10 @@ class MyVoiceViewModel() : ViewModel() {
                             selectedVoiceUrl = voice[0].customImageUrl
                         )
                     }
+
+                    SharedPreferenceUtils.saveSelectedVoiceName(voiceName = voice[0].voiceName)
+                    Log.d("MyVoiceViewModel", "선택된 음성 이름 저장: ${voice[0].voiceName}")
+
                 }.onFailure { e ->
                     Log.e("MyVoiceViewModel", "음성 불러오기 실패: ${e.message}")
 
@@ -197,6 +205,7 @@ class MyVoiceViewModel() : ViewModel() {
                 result.onSuccess { response ->
                     Log.d("MyVoiceViewModel", "음성 변경 성공, 데이터 다시 로드")
                     loadInitialData()
+
                 }.onFailure { error ->
                     _state.update {
                         it.copy(

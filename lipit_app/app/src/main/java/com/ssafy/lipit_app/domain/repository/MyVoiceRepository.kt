@@ -7,6 +7,7 @@ import com.ssafy.lipit_app.data.model.response_dto.myvoice.CustomResponse
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.VoiceResponse
 import com.ssafy.lipit_app.data.model.response_dto.myvoice.VoiceTakeResponse
 import com.ssafy.lipit_app.data.remote.RetrofitUtil
+import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import handleResponse
 
 class MyVoiceRepository {
@@ -72,7 +73,8 @@ class MyVoiceRepository {
             Log.d("MyVoiceRepository", "📦 응답 수신: isSuccessful=${response.isSuccessful}, code=${response.code()}")
 
             if (response.isSuccessful) {
-                val voiceName = response.body()?.data?.firstOrNull()?.voiceName ?: "SSAFY"
+                val voiceName = response.body()?.data?.firstOrNull()?.voiceName ?: "Sarang"
+                SharedPreferenceUtils.saveSelectedVoiceName(voiceName)
                 Log.d("MyVoiceRepository", "음성 이름: $voiceName")
                 return Result.success(voiceName)
             }

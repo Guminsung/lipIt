@@ -77,4 +77,12 @@ object SharedPreferenceUtils {
     fun getUserName(): String {
         return preferences?.getString("USER_NAME", "익명") ?: "익명"
     }
+
+    fun saveSelectedVoiceName(voiceName: String) {
+        preferences?.edit()?.putString("selected_voice_name", voiceName)?.apply()
+    }
+
+    fun getSelectedVoiceName(): String {
+        return preferences?.getString("selected_voice_name", "Sarang") ?: "Sarang"
+    }
 }
