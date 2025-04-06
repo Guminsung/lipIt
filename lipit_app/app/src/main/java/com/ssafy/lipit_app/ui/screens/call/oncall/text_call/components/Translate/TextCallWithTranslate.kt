@@ -9,10 +9,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,44 +26,49 @@ import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallState
 
 @Composable
-fun TextCallWithTranslate(state: TextCallState) {
+fun TextCallWithTranslate(
+    state: TextCallState,
+    listState: LazyListState
+) {
     val chatMessages = state.messages
+    val scrollState = rememberScrollState()
 
-    // 일단 리스트로 구현했으나 백 연동 시 다시 고려
-    LazyColumn(
+    // 새 메시지 생기면 맨 아래로 스크롤
+    LaunchedEffect(chatMessages.size) {
+        scrollState.animateScrollTo(scrollState.maxValue)
+    }
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 24.dp),
+            .padding(top = 24.dp)
+            .verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(17.dp)
     ) {
-        items(chatMessages.size) { index ->
-            val message = chatMessages[index]
-            val isUser = message.isFromUser // 누가 보낸 메시지인지 판단
+        chatMessages.forEach { message ->
+            val isUser = message.isFromUser
 
             Column(
-                modifier = Modifier
-                    .fillMaxWidth(),
-
-                // 누가 보낸 메시지인지에 따라 가로 위치 변경
+                modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = if (isUser) Alignment.End else Alignment.Start
             ) {
                 Box(
                     modifier = Modifier
                         .background(
                             color = if (isUser) Color(0x99C494D9) else Color(0x66000000),
-                            shape = RoundedCornerShape(size = 15.dp)
+                            shape = RoundedCornerShape(15.dp)
                         )
                         .padding(17.dp)
-                        .widthIn(max = 260.dp) // 최대 가로 길이 제한
+                        .widthIn(max = 260.dp)
                 ) {
                     Column {
                         Text(
                             text = message.text,
                             style = TextStyle(
                                 fontSize = 20.sp,
-                                lineHeight = 30.sp,
                                 fontWeight = FontWeight(590),
-                                color = Color(0xFFFDF8FF)
+                                color = Color(0xFFFDF8FF),
+                                lineHeight = 30.sp
                             )
                         )
 
@@ -71,18 +79,15 @@ fun TextCallWithTranslate(state: TextCallState) {
                                 text = message.translatedText,
                                 style = TextStyle(
                                     fontSize = 16.sp,
-                                    lineHeight = 30.sp,
                                     fontWeight = FontWeight(274),
-                                    color = Color(0xB2FDF8FF)
+                                    color = Color(0xB2FDF8FF),
+                                    lineHeight = 30.sp
                                 )
                             )
                         }
                     }
-
                 }
             }
-
         }
     }
-
 }

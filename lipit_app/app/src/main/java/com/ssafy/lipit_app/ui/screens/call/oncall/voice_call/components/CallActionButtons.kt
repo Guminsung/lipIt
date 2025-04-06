@@ -256,7 +256,7 @@ fun CallActionButtons(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                painterResource(id = R.drawable.oncall_voice_send_icon),
+                painterResource(id = R.drawable.call_mic_icon),
                 contentDescription = "메뉴",
                 Modifier
                     .width(39.dp)
