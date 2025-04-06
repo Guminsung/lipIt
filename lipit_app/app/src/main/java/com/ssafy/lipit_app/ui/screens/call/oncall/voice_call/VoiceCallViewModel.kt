@@ -23,6 +23,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import com.ssafy.lipit_app.data.model.ChatMessage
 import com.ssafy.lipit_app.data.model.ChatMessageText
 import com.ssafy.lipit_app.domain.repository.MyVoiceRepository
+import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallViewModel
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import com.ssafy.lipit_app.util.WebSocketHeartbeat
 import kotlinx.coroutines.Job
@@ -668,14 +669,16 @@ class VoiceCallViewModel : ViewModel() {
                 if (!result.isNullOrBlank()) {
                     Log.d("STT", "✅ 최종 결과: $result")
                     fullSpeechBuffer = StringBuilder(result)
+
+                    onResult(result)
                 }
 
                 stopSpeechToText()
 
                 // 자동으로 다시 듣기
-                Handler(Looper.getMainLooper()).postDelayed({
-                    startSpeechToText(context, onResult)
-                }, 500)
+//                Handler(Looper.getMainLooper()).postDelayed({
+//                    startSpeechToText(context, onResult)
+//                }, 500)
             }
 
             override fun onEndOfSpeech() {
@@ -685,12 +688,15 @@ class VoiceCallViewModel : ViewModel() {
             override fun onError(error: Int) {
                 Log.e("STT", "❌ 인식 오류: $error")
 
-                if (error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT) {
-                    restartSpeechToText(context, onResult)
-                    showNoInputMessage()
-
-                } else {
-                    stopSpeechToText() // 다른 오류는 그냥 종료
+                when (error) {
+                    SpeechRecognizer.ERROR_SPEECH_TIMEOUT,
+                    SpeechRecognizer.ERROR_NO_MATCH -> {
+                        restartSpeechToText(context, onResult)
+                        showNoInputMessage()
+                    }
+                    else -> {
+                        stopSpeechToText()
+                    }
                 }
             }
 
@@ -727,8 +733,19 @@ class VoiceCallViewModel : ViewModel() {
     }
 
 
-    fun sendUserSpeech(text: String) {
+    fun sendUserSpeech(text: String, textCallViewModel: TextCallViewModel? = null) {
         sendText(text) // 기존 웹소켓 전송 함수 재활용
+
+        chatMessages.add(ChatMessage(type = "user", message = text)) // 내부 리스트에도 추가
+
+        // 텍스트 모드에서의 ViewModel에도 동기화
+        textCallViewModel?.addMessage(
+            ChatMessageText(
+                text = text,
+                translatedText = "",
+                isFromUser = true
+            )
+        )
     }
 
     fun clearLatestSpeechResult() {

@@ -262,7 +262,7 @@ fun VoiceCallScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.BottomCenter
             ) {
-                CallActionButtons(state, onIntent, viewModel, navController, textState)
+                CallActionButtons(state, onIntent, viewModel, navController, textState,  textCallViewModel)
             }
         }
     }

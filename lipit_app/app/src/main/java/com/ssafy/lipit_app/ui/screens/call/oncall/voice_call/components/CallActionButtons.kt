@@ -36,6 +36,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallViewModel
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallIntent
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallState
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
@@ -48,6 +49,7 @@ fun CallActionButtons(
     viewModel: VoiceCallViewModel,
     navController: NavController,
     textState: MutableState<String>,
+    textCallViewModel: TextCallViewModel,
 ) {
     var isMenuExpanded by remember { mutableStateOf(false) }
     var isRecording by remember { mutableStateOf(false) }
@@ -214,41 +216,41 @@ fun CallActionButtons(
                 // 보내기 버튼 클릭
                 .clickable {
                     // 보내기 한 번만 누르는 버전
-//                    val message = textState.value.trim()
-//                    if (message.isNotBlank()) {
-//                        viewModel.sendUserSpeech(message)
-//                        textState.value = ""
-//                    } else {
-//                        // 말 안 하면 showNoInputMessage()에서 처리됨
-//                        viewModel.startSpeechToText(context) { result ->
-//                            if (result.isNotBlank()) {
-//                                viewModel.sendUserSpeech(result)
-//                            } else {
-//                                viewModel.showNoInputMessage()
-//                            }
-//                        }
-//                    }
+                    val message = textState.value.trim()
+                    if (message.isNotBlank()) {
+                        viewModel.sendUserSpeech(message, textCallViewModel) // textViewModel 연결
+                        textState.value = ""
+                    } else {
+                        // 말 안 하면 showNoInputMessage()에서 처리됨
+                        viewModel.startSpeechToText(context) { result ->
+                            if (result.isNotBlank()) {
+                                viewModel.sendUserSpeech(result)
+                            } else {
+                                viewModel.showNoInputMessage()
+                            }
+                        }
+                    }
 
                     // 보내기 두 번 누르는 버전
-                    if (!isRecording) {
-                        isRecording = true
-                        viewModel.fullSpeechBuffer.clear()
-                        viewModel.startSpeechToText(context) { /* 콜백 생략 가능 */ }
-                    } else {
-                        viewModel.stopSpeechToText()
-                        isRecording = false
-
-                        val finalMessage = viewModel.fullSpeechBuffer
-                            .toString()
-                            .trim()
-                        if (finalMessage.isNotBlank()) {
-                            viewModel.sendUserSpeech(finalMessage)
-                        } else {
-                            viewModel.showNoInputMessage()
-                        }
-
-                        viewModel.fullSpeechBuffer.clear()
-                    }
+//                    if (!isRecording) {
+//                        isRecording = true
+//                        viewModel.fullSpeechBuffer.clear()
+//                        viewModel.startSpeechToText(context) { /* 콜백 생략 가능 */ }
+//                    } else {
+//                        viewModel.stopSpeechToText()
+//                        isRecording = false
+//
+//                        val finalMessage = viewModel.fullSpeechBuffer
+//                            .toString()
+//                            .trim()
+//                        if (finalMessage.isNotBlank()) {
+//                            viewModel.sendUserSpeech(finalMessage)
+//                        } else {
+//                            viewModel.showNoInputMessage()
+//                        }
+//
+//                        viewModel.fullSpeechBuffer.clear()
+//                    }
 
                 },
             contentAlignment = Alignment.Center
