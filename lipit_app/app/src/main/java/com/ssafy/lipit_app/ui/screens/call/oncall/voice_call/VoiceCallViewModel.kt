@@ -565,6 +565,11 @@ class VoiceCallViewModel : ViewModel() {
      * 대화 종료 요청
      */
     fun sendEndCall() {
+        stopSpeechToText()  // 음성 인식 종료
+        stopCountdown()  // 타이머 종료
+        releasePlayer()  // 플레이어 해제
+        audioQueue.clear() //  남은 오디오 큐 비우기
+
         if (ws == null || !isConnected) {
             Log.w("WebSocket", "❌ WebSocket 연결 안 되어 있음 - 종료 메시지 전송 생략")
             return
@@ -575,6 +580,9 @@ class VoiceCallViewModel : ViewModel() {
         }
         try {
             ws?.send(json.toString())
+            ws?.close()                 // WebSocket 강제 종료
+            isConnected = false
+            isConnecting = false
         } catch (e: Exception) {
             Log.e("WebSocket", "❌ 종료 메시지 전송 실패: ${e.message}", e)
         }
