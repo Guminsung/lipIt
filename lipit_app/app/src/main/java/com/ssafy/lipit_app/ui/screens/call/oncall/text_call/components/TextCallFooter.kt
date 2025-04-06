@@ -129,7 +129,7 @@ fun TextCallFooter(
                         modifier = Modifier
                             .size(25.dp)
                             .clickable {
-                                onIntent(TextCallIntent.ToggleTranslation)
+                                onIntent(TextCallIntent.ToggleTranslation(!showTranslation))
                             }
                     )
                 }
