@@ -3,6 +3,8 @@ package com.ssafy.lipit_app.ui.screens.main.components
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,11 +32,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ssafy.lipit_app.ui.screens.main.CallItem
+import com.ssafy.lipit_app.ui.screens.main.MainIntent
 import com.ssafy.lipit_app.ui.screens.main.MainViewModel
 
 // 요일별 call 카드뷰
 @Composable
-fun dailyCallSchedule(callItems: List<CallItem>, viewModel: MainViewModel) {
+fun DailyCallSchedule(
+    callItems: List<CallItem>,
+    viewModel: MainViewModel,
+    onIntent: (MainIntent) -> Unit
+) {
     val state by viewModel.state.collectAsState() // 고정된 값이 아닌 상태 관찰 -> 실시간 UI 반영
 
     Box(
@@ -46,6 +54,12 @@ fun dailyCallSchedule(callItems: List<CallItem>, viewModel: MainViewModel) {
             )
             .width(300.dp)
             .height(70.dp)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) {
+                onIntent(MainIntent.OnSettingsClicked)
+            }
             .background(color = Color(0xFFFFFFFF), shape = RoundedCornerShape(size = 15.dp)),
         contentAlignment = Alignment.Center
     ) {
@@ -109,7 +123,7 @@ fun dailyCallSchedule(callItems: List<CallItem>, viewModel: MainViewModel) {
                 contentAlignment = Alignment.BottomEnd
             ) {
                 Text(
-                    text = formatTimeTo12Hour(callItems[0].time),
+                    text = formatCallTimeTo12Hour(callItems[0].time),
                     style = TextStyle(
                         fontSize = 15.sp,
                         lineHeight = 15.sp,
@@ -128,7 +142,7 @@ fun dailyCallSchedule(callItems: List<CallItem>, viewModel: MainViewModel) {
 }
 
 @SuppressLint("DefaultLocale")
-fun formatTimeTo12Hour(time: String): String {
+fun formatCallTimeTo12Hour(time: String): String {
     val parts = time.split(":")
     if (parts.size < 2) return time // 잘못된 입력은 그대로 반환
 
