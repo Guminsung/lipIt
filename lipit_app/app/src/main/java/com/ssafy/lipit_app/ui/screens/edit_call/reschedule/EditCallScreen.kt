@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -33,11 +32,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,9 +56,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ssafy.lipit_app.R
-import com.ssafy.lipit_app.domain.repository.ScheduleRepository
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.CallSchedule
-import kotlinx.coroutines.selects.select
+import kotlinx.coroutines.launch
 
 @Composable
 fun EditCallScreen(
@@ -340,26 +338,34 @@ fun WheelColumn(
     initialIndex: Int,
     onSelectedChanged: (Int) -> Unit
 ) {
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialIndex)
-//    val currentIndex = listState.firstVisibleItemIndex + 2
-    val currentIndex = remember(listState.firstVisibleItemIndex, listState.layoutInfo) {
-        val visibleItems = listState.layoutInfo.visibleItemsInfo
-        if (visibleItems.isNotEmpty()) {
-            val centerItemIndex = visibleItems.indexOfFirst {
-                it.offset + it.size / 2 >= listState.layoutInfo.viewportStartOffset
-            }
-            if (centerItemIndex != -1) {
-                visibleItems[centerItemIndex].index
-            } else {
-                listState.firstVisibleItemIndex
-            }
-        } else {
-            initialIndex
-        }
-    }
 
-    LaunchedEffect(currentIndex) {
-        onSelectedChanged(currentIndex.coerceIn(0, items.size - 1))
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialIndex)
+    var selectedIndex by remember { mutableIntStateOf(initialIndex) }
+
+    // 스크롤이 멈추면 가장 가까운 아이템으로 스냅
+    LaunchedEffect(listState.isScrollInProgress) {
+        if (!listState.isScrollInProgress) {
+            // 현재 스크롤 오프셋과 인덱스 기반으로 스냅할 위치 결정
+            val firstVisibleIndex = listState.firstVisibleItemIndex
+            val offset = listState.firstVisibleItemScrollOffset
+
+            // 아이템 높이가 40dp라면, 절반(20dp)을 넘었는지 확인
+            val targetIndex = if (offset > 20) {
+                firstVisibleIndex + 1
+            } else {
+                firstVisibleIndex
+            }
+
+            // 스크롤 애니메이션
+            listState.animateScrollToItem(targetIndex)
+
+            // 실제 선택된 값의 인덱스 (LazyColumn에 패딩 항목이 있으므로 조정)
+            val adjustedIndex = (targetIndex - 2).coerceIn(0, items.size - 1)
+
+            // 선택된 항목 업데이트
+            selectedIndex = adjustedIndex
+            onSelectedChanged(adjustedIndex)
+        }
     }
 
     LazyColumn(
@@ -368,13 +374,13 @@ fun WheelColumn(
             .height(150.dp)
             .width(60.dp),
         verticalArrangement = Arrangement.Center,
-        contentPadding = PaddingValues(vertical = 45.dp)
+        contentPadding = PaddingValues(vertical = 55.dp) // 여백 증가
     ) {
-        items(items.size + 4) { index -> // 추가 아이템으로 스크롤 범위 확장
-            val adjustedIndex = index - 2 // 중앙 정렬을 위한 인덱스 조정
+        items(items.size + 4) { index ->
+            val adjustedIndex = index - 2
 
             if (adjustedIndex in items.indices) {
-                val isSelected = adjustedIndex == currentIndex
+                val isSelected = adjustedIndex == selectedIndex
                 Text(
                     text = items[adjustedIndex],
                     fontSize = if (isSelected) 24.sp else 17.sp,
@@ -389,7 +395,6 @@ fun WheelColumn(
         }
     }
 }
-
 
 @Composable
 fun EditCallButtons(
