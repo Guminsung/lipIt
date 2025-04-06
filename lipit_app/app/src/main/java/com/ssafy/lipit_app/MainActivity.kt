@@ -23,7 +23,6 @@ import androidx.navigation.compose.rememberNavController
 import com.ssafy.lipit_app.base.ApplicationClass
 import com.ssafy.lipit_app.navigation.NavGraph
 import com.ssafy.lipit_app.theme.LipItTheme
-import com.ssafy.lipit_app.ui.components.TransparentStatusBar
 import com.ssafy.lipit_app.ui.screens.call.alarm.AlarmScheduler
 import com.ssafy.lipit_app.ui.screens.call.alarm.CallNotificationHelper
 
@@ -50,8 +49,6 @@ class MainActivity : ComponentActivity() {
         Log.d(TAG, "Initial destination: $initialDestination")
 
         setContent {
-            // 상태바 & 네비게이션 바 투명하게
-            TransparentStatusBar()
 
             val navController = rememberNavController()
 
