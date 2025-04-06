@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.Translate
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,11 +29,22 @@ fun TextCallwithOriginalOnly(state: TextCallState) {
     val chatMessages = state.messages
     val scrollState = rememberScrollState()
 
+    Log.d("TextCall", "🖼️ 렌더링 대상 메시지 수: ${chatMessages.size}")
+    chatMessages.forEachIndexed { i, msg ->
+        Log.d("TextCall", "🗨️ [$i] ${if (msg.isFromUser) "나" else "AI"} → ${msg.text}")
+    }
+    Log.d("TextCallFooter", "📨 SendMessage 클릭됨")
+
+    // 스크롤 상태 변화 시 맨 아래로 자동 스크롤
+    LaunchedEffect(chatMessages.size) {
+        scrollState.animateScrollTo(scrollState.maxValue)
+    }
+    
     // 일단 리스트로 구현했으나 백 연동 시 다시 고려
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
             .padding(top = 24.dp),
         verticalArrangement = Arrangement.spacedBy(17.dp)
     ) {

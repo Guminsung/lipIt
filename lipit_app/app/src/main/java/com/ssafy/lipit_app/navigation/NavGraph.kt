@@ -3,9 +3,9 @@ package com.ssafy.lipit_app.navigation
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.*
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,6 +22,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.ssafy.lipit_app.base.SecureDataStore
+import com.ssafy.lipit_app.ui.components.TestLottieLoadingScreen
 import com.ssafy.lipit_app.ui.screens.auth.Login.LoginScreen
 import com.ssafy.lipit_app.ui.screens.auth.Login.LoginViewModel
 import com.ssafy.lipit_app.ui.screens.auth.Signup.SignupScreen
@@ -31,7 +32,7 @@ import com.ssafy.lipit_app.ui.screens.call.incoming.IncomingCallScreen
 import com.ssafy.lipit_app.ui.screens.call.incoming.IncomingCallViewModel
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallViewModel
-import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallScreen
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.CallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
 import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.add_voice.AddVoiceViewModel
@@ -44,11 +45,11 @@ import com.ssafy.lipit_app.ui.screens.main.MainViewModel
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceIntent
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceScreen
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceViewModel
-import com.ssafy.lipit_app.ui.screens.report.report_detail.ReportDetailScreen
-import com.ssafy.lipit_app.ui.screens.report.report_detail.ReportDetailViewModel
 import com.ssafy.lipit_app.ui.screens.report.ReportIntent
 import com.ssafy.lipit_app.ui.screens.report.ReportScreen
 import com.ssafy.lipit_app.ui.screens.report.ReportViewModel
+import com.ssafy.lipit_app.ui.screens.report.report_detail.ReportDetailScreen
+import com.ssafy.lipit_app.ui.screens.report.report_detail.ReportDetailViewModel
 import kotlinx.coroutines.launch
 
 private const val TAG = "NavGraph"
@@ -59,6 +60,8 @@ fun NavGraph(
     navController: NavHostController,
     initialDestination: String? = null
 ) {
+
+
     val context = LocalContext.current
     val secureDataStore = SecureDataStore.getInstance(context)
 
@@ -132,6 +135,11 @@ fun NavGraph(
                 }
             )
         }
+
+        composable("test_loader") {
+            TestLottieLoadingScreen()
+        }
+
 
         composable("login") {
             Log.d(TAG, "login 화면 구성")
@@ -225,6 +233,13 @@ fun NavGraph(
             )
         }
 
+        composable("call_screen") {
+            val viewModel = viewModel<VoiceCallViewModel>()
+            CallScreen(voiceViewModel = viewModel, navController = navController)
+        }
+
+
+
         composable("my_voices") {
             Log.d(TAG, "my_voices 화면 구성")
             val viewModel = viewModel<MyVoiceViewModel>()
@@ -278,27 +293,35 @@ fun NavGraph(
             val viewModel = viewModel<VoiceCallViewModel>()
             val state by viewModel.state.collectAsState()
 
-            VoiceCallScreen(
-                state = state,
-                onIntent = {
-                    Log.d(TAG, "VoiceCall 인텐트 처리: $it")
-                    viewModel.onIntent(it)
-                }
+            CallScreen(
+                voiceViewModel = viewModel,
+                navController = navController
             )
         }
 
         composable("onTextCall") {
             Log.d(TAG, "onTextCall 화면 구성")
+
             val viewModel = viewModel<TextCallViewModel>()
 
             TextCallScreen(
-                state = viewModel.state.collectAsState().value,
+                viewModel = viewModel,
                 onIntent = {
                     Log.d(TAG, "TextCall 인텐트 처리: $it")
                     viewModel.onIntent(it)
-                }
+                },
+                navController = navController,
+                onModeToggle = {
+                    navController.navigate("call_screen") {
+                        popUpTo("onTextCall") { inclusive = true } // 이전 스택 제거 (선택사항)
+                        launchSingleTop = true
+                    }
+                },
+                voiceCallViewModel = VoiceCallViewModel()
             )
+
         }
+
 
         composable("add_voice") {
             val context = LocalContext.current
