@@ -35,16 +35,17 @@ class TextCallViewModel : ViewModel() {
 
     fun onIntent(intent: TextCallIntent, onSendToServer: (String) -> Unit = {}) {
         when (intent) {
+            // 번역 켜고 끄기
             is TextCallIntent.ToggleTranslation -> {
-                _state.value = _state.value.copy(
-                    showTranslation = !_state.value.showTranslation
-                )
+                _state.update { it.copy(showTranslation = intent.show) }
             }
 
+            // 사용자 입력 반영
             is TextCallIntent.UpdateInputText -> {
                 _state.update { it.copy(inputText = intent.text) }
             }
 
+            // 입력된 메시지 보내기
             is TextCallIntent.SendMessage -> {
                 val currentText = _state.value.inputText
                 if (currentText.isNotBlank()) {

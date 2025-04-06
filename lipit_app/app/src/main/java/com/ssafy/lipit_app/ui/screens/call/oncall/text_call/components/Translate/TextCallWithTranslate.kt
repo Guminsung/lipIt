@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,8 +24,7 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallState
 
 @Composable
 fun TextCallWithTranslate(state: TextCallState) {
-    //val chatMessages = state.messages
-    val chatMessages = remember(state.messages) { state.messages }
+    val chatMessages = state.messages
 
     // 일단 리스트로 구현했으나 백 연동 시 다시 고려
     LazyColumn(
@@ -37,20 +35,19 @@ fun TextCallWithTranslate(state: TextCallState) {
     ) {
         items(chatMessages.size) { index ->
             val message = chatMessages[index]
+            val isUser = message.isFromUser // 누가 보낸 메시지인지 판단
 
             Column(
                 modifier = Modifier
                     .fillMaxWidth(),
 
                 // 누가 보낸 메시지인지에 따라 가로 위치 변경
-                horizontalAlignment = if (message.isFromUser) Alignment.End else Alignment.Start
+                horizontalAlignment = if (isUser) Alignment.End else Alignment.Start
             ) {
                 Box(
                     modifier = Modifier
                         .background(
-                            color = if (message.isFromUser) Color(0x99C494D9) else Color(
-                                0x66000000
-                            ),
+                            color = if (isUser) Color(0x99C494D9) else Color(0x66000000),
                             shape = RoundedCornerShape(size = 15.dp)
                         )
                         .padding(17.dp)
@@ -69,7 +66,7 @@ fun TextCallWithTranslate(state: TextCallState) {
 
                         Spacer(modifier = Modifier.height(5.dp))
 
-                        if (!message.isFromUser){
+                        if (!isUser && message.translatedText.isNotBlank()) {
                             Text(
                                 text = message.translatedText,
                                 style = TextStyle(
@@ -77,7 +74,7 @@ fun TextCallWithTranslate(state: TextCallState) {
                                     lineHeight = 30.sp,
                                     fontWeight = FontWeight(274),
                                     color = Color(0xB2FDF8FF)
-                                    )
+                                )
                             )
                         }
                     }
