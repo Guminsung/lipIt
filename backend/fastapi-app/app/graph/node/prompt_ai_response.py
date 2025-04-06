@@ -33,6 +33,8 @@ async def prompt_ai_response_node(state: dict) -> dict:
         user_input += timeout_suffix
 
     suffix = """
+IMPORTANT: Keep your responses concise and short. All replies must be limited to at most 3 sentences.
+
 IMPORTANT: Do not end the call unless the user clearly says goodbye, wants to stop, or mentions ending the conversation.
 
 ⚠️ Do NOT end the call for vague or neutral replies like "okay", "drawing", "I like it", etc.
