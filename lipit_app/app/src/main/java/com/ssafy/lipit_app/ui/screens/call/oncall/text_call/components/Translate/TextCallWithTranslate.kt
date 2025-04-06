@@ -35,20 +35,19 @@ fun TextCallWithTranslate(state: TextCallState) {
     ) {
         items(chatMessages.size) { index ->
             val message = chatMessages[index]
+            val isUser = message.isFromUser // 누가 보낸 메시지인지 판단
 
             Column(
                 modifier = Modifier
                     .fillMaxWidth(),
 
                 // 누가 보낸 메시지인지에 따라 가로 위치 변경
-                horizontalAlignment = if (message.isFromUser) Alignment.End else Alignment.Start
+                horizontalAlignment = if (isUser) Alignment.End else Alignment.Start
             ) {
                 Box(
                     modifier = Modifier
                         .background(
-                            color = if (message.isFromUser) Color(0x99C494D9) else Color(
-                                0x66000000
-                            ),
+                            color = if (isUser) Color(0x99C494D9) else Color(0x66000000),
                             shape = RoundedCornerShape(size = 15.dp)
                         )
                         .padding(17.dp)
@@ -67,7 +66,7 @@ fun TextCallWithTranslate(state: TextCallState) {
 
                         Spacer(modifier = Modifier.height(5.dp))
 
-                        if (!message.isFromUser){
+                        if (!isUser && message.translatedText.isNotBlank()) {
                             Text(
                                 text = message.translatedText,
                                 style = TextStyle(
@@ -75,7 +74,7 @@ fun TextCallWithTranslate(state: TextCallState) {
                                     lineHeight = 30.sp,
                                     fontWeight = FontWeight(274),
                                     color = Color(0xB2FDF8FF)
-                                    )
+                                )
                             )
                         }
                     }

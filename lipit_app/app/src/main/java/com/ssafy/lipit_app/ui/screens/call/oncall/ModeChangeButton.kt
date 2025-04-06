@@ -1,6 +1,7 @@
 package com.ssafy.lipit_app.ui.screens.call.oncall
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -24,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
 
 @Composable
-fun ModeChangeButton(currentMode: String) {
+fun ModeChangeButton(currentMode: String, onToggle: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth(),
@@ -38,7 +39,8 @@ fun ModeChangeButton(currentMode: String) {
                 .background(
                     color = Color(0x66000000),
                     shape = RoundedCornerShape(size = 15.dp)
-                ),
+                )
+                .clickable { onToggle() },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {

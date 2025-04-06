@@ -1,6 +1,5 @@
 package com.ssafy.lipit_app.ui.screens.main
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Build
 import android.util.Log
@@ -28,7 +27,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -69,6 +67,9 @@ fun MainScreen(
     viewModel: MainViewModel,
     onSuccess: () -> Unit
 ) {
+    //TransparentStatusBar()
+
+
     val state by viewModel.state.collectAsState() // 고정된 값이 아닌 상태 관찰 -> 실시간 UI 반영
     val context = LocalContext.current
 
@@ -245,7 +246,7 @@ fun MainScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFFFDF8FF))
-                .padding(start = 20.dp, end = 20.dp, top = 40.dp),
+                .padding(start = 20.dp, end = 20.dp, top = 70.dp),
 
             ) {
             UserInfoSection(state.userName, state, onIntent, state.level) // 상단의 유저 이름, 등급 부분
