@@ -53,8 +53,8 @@ fun AddVoiceScreen(
     // 커스텀보이스 생성후 다이얼로그는 화면 위에 얹는 형태로 조건부 표시
     if (state.uploadSuccess) {
         SuccessDialog(
-            onDismiss = { onIntent(AddVoiceIntent.NavigateToMain) },
-            onConfirm = { onIntent(AddVoiceIntent.NavigateToMain) }
+            onDismiss = { onIntent(AddVoiceIntent.NavigateBackToMyVoices) }, // 변경
+            onConfirm = { onIntent(AddVoiceIntent.NavigateBackToMyVoices) }  // 변경
         )
     }
 

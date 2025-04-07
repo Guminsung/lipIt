@@ -128,7 +128,6 @@ class MainViewModel(
 
             is MainIntent.ShowMyVoicesScreen -> {
                 _state.update { it.copy(bottomSheetContent = BottomSheetContent.MY_VOICES) }
-
             }
 
             is MainIntent.DeleteSchedule -> {
@@ -281,9 +280,14 @@ class MainViewModel(
                                 voiceImageUrl = voice[0].customImageUrl
                             )
                         )
-
                     }
+
+                    // Mian 에서 보여지는 일주일치 데이터는 해당 함수 내에서 얻어올 수 있음
+                    fetchWeeklySchedule(memberId)
                 }
+
+                _state.update { it.copy(isLoading = false) }
+
             } catch (e: Exception) {
                 println("예외 발생: ${e.message}")
             }

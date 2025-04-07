@@ -58,10 +58,13 @@ class AddVoiceViewModel(context: Context) : ViewModel() {
                 _state.update { it.copy(selectedImageUri = intent.uri) }
             }
             is AddVoiceIntent.SubmitVoice -> submitVoice()
-            is AddVoiceIntent.NavigateToMain -> {
-                // NavigateToMain은 NavGraph에서 처리되므로 여기서는 아무것도 하지 않음
-            }
+//            is AddVoiceIntent.NavigateToMain -> {
+//                // NavigateToMain은 NavGraph에서 처리되므로 여기서는 아무것도 하지 않음
+//            }
             is AddVoiceIntent.DismissErrorDialog -> dismissErrorDialog()
+            is AddVoiceIntent.NavigateBackToMyVoices -> {
+                // 실제 네비게이션 NavGraph에서 처리
+            }
         }
     }
 
