@@ -2,6 +2,7 @@
 import asyncio
 import logging
 
+from app.service.voice import get_voice_by_call_id, get_voice_by_member_id
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from app.graph.call_graph import (
@@ -35,8 +36,10 @@ end_call_graph = build_end_call_graph()
 
 
 async def start_call(
-    db: AsyncSession, request: StartCallRequest, member_id: int=1, voice_name: str=""
+    db: AsyncSession, request: StartCallRequest, member_id: int=1
 ) -> StartCallResponse:
+    voice = await get_voice_by_member_id(db, member_id)
+    
     # 자유 주제(topic = None)인 경우 뉴스/날씨 데이터로 topic 추출
     topic = request.topic
     if not topic:
@@ -48,7 +51,7 @@ async def start_call(
         "member_id": member_id,
         "topic": topic,
         "messages": [],
-        "voice_name": voice_name,
+        "voice_name": voice.voice_name,
     }
 
     try:
@@ -80,13 +83,13 @@ async def add_message_to_call(
     call_id: int,
     request: UserMessageRequest,
     member_id: int=1,
-    voice_name: str = "",
 ) -> AIMessageResponse:
     call_record = await get_call_by_id(db, call_id)
     if not call_record:
         raise APIException(404, Error.CALL_NOT_FOUND)
     if call_record.end_time:
         raise APIException(400, Error.CALL_ALREADY_ENDED)
+    voice = await get_voice_by_call_id(db, call_id)
 
     # 시간 초과 여부 확인
     duration = int((now_kst() - to_kst(call_record.start_time)).total_seconds())
@@ -98,6 +101,7 @@ async def add_message_to_call(
         "input": request.userMessage,
         "messages": [convert_to_lc_message(Message(**m)) for m in call_record.messages],
         "is_timeout": is_timeout,
+        "voice_name": voice.voice_name,
     }
 
     try:
