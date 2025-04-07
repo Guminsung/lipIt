@@ -2,7 +2,6 @@
 import asyncio
 import logging
 
-from app.service.voice import get_voice_by_call_id, get_voice_by_member_id
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from app.graph.call_graph import (
@@ -42,8 +41,6 @@ async def start_call(
     voice_name: str,
     type: int,
 ) -> StartCallResponse:
-    voice = await get_voice_by_member_id(db, member_id)
-
     # 자유 주제(topic = None)인 경우 뉴스/날씨 데이터로 topic 추출
     topic = request.topic
     if not topic:
@@ -96,7 +93,6 @@ async def add_message_to_call(
         raise APIException(404, Error.CALL_NOT_FOUND)
     if call_record.end_time:
         raise APIException(400, Error.CALL_ALREADY_ENDED)
-    voice = await get_voice_by_call_id(db, call_id)
 
     # 시간 초과 여부 확인
     duration = int((now_kst() - to_kst(call_record.start_time)).total_seconds())
