@@ -25,9 +25,9 @@ class ReportViewModel : ViewModel() {
         SharedPreferenceUtils.getMemberId()
     }
 
-    init {
-        loadReportList()
-    }
+//    init {
+//        loadReportList()
+//    }
 
     fun onIntent(intent: ReportIntent) {
         when (intent) {
@@ -71,6 +71,11 @@ class ReportViewModel : ViewModel() {
                 }
             }
         }
+    }
+
+    fun refreshReportList() {
+        _state.update { it.copy(totalReportList = emptyList()) }
+        loadReportList()
     }
 
 

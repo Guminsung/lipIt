@@ -179,13 +179,14 @@ fun VoiceCallScreen(
                 // 로딩 화면 보여주고 reports로 이동
                 viewModel._state.update { it.copy(isLoading = true) }
 
-                delay(5000L) // 리포트 생성 시간에 따라 조절
+                delay(10000L) // 리포트 생성 시간에 따라 조절
 
                 viewModel._state.update { it.copy(isLoading = false) }
 
-                navController.navigate("reports") {
+                navController.navigate("reports?refresh=true") {
                     popUpTo("call_screen") { inclusive = true }
                 }
+
             } else {
                 // 리포트 생성 실패 다이얼로그
                 viewModel._state.update { it.copy(reportFailed = true) }

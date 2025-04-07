@@ -36,8 +36,16 @@ import com.ssafy.lipit_app.ui.screens.report.components.Report
 @Composable
 fun ReportScreen(
     state: ReportState,
-    onIntent: (ReportIntent) -> Unit
+    onIntent: (ReportIntent) -> Unit,
+    shouldRefresh: Boolean
 ) {
+    // call에서 넘어올때 강제 새로고침 시행
+    LaunchedEffect(shouldRefresh) {
+        if (shouldRefresh) {
+            onIntent(ReportIntent.LoadReportList)
+            Log.d("ReportScreen", "강제 새로고침 실행")
+        }
+    }
 
     LaunchedEffect(Unit) {
         onIntent(ReportIntent.LoadReportList)
@@ -117,8 +125,6 @@ fun ReportScreen(
 
     }
 }
-
-
 
 
 @Composable
