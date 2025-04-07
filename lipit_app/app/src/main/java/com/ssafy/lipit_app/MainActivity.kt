@@ -52,34 +52,6 @@ class MainActivity : ComponentActivity() {
 
             val navController = rememberNavController()
 
-            // 알림 권한 요청
-            val requestPermissionLauncher = rememberLauncherForActivityResult(
-                ActivityResultContracts.RequestPermission()
-            ) { isGranted: Boolean ->
-                if (isGranted) {
-                    Toast.makeText(this@MainActivity, "알림 권한이 부여되었습니다", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this@MainActivity, "알림을 표시하려면 알림 권한이 필요합니다", Toast.LENGTH_SHORT)
-                        .show()
-                }
-            }
-
-            // 권한 체크
-            LaunchedEffect(Unit) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    when {
-                        ContextCompat.checkSelfPermission(
-                            this@MainActivity,
-                            Manifest.permission.POST_NOTIFICATIONS
-                        ) != PackageManager.PERMISSION_GRANTED -> {
-                            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                        }
-                    }
-                }
-            }
-
-
-
             LipItTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
