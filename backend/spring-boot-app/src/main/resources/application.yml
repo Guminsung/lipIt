@@ -43,13 +43,7 @@ spring:
     locations: classpath:db/migration
 
   cache:
-    type: caffeine
-    caffeine:
-      spec: maximumSize=1000,expireAfterWrite=3600s
-    cache-names:
-      - celebVoices
-      - customVoices
-      - selectedVoice
+    type: none  # 기본 캐시 타입 제거 (CompositeCacheManager 사용)
 
 server:
   servlet:

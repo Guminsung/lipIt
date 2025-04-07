@@ -7,6 +7,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import com.arizona.lipit.domain.member.entity.Member;
 import com.arizona.lipit.domain.member.repository.MemberRepository;
@@ -33,7 +37,9 @@ public class VoiceService {
 	private final MemberVoiceRepository memberVoiceRepository;
 	private final VoiceRepository voiceRepository;
 	private final VoiceMapper voiceMapper;
+	private final CacheManager cacheManager;
 
+	@Cacheable(value = "celebVoices", key = "'all'")  // Redis 글로벌 캐시
 	public List<CelebVoiceResponseDto> getCelebVoicesByMemberId(Long memberId) {
 		log.info("🔍 Getting celeb voices for memberId: {}", memberId);
 		validateMemberId(memberId);
@@ -50,8 +56,16 @@ public class VoiceService {
 		return findAndMapCustomVoices(memberId);
 	}
 
+	@Cacheable(value = "selectedVoice", key = "#memberId")
 	@Transactional(readOnly = true)
 	public List<UserVoiceResponseDto> getAllVoicesByMemberId(Long memberId) {
+		// 캐시 상태 로깅
+		Cache selectedVoiceCache = cacheManager.getCache("selectedVoice");
+		if (selectedVoiceCache != null) {
+			Cache.ValueWrapper value = selectedVoiceCache.get(memberId);
+			log.info("🔍 Cache status for memberId {}: {}", memberId, value != null ? "HIT" : "MISS");
+		}
+
 		log.info("🔍 Fetching all voices for memberId: {}", memberId);
 		validateMemberId(memberId);
 		Member member = findMemberById(memberId);
@@ -61,7 +75,12 @@ public class VoiceService {
 		}
 
 		Voice selectedVoice = findVoiceById(member.getSelectedVoiceId());
-		return List.of(voiceMapper.toUserVoiceResponseDto(selectedVoice));
+		List<UserVoiceResponseDto> result = List.of(voiceMapper.toUserVoiceResponseDto(selectedVoice));
+
+		// 캐시에 저장된 결과 로깅
+		log.info("💾 Caching result for memberId {}: {}", memberId, result);
+		
+		return result;
 	}
 
 	@Transactional

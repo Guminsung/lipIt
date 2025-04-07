@@ -76,6 +76,9 @@ dependencies {
 
     // Flyway
     implementation 'org.flywaydb:flyway-database-postgresql'
+
+    // Caffeine
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
 }
 
 tasks.named('test') {
