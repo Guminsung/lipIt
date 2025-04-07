@@ -7,8 +7,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 
@@ -28,7 +26,6 @@ import com.arizona.lipit.domain.member.entity.Level;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class VoiceService {
@@ -37,11 +34,9 @@ public class VoiceService {
 	private final MemberVoiceRepository memberVoiceRepository;
 	private final VoiceRepository voiceRepository;
 	private final VoiceMapper voiceMapper;
-	private final CacheManager cacheManager;
 
-	@Cacheable(value = "celebVoices", key = "'all'")  // Redis 글로벌 캐시
+	@Cacheable(value = "celebVoices", key = "'all'")
 	public List<CelebVoiceResponseDto> getCelebVoicesByMemberId(Long memberId) {
-		log.info("🔍 Getting celeb voices for memberId: {}", memberId);
 		validateMemberId(memberId);
 		Member member = findMemberById(memberId);
 		List<Voice> celebVoices = voiceRepository.findByType(VoiceType.CELEB);
@@ -50,23 +45,13 @@ public class VoiceService {
 
 	@Transactional(readOnly = true)
 	public List<VoiceResponseDto> getCustomVoicesByMemberId(Long memberId) {
-		log.info("🔍 Fetching custom voices for memberId: {}", memberId);
 		validateMemberId(memberId);
 		findMemberById(memberId);
 		return findAndMapCustomVoices(memberId);
 	}
 
-	@Cacheable(value = "selectedVoice", key = "#memberId")
 	@Transactional(readOnly = true)
 	public List<UserVoiceResponseDto> getAllVoicesByMemberId(Long memberId) {
-		// 캐시 상태 로깅
-		Cache selectedVoiceCache = cacheManager.getCache("selectedVoice");
-		if (selectedVoiceCache != null) {
-			Cache.ValueWrapper value = selectedVoiceCache.get(memberId);
-			log.info("🔍 Cache status for memberId {}: {}", memberId, value != null ? "HIT" : "MISS");
-		}
-
-		log.info("🔍 Fetching all voices for memberId: {}", memberId);
 		validateMemberId(memberId);
 		Member member = findMemberById(memberId);
 		
@@ -75,17 +60,11 @@ public class VoiceService {
 		}
 
 		Voice selectedVoice = findVoiceById(member.getSelectedVoiceId());
-		List<UserVoiceResponseDto> result = List.of(voiceMapper.toUserVoiceResponseDto(selectedVoice));
-
-		// 캐시에 저장된 결과 로깅
-		log.info("💾 Caching result for memberId {}: {}", memberId, result);
-		
-		return result;
+		return List.of(voiceMapper.toUserVoiceResponseDto(selectedVoice));
 	}
 
 	@Transactional
 	public SelectVoiceResponseDto selectVoice(Long memberId, SelectVoiceRequestDto requestDto) {
-		log.info("💾 Updating voice selection for memberId: {}", memberId);
 		validateVoiceRequest(requestDto);
 		Member member = findMemberById(memberId);
 		Voice selectedVoice = findVoiceById(requestDto.getVoiceId());
@@ -100,7 +79,6 @@ public class VoiceService {
 
 	@Transactional
 	public RecordingVoiceResponseDto saveRecordingVoice(RecordingVoiceRequestDto requestDto, Long memberId) {
-		log.info("💾 Saving recording voice for memberId: {}", memberId);
 		validateRecordingRequest(requestDto, memberId);
 		Member member = findMemberById(memberId);
 		validateDuplicateVoiceName(memberId, requestDto.getVoiceName());
@@ -125,8 +103,6 @@ public class VoiceService {
 
 	private List<VoiceResponseDto> findAndMapCustomVoices(Long memberId) {
 		List<MemberVoice> memberVoices = memberVoiceRepository.findCustomVoicesByMemberId(memberId);
-		memberVoices.forEach(mv -> log.info("Custom Voice: id={}, name={}, audioUrl={}", 
-			mv.getVoice().getVoiceId(), mv.getVoice().getVoiceName(), mv.getVoice().getAudioUrl()));
 		if (memberVoices.isEmpty()) {
 			throw new CustomException(ErrorCode.VOICE_NOT_FOUND);
 		}
@@ -138,30 +114,13 @@ public class VoiceService {
 			.orElseThrow(() -> new CustomException(ErrorCode.VOICE_NOT_EXIST));
 	}
 
-	private void validateVoiceRequest(SelectVoiceRequestDto requestDto) {
-		if (requestDto.getVoiceId() == null || requestDto.getVoiceId() <= 0) {
-			throw new CustomException(ErrorCode.BAD_REQUEST);
-		}
-	}
-
-	private void validateVoiceOwnership(Long memberId, Voice voice) {
-		if (voice.getType() == VoiceType.CUSTOM) {
-			boolean isOwnVoice = memberVoiceRepository.findAllVoicesByMemberId(memberId).stream()
-				.anyMatch(mv -> mv.getVoice().getVoiceId().equals(voice.getVoiceId()));
-			
-			if (!isOwnVoice) {
-				throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
-			}
-		}
-	}
-
 	private void validateRecordingRequest(RecordingVoiceRequestDto requestDto, Long memberId) {
 		if (requestDto == null || memberId == null) {
-			throw new CustomException(ErrorCode.INVALID_FORMAT, "필수 정보가 누락되었습니다.");
+			throw new CustomException(ErrorCode.INVALID_REQUEST, "잘못된 요청입니다. 입력 값을 확인해주세요.");
 		}
 
 		if (isInvalidRequiredFields(requestDto)) {
-			throw new CustomException(ErrorCode.INVALID_FORMAT, "필수 정보가 누락되었습니다.");
+			throw new CustomException(ErrorCode.INVALID_DATA, "요청 데이터를 처리할 수 없습니다. 입력 값을 확인해주세요.");
 		}
 
 		validateUrls(requestDto);
@@ -179,7 +138,7 @@ public class VoiceService {
 				new URL(requestDto.getImageUrl());
 			}
 		} catch (MalformedURLException e) {
-			throw new CustomException(ErrorCode.INVALID_URL, "올바르지 않은 URL 형식입니다.");
+			throw new CustomException(ErrorCode.URL_RESOURCE_NOT_FOUND, "제공된 URL에서 리소스를 찾을 수 없습니다.");
 		}
 	}
 
@@ -188,7 +147,24 @@ public class VoiceService {
 			.anyMatch(mv -> mv.getVoice().getVoiceName().trim().equals(voiceName.trim()));
 
 		if (isDuplicate) {
-			throw new CustomException(ErrorCode.VOICE_ALREADY_EXISTS, "이미 존재하는 음성 이름입니다.");
+			throw new CustomException(ErrorCode.DATA_CONFLICT, "이미 존재하는 데이터입니다. 중복을 확인해주세요.");
+		}
+	}
+
+	private void validateVoiceRequest(SelectVoiceRequestDto requestDto) {
+		if (requestDto.getVoiceId() == null || requestDto.getVoiceId() <= 0) {
+			throw new CustomException(ErrorCode.INVALID_REQUEST, "잘못된 요청입니다. 입력 값을 확인해주세요.");
+		}
+	}
+
+	private void validateVoiceOwnership(Long memberId, Voice voice) {
+		if (voice.getType() == VoiceType.CUSTOM) {
+			boolean isOwnVoice = memberVoiceRepository.findAllVoicesByMemberId(memberId).stream()
+				.anyMatch(mv -> mv.getVoice().getVoiceId().equals(voice.getVoiceId()));
+			
+			if (!isOwnVoice) {
+				throw new CustomException(ErrorCode.FORBIDDEN_ACCESS, "해당 리소스에 접근할 권한이 없습니다.");
+			}
 		}
 	}
 

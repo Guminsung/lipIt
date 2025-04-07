@@ -19,6 +19,12 @@ import java.util.Arrays;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.support.CompositeCacheManager;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.context.annotation.Primary;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 @Configuration
 @EnableCaching
@@ -26,43 +32,50 @@ import org.springframework.cache.support.CompositeCacheManager;
 public class CacheConfig {
 
     @Bean
-    public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
-        // Redis 캐시 설정
+    public CacheManager redisCacheManager(RedisConnectionFactory redisConnectionFactory) {
+        ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .activateDefaultTyping(
+                LaissezFaireSubTypeValidator.instance,
+                ObjectMapper.DefaultTyping.NON_FINAL,
+                JsonTypeInfo.As.PROPERTY
+            );
+
         RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
             .entryTtl(Duration.ofHours(1))
-            .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+            .serializeKeysWith(
+                RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())
+            )
+            .serializeValuesWith(
+                RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer(objectMapper))
+            );
 
         RedisCacheManager redisCacheManager = RedisCacheManager.builder(redisConnectionFactory)
             .cacheDefaults(redisCacheConfiguration)
             .build();
 
-        // Caffeine 캐시 설정
-        CaffeineCacheManager caffeineCacheManager = new CaffeineCacheManager();
-        caffeineCacheManager.setCaffeine(Caffeine.newBuilder()
-            .initialCapacity(100)
-            .maximumSize(500)
-            .expireAfterWrite(Duration.ofMinutes(5))
-            .recordStats());
-
-        // 캐시 이름 명시적 설정
-        caffeineCacheManager.setCacheNames(Arrays.asList("selectedVoice"));
-        
-        log.info("🔧 Cache configuration initialized");
-        log.info("📦 Redis caches: celebVoices");
-        log.info("📦 Caffeine caches: selectedVoice");
-
-        return new CompositeCacheManager(redisCacheManager, caffeineCacheManager);
+        log.info("🔧 Redis Cache Manager initialized");
+        return redisCacheManager;
     }
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+        ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .activateDefaultTyping(
+                LaissezFaireSubTypeValidator.instance,
+                ObjectMapper.DefaultTyping.NON_FINAL,
+                JsonTypeInfo.As.PROPERTY
+            );
+
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
         template.setHashKeySerializer(new StringRedisSerializer());
-        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
+        
+        template.afterPropertiesSet();  // 설정 적용
         return template;
     }
 }
