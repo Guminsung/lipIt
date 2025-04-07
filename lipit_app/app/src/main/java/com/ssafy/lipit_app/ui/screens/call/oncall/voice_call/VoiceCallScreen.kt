@@ -34,8 +34,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.rememberLottieComposition
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.ChatMessage
 import com.ssafy.lipit_app.ui.components.ListeningUi
@@ -85,7 +83,6 @@ fun VoiceCallScreen(
             }
         )
     }
-
 
 
     // 가장 먼저 Player 초기화
@@ -173,24 +170,28 @@ fun VoiceCallScreen(
     }
 
     // 통화 종료 후 이동
-    LaunchedEffect(viewModel.isCallEnded) {
-        if (viewModel.isCallEnded) {
-            if (viewModel.state.value.isReportCreated) {
-                // 로딩 화면 보여주고 reports로 이동
-                viewModel._state.update { it.copy(isLoading = true) }
+    // 로딩 화면 보여주기
+    if (state.isLoading) {
+        TestLottieLoadingScreen("리포트 생성 중...")
+    }
 
-                delay(10000L) // 리포트 생성 시간에 따라 조절
 
-                viewModel._state.update { it.copy(isLoading = false) }
+    LaunchedEffect(
+        key1 = state.isCallEnded,
+        key2 = state.isReportCreated
+    ) {
+        if (state.isCallEnded && state.isReportCreated) {
+            Log.d("VoiceCallScreen", "📍 종료됨 + 리포트 생성됨 → 이동")
+            viewModel._state.update { it.copy(isLoading = true) }
 
-                navController.navigate("reports?refresh=true") {
-                    popUpTo("call_screen") { inclusive = true }
-                }
+            delay(10000L) // 로딩 보여주는 시간
 
-            } else {
-                // 리포트 생성 실패 다이얼로그
-                viewModel._state.update { it.copy(reportFailed = true) }
+            viewModel._state.update { it.copy(isLoading = false) }
+
+            navController.navigate("reports?refresh=true") {
+                popUpTo("call_screen") { inclusive = true }
             }
+
         }
     }
 
@@ -217,16 +218,6 @@ fun VoiceCallScreen(
                 )
             }
         )
-    }
-
-
-    // 리포트 생성 중 로딩 다이얼로그 표시
-    val composition by rememberLottieComposition(
-        LottieCompositionSpec.RawRes(R.raw.loader)
-    )
-
-    if (state.isLoading) {
-        TestLottieLoadingScreen("리포트 생성 중...")
     }
 
 
