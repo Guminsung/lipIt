@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -49,6 +50,7 @@ fun TextCallScreen(
     val listState = rememberLazyListState()
     val context = LocalContext.current
     val voiceCallState by voiceCallViewModel.state.collectAsState()
+    val isKeyboardOpen = isKeyboardOpen()
 
     val state = viewModel.state.collectAsState().value
     Log.d("TextCall", "📦 메시지 수: ${state.messages.size}")
@@ -130,7 +132,7 @@ fun TextCallScreen(
     Box(
         modifier = Modifier
             .fillMaxWidth(),
-        contentAlignment = Alignment.TopCenter
+        contentAlignment = Alignment.TopCenter,
     ) {
         // 배경
         Image(
@@ -147,7 +149,7 @@ fun TextCallScreen(
             modifier = Modifier
                 .padding(top = 55.dp, start = 20.dp, end = 20.dp, bottom = 40.dp)
                 .fillMaxSize()
-        ) {
+            ) {
             // 모드 변경
             ModeChangeButton(
                 currentMode = state.currentMode,
@@ -178,6 +180,12 @@ fun TextCallScreen(
 
             // 하단 영역 (텍스트 입력 공간, 번역 여부 및 텍스트 보내기 버튼)
             TextCallFooter(state.inputText, state.showTranslation, onIntent = onIntent)
+
+            if (isKeyboardOpen) {
+                Spacer(modifier = Modifier.height(30.dp)) // 키보드 열렸을 때만 여백 줌
+            } else {
+                Spacer(modifier = Modifier.height(5.dp))
+            }
         }
     }
 }
@@ -195,4 +203,9 @@ fun TextVersionCall(
     }
 }
 
+@Composable
+fun isKeyboardOpen(): Boolean {
+    val ime = androidx.compose.foundation.layout.WindowInsets.ime
+    return ime.getBottom(androidx.compose.ui.platform.LocalDensity.current) > 0
+}
 
