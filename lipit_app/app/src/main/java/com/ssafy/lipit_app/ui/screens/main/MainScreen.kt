@@ -58,6 +58,7 @@ import com.ssafy.lipit_app.ui.screens.main.components.ReportAndVoiceBtn
 import com.ssafy.lipit_app.ui.screens.main.components.TodaysSentence
 import com.ssafy.lipit_app.ui.screens.main.components.WeeklyCallsSection
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
+import kotlinx.coroutines.delay
 
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -205,11 +206,12 @@ fun MainScreen(
                                         "Plan ${if (isEditMode) "수정" else "추가"} OK: $updatedSchedule"
                                     )
 
-                                    // 바텀시트 닫고 다시 열기 (데이터 내용 갱신)
-                                    onIntent(MainIntent.OnCloseSettingsSheet)
-                                    android.os.Handler().postDelayed({
-                                        onIntent(MainIntent.OnSettingsClicked)
-                                    }, 300) // 300ms 지연
+
+                                    // 먼저 데이터 갱신
+                                    onIntent(MainIntent.RefreshAfterVoiceChange)  // 메인 화면 데이터 갱신
+                                    onIntent(MainIntent.OnSettingsClicked)        // 바텀시트 데이터 갱신
+                                    onIntent(MainIntent.ShowWeeklyCallsScreen)    // 바텀시트 화면 전환
+
                                 }
                             )
                         }
