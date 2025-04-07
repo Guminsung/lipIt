@@ -52,6 +52,7 @@ async def start_call(
         "topic": topic,
         "messages": [],
         "voice_name": voice.voice_name,
+        "voice_type": voice.voice_type,
     }
 
     try:
@@ -102,6 +103,7 @@ async def add_message_to_call(
         "messages": [convert_to_lc_message(Message(**m)) for m in call_record.messages],
         "is_timeout": is_timeout,
         "voice_name": voice.voice_name,
+        "voice_type": voice.voice_type,
     }
 
     try:
