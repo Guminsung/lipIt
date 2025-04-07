@@ -109,7 +109,7 @@ fun TextCallFooter(
                     },
                 )
             } else {
-                // ㅑ번역 버튼
+                // 번역 버튼
                 Box(
                     modifier = Modifier
                         .size(51.dp)

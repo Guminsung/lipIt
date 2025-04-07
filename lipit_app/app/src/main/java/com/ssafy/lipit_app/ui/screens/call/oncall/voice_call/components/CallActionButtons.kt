@@ -187,12 +187,8 @@ fun CallActionButtons(
                 .clickable {
                     // 전화 끊기
                     viewModel.sendEndCall() // 연결되어 있으면 종료 메시지 보내고
-                    Toast
-                        .makeText(context, "통화가 종료되어 메인으로 돌아갑니다.", Toast.LENGTH_SHORT)
-                        .show()
-                    navController.navigate("main") {
-                        popUpTo("call_screen") { inclusive = true }
-                    }
+                    Toast.makeText(context, "통화 종료 요청을 보냈습니다.", Toast.LENGTH_SHORT).show()
+
                 },
             contentAlignment = Alignment.Center
         ) {
