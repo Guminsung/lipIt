@@ -8,12 +8,9 @@ import com.ssafy.lipit_app.data.model.request_dto.auth.LogoutRequest
 import com.ssafy.lipit_app.data.model.response_dto.schedule.TopicCategory
 import com.ssafy.lipit_app.domain.repository.MyVoiceRepository
 import com.ssafy.lipit_app.domain.repository.ScheduleRepository
+import com.ssafy.lipit_app.ui.screens.call.alarm.AlarmScheduler
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.CallSchedule
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsState
-import com.ssafy.lipit_app.util.sortSchedulesByDay
-import androidx.lifecycle.viewModelScope
-import com.ssafy.lipit_app.data.model.request_dto.schedule.ScheduleCreateRequest
-import com.ssafy.lipit_app.ui.screens.call.alarm.AlarmScheduler
 import com.ssafy.lipit_app.ui.screens.main.components.DailySentenceManager
 import com.ssafy.lipit_app.ui.screens.main.components.dayFullToShort
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
@@ -171,6 +168,9 @@ class MainViewModel(
                 com.ssafy.lipit_app.base.SecureDataStore.getInstance(context).clearUserInfo()
 
                 _state.value = _state.value.copy(isLogoutSuccess = true)
+
+                // 사용자 id 정보 삭제
+                SharedPreferenceUtils.clearMemberId()
             } else {
                 _state.value = _state.value.copy(isLogoutSuccess = true)
 
