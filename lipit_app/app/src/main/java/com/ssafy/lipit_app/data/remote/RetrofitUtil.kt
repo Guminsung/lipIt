@@ -59,4 +59,8 @@ object RetrofitUtil {
         fastApiRetrofit.create(S3PresignService::class.java)
     }
 
+    val onBoardingService: OnBoardingService by lazy {
+        springRetrofit.create(OnBoardingService::class.java)
+    }
+
 }
