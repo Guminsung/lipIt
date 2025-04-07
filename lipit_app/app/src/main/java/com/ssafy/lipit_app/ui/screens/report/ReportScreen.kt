@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.report
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,6 +41,7 @@ fun ReportScreen(
 
     LaunchedEffect(Unit) {
         onIntent(ReportIntent.LoadReportList)
+        Log.d("ReportScreen", "리포트 개수: ${state.totalReportList.size}")
     }
 
     Column(
