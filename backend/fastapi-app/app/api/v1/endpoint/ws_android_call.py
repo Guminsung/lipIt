@@ -49,10 +49,11 @@ async def android_ws_call(client_ws: WebSocket, db: AsyncSession = Depends(get_d
                     request = StartCallRequest(**payload["data"])
 
                     member_id = request.memberId
-                    voice = await get_voice_by_member_id(db, member_id)
+
+                    voice = await get_voice_by_call_id(db, call_id)
 
                     response = await call.start_call(
-                        db, request, member_id, voice.voice_name
+                        db, request, member_id, voice.voice_name, voice.type
                     )
 
                     call_id = response.calld
@@ -94,7 +95,7 @@ async def android_ws_call(client_ws: WebSocket, db: AsyncSession = Depends(get_d
                     voice = await get_voice_by_call_id(db, call_id)
 
                     response = await call.add_message_to_call(
-                        db, call_id, request, member_id, voice.voice_name
+                        db, call_id, request, member_id, voice
                     )
 
                     await client_ws.send_text(

@@ -36,10 +36,14 @@ end_call_graph = build_end_call_graph()
 
 
 async def start_call(
-    db: AsyncSession, request: StartCallRequest, member_id: int=1
+    db: AsyncSession,
+    request: StartCallRequest,
+    member_id: int,
+    voice_name: str,
+    type: int,
 ) -> StartCallResponse:
     voice = await get_voice_by_member_id(db, member_id)
-    
+
     # 자유 주제(topic = None)인 경우 뉴스/날씨 데이터로 topic 추출
     topic = request.topic
     if not topic:
@@ -51,8 +55,8 @@ async def start_call(
         "member_id": member_id,
         "topic": topic,
         "messages": [],
-        "voice_name": voice.voice_name,
-        "voice_type": voice.type,
+        "voice_name": voice_name,
+        "voice_type": type,
     }
 
     try:
@@ -83,7 +87,9 @@ async def add_message_to_call(
     db: AsyncSession,
     call_id: int,
     request: UserMessageRequest,
-    member_id: int=1,
+    member_id: int,
+    voice_name: str,
+    type: int,
 ) -> AIMessageResponse:
     call_record = await get_call_by_id(db, call_id)
     if not call_record:
@@ -102,8 +108,8 @@ async def add_message_to_call(
         "input": request.userMessage,
         "messages": [convert_to_lc_message(Message(**m)) for m in call_record.messages],
         "is_timeout": is_timeout,
-        "voice_name": voice.voice_name,
-        "voice_type": voice.type,
+        "voice_name": voice_name,
+        "voice_type": type,
     }
 
     try:
@@ -147,7 +153,9 @@ async def add_message_to_call(
                 f"Member {call_record.member_id}의 total_report_count를 증가시키고 total_call_duration에 {duration}을 추가했습니다."
             )
         except Exception as e:
-            logger.error(f"total_report_count/total_call_duration 업데이트 실패: {str(e)}")
+            logger.error(
+                f"total_report_count/total_call_duration 업데이트 실패: {str(e)}"
+            )
             # 이 오류로 인해 전체 흐름이 중단되지 않도록 pass
             pass
 
