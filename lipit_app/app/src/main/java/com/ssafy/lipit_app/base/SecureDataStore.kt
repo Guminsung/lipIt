@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.ssafy.lipit_app.data.model.response_dto.auth.LoginResponse
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
@@ -35,9 +36,8 @@ class SecureDataStore(private val context: Context) {
         val MEMBER_ID_KEY = longPreferencesKey("member_id")
         val EMAIL_KEY = stringPreferencesKey("user_email")
         val USER_NAME_KEY = stringPreferencesKey("user_name")
-        val FIRST_LOGIN_KEY = booleanPreferencesKey("is_first_login") // 첫 로그인 여부
         val FCM_TOKEN_KEY = stringPreferencesKey("fcm_token") //fcm 토큰 추가
-
+        val ONBOARDING_COMPLETED_KEY = booleanPreferencesKey("onboarding_completed")
     }
 
     // JWT Access Token 가져오기
@@ -70,23 +70,23 @@ class SecureDataStore(private val context: Context) {
     // 로그아웃 시 DataStore 초기화
     suspend fun clearUserInfo() {
         Log.d("SecureDataStore", "사용자 정보 삭제")
-        context.dataStore.edit { prefs ->
-            prefs.clear()
-        }
-    }
 
-    // 첫 로그인 여부 저장 -> 온보딩 이후 상태 갱신 시 사용
-    suspend fun setFirstLogin(isFirst: Boolean) {
-        context.dataStore.edit { prefs ->
-            prefs[FIRST_LOGIN_KEY] = isFirst
-        }
-    }
+        val isOnboardingCompleted =
+            context.dataStore.data.first()[ONBOARDING_COMPLETED_KEY] ?: false
 
-    // 첫 로그인 여부 가져오기
-    fun getFirstLogin(): Flow<Boolean?> {
-        return context.dataStore.data.map { prefs ->
-            prefs[FIRST_LOGIN_KEY]
+        context.dataStore.edit { prefs ->
+            prefs.remove(ACCESS_TOKEN_KEY)
+            prefs.remove(REFRESH_TOKEN_KEY)
+            prefs.remove(MEMBER_ID_KEY)
+            prefs.remove(EMAIL_KEY)
+            prefs.remove(USER_NAME_KEY)
+            prefs.remove(FCM_TOKEN_KEY)
+
+            // 온보딩 상태는 그대로 유지
+            prefs[ONBOARDING_COMPLETED_KEY] = isOnboardingCompleted
         }
+
+        Log.d("SecureDataStore", "로그아웃 후 온보딩 상태 유지: $isOnboardingCompleted")
     }
 
     // 토큰이 있는지 동기적으로 확인하는 함수 (NavGraph 등에서 사용)
@@ -104,4 +104,49 @@ class SecureDataStore(private val context: Context) {
         }
     }
 
+    // 온보딩 완료 상태를 저장하는 메서드
+    suspend fun setOnboardingCompleted(completed: Boolean) {
+        // 현재 로그인한 사용자의 아이디 가져오기
+        val memberId = context.dataStore.data.first()[MEMBER_ID_KEY]
+
+        if (memberId != null) {
+            // 사용자별 온보딩 키 생성
+            val userOnboardingKey = booleanPreferencesKey("onboarding_completed_$memberId")
+
+            context.dataStore.edit { preferences ->
+                preferences[userOnboardingKey] = completed
+            }
+
+            Log.d("SecureDataStore", "사용자($memberId)의 온보딩 상태 설정: $completed")
+        } else {
+            // 로그인되지 않은 경우 처리
+            Log.e("SecureDataStore", "사용자 ID가 없어 온보딩 상태를 저장할 수 없습니다")
+        }
+    }
+
+
+    // 온보딩 완료 상태를 확인하는 메서드
+    fun isOnboardingCompletedSync(): Boolean {
+        return runBlocking {
+            try {
+                val memberId = context.dataStore.data.first()[MEMBER_ID_KEY]
+
+                if (memberId != null) {
+                    // 사용자별 온보딩 키로 상태 확인
+                    val userOnboardingKey = booleanPreferencesKey("onboarding_completed_$memberId")
+                    val completed = context.dataStore.data.first()[userOnboardingKey] ?: false
+
+                    Log.d("SecureDataStore", "사용자($memberId)의 온보딩 상태: $completed")
+                    completed
+                } else {
+                    // 로그인되지 않은 경우 온보딩이 필요하다고 판단
+                    Log.d("SecureDataStore", "로그인되지 않아 온보딩 필요")
+                    false
+                }
+            } catch (e: Exception) {
+                Log.e("SecureDataStore", "온보딩 상태 확인 오류", e)
+                false
+            }
+        }
+    }
 }
