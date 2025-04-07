@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.ssafy.lipit_app.data.model.response_dto.auth.LoginResponse
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
@@ -37,7 +38,7 @@ class SecureDataStore(private val context: Context) {
         val USER_NAME_KEY = stringPreferencesKey("user_name")
         val FIRST_LOGIN_KEY = booleanPreferencesKey("is_first_login") // 첫 로그인 여부
         val FCM_TOKEN_KEY = stringPreferencesKey("fcm_token") //fcm 토큰 추가
-
+        val ONBOARDING_COMPLETED_KEY = booleanPreferencesKey("onboarding_completed")
     }
 
     // JWT Access Token 가져오기
@@ -101,6 +102,20 @@ class SecureDataStore(private val context: Context) {
                 Log.e("SecureDataStore", "토큰 확인 중 오류", e)
                 false
             }
+        }
+    }
+
+    // 온보딩 완료 상태를 저장하는 메서드
+    suspend fun setOnboardingCompleted(completed: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[ONBOARDING_COMPLETED_KEY] = completed
+        }
+    }
+
+    // 동기 방식으로 온보딩 완료 상태를 확인하는 메서드
+    fun isOnboardingCompletedSync(): Boolean {
+        return runBlocking {
+            context.dataStore.data.first()[ONBOARDING_COMPLETED_KEY] ?: false
         }
     }
 
