@@ -1,8 +1,11 @@
 package com.ssafy.lipit_app.ui.screens.onboarding.components
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -51,6 +54,7 @@ import com.ssafy.lipit_app.R
 fun OnBoardingSixth(onNext: () -> Unit) {
 
     val context = LocalContext.current
+    var showPermissionToast by remember { mutableStateOf(false) }
 
     // 권한 상태 관리
     var notificationPermissionGranted by remember {
@@ -91,6 +95,43 @@ fun OnBoardingSixth(onNext: () -> Unit) {
         )
     }
 
+    // 모든 권한이 허용되었는지 확인
+    fun areAllPermissionsGranted(): Boolean {
+        // 실시간으로 권한 상태 갱신
+        microphonePermissionGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.RECORD_AUDIO
+        ) == PackageManager.PERMISSION_GRANTED
+
+        storagePermissionGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.READ_MEDIA_IMAGES
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+
+        notificationPermissionGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true // Android 13 미만에서는 알림 권한이 필요하지 않음
+        }
+
+        Log.d(
+            "Permissions",
+            "마이크: $microphonePermissionGranted, 저장소: $storagePermissionGranted, 알림: $notificationPermissionGranted"
+        )
+
+        return microphonePermissionGranted && storagePermissionGranted &&
+                (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || notificationPermissionGranted)
+    }
 
     // 개별 권한 요청 런처들
     val requestNotificationPermissionLauncher = rememberLauncherForActivityResult(
@@ -130,97 +171,162 @@ fun OnBoardingSixth(onNext: () -> Unit) {
     val multiplePermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
+        var updatedAny = false
+
         permissions.entries.forEach { (permission, isGranted) ->
             when (permission) {
                 Manifest.permission.RECORD_AUDIO -> {
                     microphonePermissionGranted = isGranted
-                    if (isGranted) {
-                        Log.d("Granted", "마이크 권한이 허용되었습니다")
+                    updatedAny = true
+                    Log.d("Permissions", "마이크 권한 업데이트: $isGranted")
+                }
+
+                Manifest.permission.READ_EXTERNAL_STORAGE -> {
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                        storagePermissionGranted = isGranted
+                        updatedAny = true
+                        Log.d("Permissions", "저장소 권한(READ_EXTERNAL_STORAGE) 업데이트: $isGranted")
                     }
                 }
 
-                Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.READ_MEDIA_IMAGES -> {
-                    storagePermissionGranted = isGranted
-                    if (isGranted) {
-                        Log.d("Granted", "저장소 권한이 허용되었습니다")
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        storagePermissionGranted = isGranted
+                        updatedAny = true
+                        Log.d("Permissions", "저장소 권한(READ_MEDIA_IMAGES) 업데이트: $isGranted")
                     }
                 }
 
                 Manifest.permission.POST_NOTIFICATIONS -> {
                     notificationPermissionGranted = isGranted
-                    if (isGranted) {
-                        Log.d("Granted", "알림 권한이 허용되었습니다")
-                    }
+                    updatedAny = true
+                    Log.d("Permissions", "알림 권한 업데이트: $isGranted")
                 }
             }
         }
 
-        // 권한 거부 메시지
-        if (!microphonePermissionGranted || !storagePermissionGranted ||
-            (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !notificationPermissionGranted)
-        ) {
-            Toast.makeText(context, "필수 권한을 허용하지 않으면 서비스 이용이 제한됩니다", Toast.LENGTH_LONG).show()
+        if (updatedAny) {
+            Log.d(
+                "Permissions",
+                "최종 권한 상태 - 마이크: $microphonePermissionGranted, 저장소: $storagePermissionGranted, 알림: $notificationPermissionGranted"
+            )
+        }
+    }
+
+
+    fun openAppSettings() {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.fromParts("package", context.packageName, null)
+        }
+        context.startActivity(intent)
+    }
+
+    // 모든 필요한 권한 요청 함수
+    fun requestMissingPermissions() {
+        // 실시간 권한 상태 확인
+        val hasAudioPermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.RECORD_AUDIO
+        ) == PackageManager.PERMISSION_GRANTED
+
+        val hasStoragePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.READ_MEDIA_IMAGES
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+
+        val hasNotificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+
+        // 빈 목록으로 시작해 필요한 권한 추가
+        val permissionsToRequest = mutableListOf<String>()
+
+        // 누락된 권한 추가
+        if (!hasAudioPermission) {
+            permissionsToRequest.add(Manifest.permission.RECORD_AUDIO)
+        }
+
+        if (!hasStoragePermission) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                permissionsToRequest.add(Manifest.permission.READ_MEDIA_IMAGES)
+            } else {
+                permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !hasNotificationPermission) {
+            permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        // 한 번에 모든 필요한 권한 요청
+        if (permissionsToRequest.isNotEmpty()) {
+            Log.d("Permissions", "요청할 권한: $permissionsToRequest")
+            multiplePermissionLauncher.launch(permissionsToRequest.toTypedArray())
+        } else {
+            // 특별한 케이스: 알림 권한이 거부된 경우 설정 화면으로 안내
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !hasNotificationPermission) {
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", context.packageName, null)
+                }
+                Toast.makeText(context, "설정 화면에서 알림 권한을 활성화해주세요", Toast.LENGTH_LONG).show()
+                context.startActivity(intent)
+            }
+        }
+    }
+
+    // 모든 필요한 권한 요청 함수
+    fun requestAllPermissions() {
+        val permissionsToRequest = mutableListOf<String>()
+
+        // 마이크 권한 확인
+        if (!microphonePermissionGranted) {
+            permissionsToRequest.add(Manifest.permission.RECORD_AUDIO)
+        }
+
+        // 저장소 권한 확인
+        if (!storagePermissionGranted) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                permissionsToRequest.add(Manifest.permission.READ_MEDIA_IMAGES)
+            } else {
+                permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+            }
+        }
+
+        // 알림 권한 확인
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !notificationPermissionGranted) {
+            permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        if (permissionsToRequest.isNotEmpty()) {
+            Log.d("Permissions", "한 번에 요청할 권한: $permissionsToRequest")
+            multiplePermissionLauncher.launch(permissionsToRequest.toTypedArray())
+        } else {
+            Log.d("Permissions", "요청할 권한 없음, 모든 권한 이미 허용됨")
         }
     }
 
     // 권한 체크 및 요청
     LaunchedEffect(Unit) {
-        val permissionsToRequest = mutableListOf<String>()
+        requestAllPermissions()
+    }
 
-        // 마이크 권한 확인
-        if (ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.RECORD_AUDIO
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            permissionsToRequest.add(Manifest.permission.RECORD_AUDIO)
-        } else {
-            microphonePermissionGranted = true
-        }
-
-        // 저장소 권한 확인 (Android 버전에 따라 다른 권한 사용)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.READ_MEDIA_IMAGES
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                permissionsToRequest.add(Manifest.permission.READ_MEDIA_IMAGES)
-            } else {
-                storagePermissionGranted = true
-            }
-        } else {
-            if (ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.READ_EXTERNAL_STORAGE
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
-            } else {
-                storagePermissionGranted = true
-            }
-        }
-
-        // 알림 권한 확인 (Android 13 이상에서만)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
-            } else {
-                notificationPermissionGranted = true
-            }
-        } else {
-            // Android 13 미만에서는 알림 권한이 필요하지 않음
-            notificationPermissionGranted = true
-        }
-
-        // 필요한 권한 요청
-        if (permissionsToRequest.isNotEmpty()) {
-            multiplePermissionLauncher.launch(permissionsToRequest.toTypedArray())
+    // 토스트 메시지 표시 효과
+    LaunchedEffect(showPermissionToast) {
+        if (showPermissionToast) {
+            Toast.makeText(context, "필수 권한을 모두 허용해야 진행할 수 있습니다", Toast.LENGTH_LONG).show()
+            showPermissionToast = false
         }
     }
 
@@ -322,7 +428,25 @@ fun OnBoardingSixth(onNext: () -> Unit) {
                 .height(80.dp)
                 .align(Alignment.BottomCenter)
                 .background(Color(0xff603981))
-                .clickable(onClick = onNext),
+                .clickable(onClick = {
+                    Log.d("OnBoardingSixth", "다음 버튼 클릭됨, 권한 상태 확인 중")
+
+                    // 모든 권한이 허용되었는지 확인
+                    val allGranted = areAllPermissionsGranted()
+                    Log.d("OnBoardingSixth", "모든 권한 허용 여부: $allGranted")
+
+                    if (allGranted) {
+                        // 모든 권한이 허용되었으면 다음으로 진행
+                        Log.d("OnBoardingSixth", "모든 권한 허용됨, 다음 화면으로 이동")
+                        onNext()
+                    } else {
+                        // 권한이 없으면 권한 요청 다이얼로그 표시 후 토스트 메시지
+                        Log.d("OnBoardingSixth", "일부 권한 누락, 권한 요청 다이얼로그 표시")
+                        requestMissingPermissions()
+                        openAppSettings()
+                        showPermissionToast = true
+                    }
+                }),
             contentAlignment = Alignment.TopCenter
         ) {
             Text(

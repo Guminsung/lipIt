@@ -110,7 +110,7 @@ class SecureDataStore(private val context: Context) {
         val memberId = context.dataStore.data.first()[MEMBER_ID_KEY]
 
         if (memberId != null) {
-            // 사용자별 온보딩 키 생성 (예: onboarding_completed_123)
+            // 사용자별 온보딩 키 생성
             val userOnboardingKey = booleanPreferencesKey("onboarding_completed_$memberId")
 
             context.dataStore.edit { preferences ->
