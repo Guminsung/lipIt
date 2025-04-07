@@ -24,10 +24,7 @@ class ReportViewModel : ViewModel() {
     private val memberId: Long by lazy {
         SharedPreferenceUtils.getMemberId()
     }
-
-//    init {
-//        loadReportList()
-//    }
+    
 
     fun onIntent(intent: ReportIntent) {
         when (intent) {
