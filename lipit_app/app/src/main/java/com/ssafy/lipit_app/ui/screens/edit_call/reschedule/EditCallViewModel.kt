@@ -82,8 +82,6 @@ class EditCallViewModel(
 
     private fun updateSchedule(schedule: CallSchedule, onSuccess: () -> Unit) {
         viewModelScope.launch {
-            val memberId = schedule.memberId
-            val scheduleId = schedule.callScheduleId
 
             val topic = schedule.topicCategory
             // "자유주제"면 null, 그 외엔 영어 enum으로 변환
@@ -144,7 +142,12 @@ class EditCallViewModel(
             val scheduledTime = LocalTime.parse(schedule.scheduledTime)
             val currentDateTime = LocalDateTime.now()
             val currentDayOfWeek = currentDateTime.dayOfWeek
-            Log.d("AlarmScheduler", "currentDatetime: $currentDateTime, dayofweek: $currentDayOfWeek")
+            val currentVoiceName = SharedPreferenceUtils.getSelectedVoiceName()
+
+            Log.d(
+                "AlarmScheduler",
+                "currentDatetime: $currentDateTime, dayofweek: $currentDayOfWeek"
+            )
             val nextScheduledDate = if (currentDayOfWeek == scheduledDay) {
                 // 현재 요일과 스케줄된 요일이 같으면 오늘 시간으로 설정
                 currentDateTime.with(scheduledTime)
@@ -157,8 +160,9 @@ class EditCallViewModel(
 
             alarmScheduler.scheduleCallAlarm(
                 time = nextScheduledDate,
-                callerName = schedule.topicCategory ?: "HarryPotter",  // TODO:: 보이스 설정이름으로
-                alarmId = schedule.callScheduleId.toInt()
+                callerName = currentVoiceName,  // TODO:: 보이스 설정이름으로
+                alarmId = schedule.callScheduleId.toInt(),
+                retryCount = 0
             )
 
             Log.d("Alarm", "Alarm 설정: $schedule")

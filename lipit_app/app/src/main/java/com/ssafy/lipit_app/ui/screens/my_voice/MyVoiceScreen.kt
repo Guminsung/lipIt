@@ -187,8 +187,6 @@ fun MyVoiceScreen(
                             onIntent(MyVoiceIntent.SelectTab("Custom"))
                         }
                 )
-
-
             }
 
             // Custom 탭이 선택된 경우에만 플러스 버튼 표시

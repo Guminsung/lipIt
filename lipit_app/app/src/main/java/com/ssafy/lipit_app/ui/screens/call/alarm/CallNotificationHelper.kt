@@ -19,7 +19,8 @@ import com.ssafy.lipit_app.R
 
 object CallNotificationHelper {
     private const val CALL_CHANNEL_ID = "call_channel"
-    private const val CALL_NOTIFICATION_ID = 1001
+    const val CALL_NOTIFICATION_ID = 1001
+    private const val MISSED_CALL_NOTIFICATION_ID = 1002
 
     /**
      * 전화 알림 채널 생성
@@ -46,7 +47,8 @@ object CallNotificationHelper {
     fun showCallNotification(
         context: Context,
         callerName: String,
-        callerPhotoUri: Uri? = null
+        callerPhotoUri: Uri? = null,
+        declineIntent: PendingIntent? = null
     ) {
         // 수락
         val acceptIntent = PendingIntent.getBroadcast(
@@ -59,7 +61,7 @@ object CallNotificationHelper {
         )
 
         // 거절
-        val declineIntent = PendingIntent.getBroadcast(
+        val finalDeclineIntent = declineIntent ?: PendingIntent.getBroadcast(
             context,
             1,
             Intent(context, CallActionReceiver::class.java).apply {
@@ -106,7 +108,7 @@ object CallNotificationHelper {
                 .setFullScreenIntent(contentIntent, true)
                 .setStyle(NotificationCompat.CallStyle.forIncomingCall(
                     caller,
-                    declineIntent,
+                    finalDeclineIntent,
                     acceptIntent
                 ))
                 .setAutoCancel(true)
@@ -122,7 +124,7 @@ object CallNotificationHelper {
                 .addAction(
                     R.drawable.incoming_call_decline,
                     "거절",
-                    declineIntent
+                    finalDeclineIntent
                 )
                 .addAction(
                     R.drawable.incoming_call_accept,
@@ -150,4 +152,50 @@ object CallNotificationHelper {
         val notificationManager = NotificationManagerCompat.from(context)
         notificationManager.cancel(CALL_NOTIFICATION_ID)
     }
+
+    /**
+     * 알림이 아직 활성 상태인지 확인
+     */
+    fun isNotificationActive(context: Context, notificationId: Int): Boolean {
+        val notificationManager = NotificationManagerCompat.from(context)
+        val activeNotifications = notificationManager.activeNotifications
+        return activeNotifications.any { it.id == notificationId }
+    }
+
+    /**
+     * 부재중 전화 알림 표시
+     */
+    fun showMissedCallNotification(context: Context, callerName: String) {
+        // 알림을 탭했을 때 열릴 액티비티
+        val contentIntent = PendingIntent.getActivity(
+            context,
+            2,
+            Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                putExtra("NAVIGATION_DESTINATION", "missedCalls")
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // 알림 생성
+        val builder = NotificationCompat.Builder(context, CALL_CHANNEL_ID)
+            .setSmallIcon(R.drawable.notification_icon)
+            .setContentTitle("부재중 전화")
+            .setContentText("${callerName}님으로부터 부재중 전화가 있습니다")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_CALL)
+            .setContentIntent(contentIntent)
+            .setAutoCancel(true)
+
+        // 알림 표시
+        val notificationManager = NotificationManagerCompat.from(context)
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+        ) {
+            notificationManager.notify(MISSED_CALL_NOTIFICATION_ID, builder.build())
+        }
+    }
+
 }

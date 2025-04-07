@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class EditVoiceViewModel : ViewModel() {
+class EditVoiceViewModel: ViewModel() {
 
     private val _state = MutableStateFlow(EditVoiceState())
     val state: StateFlow<EditVoiceState> = _state.asStateFlow()
@@ -51,6 +51,7 @@ class EditVoiceViewModel : ViewModel() {
                             selectedVoiceUrl = voices[0].customImageUrl
                         )
                     }
+                    SharedPreferenceUtils.saveSelectedVoiceName(voices[0].voiceName)
                 }
             }
 
@@ -129,7 +130,20 @@ class EditVoiceViewModel : ViewModel() {
 
                 result.onSuccess { response ->
                     Log.d("MyVoiceViewModel", "음성 변경 성공, 데이터 다시 로드")
+
                     loadInitialData()
+
+                    val currentVoiceName = _state.value.selectedVoiceName
+
+                    if (currentVoiceName.isNotEmpty()) {
+                        SharedPreferenceUtils.saveSelectedVoiceName(currentVoiceName)
+                        Log.d("MyVoiceViewModel", "선택된 음성 이름 저장: $currentVoiceName")
+                    } else {
+                        SharedPreferenceUtils.saveSelectedVoiceName("Sarang")
+                        Log.d("MyVoiceViewModel", "선택된 음성 이름이 없어 기본값 저장")
+                    }
+
+
                 }.onFailure { error ->
                     _state.update {
                         it.copy(
