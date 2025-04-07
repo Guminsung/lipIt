@@ -50,7 +50,7 @@ async def android_ws_call(client_ws: WebSocket, db: AsyncSession = Depends(get_d
 
                     member_id = request.memberId
 
-                    voice = await get_voice_by_call_id(db, call_id)
+                    voice = await get_voice_by_member_id(db, member_id)
 
                     response = await call.start_call(
                         db, request, member_id, voice.voice_name, voice.type
