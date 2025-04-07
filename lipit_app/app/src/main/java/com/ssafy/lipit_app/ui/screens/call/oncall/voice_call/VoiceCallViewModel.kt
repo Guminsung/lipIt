@@ -205,19 +205,19 @@ class VoiceCallViewModel : ViewModel() {
 
         timerJob = viewModelScope.launch {
             remainingSeconds = initialSeconds  // 텍스트 모드와의 연동을 위해 저장된 값에서 시작
-            while (remainingSeconds  >= 0) {
-                val minutes = remainingSeconds  / 60
-                val seconds = remainingSeconds  % 60
+            while (remainingSeconds >= 0) {
+                val minutes = remainingSeconds / 60
+                val seconds = remainingSeconds % 60
                 val timeString = String.format("%02d:%02d", minutes, seconds)
 
                 _state.update { it.copy(leftTime = timeString) }
 
                 delay(1000L) // 1초 기다리고 text에 반영
-                remainingSeconds --
+                remainingSeconds--
 
                 // 5분이 종료되면 로딩 화면 출력(리포트 생성 중.. or 리포트 생성 실패!) 후 
                 // main으로 돌아가거니 아님 레포트로 이동
-                if (remainingSeconds  == 0) {
+                if (remainingSeconds == 0) {
                     onIntent(VoiceCallIntent.timerIsOver)
                 }
             }
@@ -354,6 +354,13 @@ class VoiceCallViewModel : ViewModel() {
                             "end" -> {
                                 val reportCreated = data.optBoolean("reportCreated", false)
                                 Log.d("WebSocket", "🔚 통화 종료 - report=$reportCreated")
+
+                                _state.update {
+                                    it.copy(
+                                        isReportCreated = reportCreated,
+                                        isCallEnded = true
+                                    )
+                                }
 
                                 if (data.has("aiMessage")) {
                                     aiMessage = data.getString("aiMessage")
