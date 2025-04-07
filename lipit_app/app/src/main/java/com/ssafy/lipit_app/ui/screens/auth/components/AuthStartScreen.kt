@@ -101,7 +101,7 @@ fun AuthStartScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     CustomOutlinedButton(text = "Get Started") {
-                        Toast.makeText(context, "회원가입 화면 이동", Toast.LENGTH_SHORT).show()
+//                        Toast.makeText(context, "회원가입 화면 이동", Toast.LENGTH_SHORT).show()
                         onSignupClick()
                     }
 
@@ -112,7 +112,7 @@ fun AuthStartScreen(
                         color = Color.White.copy(alpha = 0.8f),
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.clickable {
-                            Toast.makeText(context, "로그인 화면 이동", Toast.LENGTH_SHORT).show()
+//                            Toast.makeText(context, "로그인 화면 이동", Toast.LENGTH_SHORT).show()
                             onLoginClick()
                         }
                     )
