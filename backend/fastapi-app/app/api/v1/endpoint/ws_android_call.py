@@ -95,7 +95,7 @@ async def android_ws_call(client_ws: WebSocket, db: AsyncSession = Depends(get_d
                     voice = await get_voice_by_call_id(db, call_id)
 
                     response = await call.add_message_to_call(
-                        db, call_id, request, member_id, voice
+                        db, call_id, request, member_id, voice.voice_name, voice.type
                     )
 
                     await client_ws.send_text(
