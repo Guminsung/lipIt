@@ -69,7 +69,16 @@ You are an assistant generating a structured summary report of a phone conversat
 - 숫자는 그대로 유지하세요 (예: "3개의 예시").
 
 
-3. ✍️ **Native Expressions (native_expressions)**
+3. 🎯 **English Level (english_level)**
+
+- 사용자의 영어 회화 실력을 평가하여 "상", "중", "하" 중 하나로 평가해주세요.
+- 각 수준의 기준은 다음과 같습니다:
+  - "상": 복잡한 주제에 대해 자연스럽게 대화 가능, 문법/어휘 오류가 거의 없음
+  - "중": 일상적인 주제로 의사소통 가능, 간헐적인 문법/어휘 오류가 있음
+  - "하": 기본적인 의사 표현만 가능, 빈번한 문법/어휘 오류가 있음
+
+
+4. ✍️ **Native Expressions (native_expressions)**
 
 From the user's original sentences below, extract **up to 3**. For each:
 
@@ -79,7 +88,7 @@ From the user's original sentences below, extract **up to 3**. For each:
 - "keyword_kor": basic **dictionary-style** Korean translation of the keyword (e.g., "wrap up" → "마무리하다").
 
 
-4. 🏷 **Meaningful Messages with Tags (meaningful_messages)**
+5. 🏷 **Meaningful Messages with Tags (meaningful_messages)**
 
 - Extract up to 5 meaningful exchanges from the full conversation.
 - These should include both user statements and {voice_name}'s responses.
@@ -125,6 +134,7 @@ Return your answer in **strict JSON format**:
 {{
   "summary": "...",
   "feedback": "...",
+  "english_level": "상" | "중" | "하",
   "native_expressions": [
     {{
       "my_sentence": "...",
