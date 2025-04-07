@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.data.model.ChatMessageText
 import com.ssafy.lipit_app.ui.components.TestLottieLoadingScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.TextCallFooter
@@ -65,7 +66,7 @@ fun TextCallScreen(
             Log.d("TextCallScreen", "📍 종료됨 + 리포트 생성됨 → 이동")
             voiceCallViewModel._state.update { it.copy(isLoading = true) }
 
-            delay(10000L) // 로딩 보여주는 시간
+            delay(15000L) // 로딩 보여주는 시간
 
             voiceCallViewModel._state.update { it.copy(isLoading = false) }
 
@@ -75,6 +76,25 @@ fun TextCallScreen(
 
         }
     }
+
+    LaunchedEffect(voiceCallViewModel.aiMessage) {
+        if (voiceCallViewModel.aiMessage.isNotBlank() &&
+            voiceCallViewModel.state.value.currentMode == "Text"
+        ) {
+            Log.d("TextCallScreen", "🤖 AI 응답 감지됨 → TextCallViewModel에 추가")
+
+            viewModel.addMessage(
+                ChatMessageText(
+                    text = voiceCallViewModel.aiMessage,
+                    translatedText = voiceCallViewModel.aiMessageKor,
+                    isFromUser = false
+                )
+            )
+
+            voiceCallViewModel.clearAiMessage()
+        }
+    }
+
 
 
     if (voiceCallState.reportFailed) {

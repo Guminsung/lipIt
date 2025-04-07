@@ -36,6 +36,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.ChatMessage
+import com.ssafy.lipit_app.data.model.ChatMessageText
 import com.ssafy.lipit_app.ui.components.ListeningUi
 import com.ssafy.lipit_app.ui.components.TestLottieLoadingScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
@@ -157,6 +158,17 @@ fun VoiceCallScreen(
             onIntent(VoiceCallIntent.UpdateSubtitle(viewModel.aiMessage))
             onIntent(VoiceCallIntent.UpdateTranslation(viewModel.aiMessageKor))
 
+            // 텍스트 모드일 때 텍스트 뷰모델에도 반영
+            if (viewModel.state.value.currentMode == "Text") {
+                textCallViewModel.addMessage(
+                    ChatMessageText(
+                        text = viewModel.aiMessage,
+                        translatedText = viewModel.aiMessageKor,
+                        isFromUser = false
+                    )
+                )
+            }
+
             viewModel.clearAiMessage()
         }
     }
@@ -184,7 +196,7 @@ fun VoiceCallScreen(
             Log.d("VoiceCallScreen", "📍 종료됨 + 리포트 생성됨 → 이동")
             viewModel._state.update { it.copy(isLoading = true) }
 
-            delay(10000L) // 로딩 보여주는 시간
+            delay(15000L) // 로딩 보여주는 시간
 
             viewModel._state.update { it.copy(isLoading = false) }
 
