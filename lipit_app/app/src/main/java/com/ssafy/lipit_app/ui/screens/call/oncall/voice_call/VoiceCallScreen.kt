@@ -83,7 +83,7 @@ fun VoiceCallScreen(
         )
     }
 
-    
+
     // 가장 먼저 Player 초기화
     LaunchedEffect(Unit) {
         viewModel.initPlayerIfNeeded(context)
@@ -151,7 +151,7 @@ fun VoiceCallScreen(
             Log.d("VoiceCallScreen", "🤖 AI: ${viewModel.aiMessage}")
             Log.d("VoiceCallScreen", "🤖 currentMode: ${state.currentMode}")
 
-            
+
             // 자막용 업뎃
             onIntent(VoiceCallIntent.UpdateSubtitle(viewModel.aiMessage))
             onIntent(VoiceCallIntent.UpdateTranslation(viewModel.aiMessageKor))
@@ -171,22 +171,22 @@ fun VoiceCallScreen(
     // 통화 종료 후 이동
     LaunchedEffect(viewModel.isCallEnded) {
         if (viewModel.isCallEnded) {
-            val totalChars = viewModel.chatMessages
-                .filter { it.type == "user" } // 사용자 입력만 카운트
-                .sumOf { it.message.length }
+            if (state.isReportCreated) {
+                viewModel._state.update { it.copy(isLoading = true) }
+                kotlinx.coroutines.delay(2000L)
+                viewModel._state.update { it.copy(isLoading = false) }
 
-            if (totalChars <= 100) { // 단어수가 100자가 안된다면
-                // 다이얼로그 띄우기 위한 상태값 업데이트
-                viewModel._state.update { it.copy(reportFailed = true) }
-            } else {
                 navController.navigate("reports") {
                     popUpTo("call_screen") { inclusive = true }
                 }
+            } else {
+                viewModel._state.update { it.copy(reportFailed = true) }
             }
 
             viewModel.sendEndCall()
         }
     }
+
 
     if (state.reportFailed) {
         AlertDialog(

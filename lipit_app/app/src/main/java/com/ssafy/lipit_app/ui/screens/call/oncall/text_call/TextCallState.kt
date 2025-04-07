@@ -16,6 +16,7 @@ data class TextCallState (
     val inputText: String="",
 
     // 번역 출력 여부
-    val showTranslation: Boolean = false
+    val showTranslation: Boolean = false,
+    val isReportCreated: Boolean = false
 
 )
