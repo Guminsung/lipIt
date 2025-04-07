@@ -23,14 +23,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
-import com.ssafy.lipit_app.ui.components.TestLottieLoadingScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.TextCallFooter
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.TextCallHeader
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.Translate.TextCallWithTranslate
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.Translate.TextCallwithOriginalOnly
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
-import com.ssafy.lipit_app.ui.screens.report.components.showReportNotification
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 
@@ -51,37 +49,31 @@ fun TextCallScreen(
     val voiceCallState by voiceCallViewModel.state.collectAsState() // time 동기화를 위해 가져옴
 
 
-    LaunchedEffect(voiceCallState.isCallEnded) {
-        if (voiceCallState.isCallEnded) {
-            val totalChars = voiceCallViewModel.chatMessages
-                .filter { it.type == "user" }
-                .sumOf { it.message.length }
-
-            if (totalChars <= 100) {
-                voiceCallViewModel._state.update { it.copy(reportFailed = true) }
-                navController.navigate("main") {
-                    popUpTo("onTextCall") { inclusive = true }
-                }
-            } else {
+    // 통화 종료 후 이동
+    LaunchedEffect(voiceCallViewModel.isCallEnded) {
+        if (voiceCallViewModel.isCallEnded) {
+            if (voiceCallViewModel.state.value.isReportCreated) {
+                // 로딩 화면 보여주고 reports로 이동
                 voiceCallViewModel._state.update { it.copy(isLoading = true) }
 
-                delay(2000L)
+                delay(5000L) // 리포트 생성 시간에 따라 조절
 
                 voiceCallViewModel._state.update { it.copy(isLoading = false) }
 
-                showReportNotification(context)
-
-                navController.navigate("main") {
-                    popUpTo("onTextCall") { inclusive = true }
+                navController.navigate("reports") {
+                    popUpTo("call_screen") { inclusive = true }
                 }
+            } else {
+                // 리포트 생성 실패 다이얼로그
+                voiceCallViewModel._state.update { it.copy(reportFailed = true) }
             }
         }
     }
 
 
-    if (voiceCallState.isLoading) {
-        TestLottieLoadingScreen("리포트 생성 중...")
-    }
+//    if (voiceCallState.isLoading) {
+//        TestLottieLoadingScreen("리포트 생성 중...")
+//    }
 
     // 대화 내역이 바뀌면 마지막으로 스크롤
     LaunchedEffect(state.messages.size) {
@@ -124,11 +116,7 @@ fun TextCallScreen(
             TextCallHeader(
                 voiceName = voiceCallState.voiceName,
                 leftTime = voiceCallState.leftTime,
-                onHangUp = {
-                    Log.d("TextCall", "🛑 끊기 버튼 눌림")
-                    voiceCallViewModel.sendEndCall()
-                    voiceCallViewModel._state.update { it.copy(isCallEnded = true) }
-                }
+                voiceCallViewModel = VoiceCallViewModel()
             )
 
 

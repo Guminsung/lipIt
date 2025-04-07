@@ -48,6 +48,7 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.Subtitle
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.Subtitle.CallWithoutSubtitle
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components.VoiceCallHeader
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 
 @Composable
@@ -171,19 +172,21 @@ fun VoiceCallScreen(
     // 통화 종료 후 이동
     LaunchedEffect(viewModel.isCallEnded) {
         if (viewModel.isCallEnded) {
-            if (state.isReportCreated) {
+            if (viewModel.state.value.isReportCreated) {
+                // 로딩 화면 보여주고 reports로 이동
                 viewModel._state.update { it.copy(isLoading = true) }
-                kotlinx.coroutines.delay(2000L)
+
+                delay(5000L) // 리포트 생성 시간에 따라 조절
+
                 viewModel._state.update { it.copy(isLoading = false) }
 
                 navController.navigate("reports") {
                     popUpTo("call_screen") { inclusive = true }
                 }
             } else {
+                // 리포트 생성 실패 다이얼로그
                 viewModel._state.update { it.copy(reportFailed = true) }
             }
-
-            viewModel.sendEndCall()
         }
     }
 
