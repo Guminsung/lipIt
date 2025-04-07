@@ -133,18 +133,19 @@ async def add_message_to_call(
                 text(
                     """
                     UPDATE member 
-                    SET total_report_count = COALESCE(total_report_count, 0) + 1 
+                    SET total_report_count = COALESCE(total_report_count, 0) + 1,
+                        total_call_duration = COALESCE(total_call_duration, 0) + :duration
                     WHERE member_id = :member_id
                 """
                 ),
-                {"member_id": call_record.member_id},
+                {"member_id": call_record.member_id, "duration": duration},
             )
             await db.commit()
             logger.info(
-                f"Member {call_record.member_id}의 total_report_count를 증가시켰습니다."
+                f"Member {call_record.member_id}의 total_report_count를 증가시키고 total_call_duration에 {duration}을 추가했습니다."
             )
         except Exception as e:
-            logger.error(f"total_report_count 증가 실패: {str(e)}")
+            logger.error(f"total_report_count/total_call_duration 업데이트 실패: {str(e)}")
             # 이 오류로 인해 전체 흐름이 중단되지 않도록 pass
             pass
 
@@ -209,18 +210,19 @@ async def end_call(db: AsyncSession, call_id: int) -> EndCallResponse:
             text(
                 """
                 UPDATE member 
-                SET total_report_count = COALESCE(total_report_count, 0) + 1 
+                SET total_report_count = COALESCE(total_report_count, 0) + 1,
+                    total_call_duration = COALESCE(total_call_duration, 0) + :duration
                 WHERE member_id = :member_id
             """
             ),
-            {"member_id": call_record.member_id},
+            {"member_id": call_record.member_id, "duration": duration},
         )
         await db.commit()
         logger.info(
-            f"Member {call_record.member_id}의 total_report_count를 증가시켰습니다."
+            f"Member {call_record.member_id}의 total_report_count를 증가시키고 total_call_duration에 {duration}을 추가했습니다."
         )
     except Exception as e:
-        logger.error(f"total_report_count 증가 실패: {str(e)}")
+        logger.error(f"total_report_count/total_call_duration 업데이트 실패: {str(e)}")
         # 이 오류로 인해 전체 흐름이 중단되지 않도록 pass
         pass
 
