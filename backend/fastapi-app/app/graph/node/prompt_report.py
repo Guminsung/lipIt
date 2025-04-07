@@ -43,6 +43,7 @@ You are an assistant generating a structured summary report of a phone conversat
 📌 Use the actual name "{member_name}" throughout the report.
 📌 Use the voice name "{voice_name}" instead of "English Tutor" when referring to the AI assistant.
 📌 Your task is to analyze the conversation and return a polished, natural, and helpful Korean report.
+📌 IMPORTANT: Keep numeric digits as they are in Korean text (예: "2개", "3시간", "5가지").
 
 1. 📖 Summary (summary)
 
@@ -52,6 +53,7 @@ You are an assistant generating a structured summary report of a phone conversat
 - 직접 인용보다는 자연스러운 **내러티브 문장**을 사용하세요.
 - 너무 단순하게 "~을 말했다"가 아니라, "{member_name}님은 처음에 ~을 이야기하고, {voice_name}는 ~라고 대답했습니다. 이후 ~에 대해 서로 의견을 나누었습니다"처럼 대화의 흐름을 자연스럽게 표현해주세요.
 - 최대 150자 내외, 3~5문장.
+- 한국어 텍스트에서는 숫자를 그대로 유지하세요 (예: "2일", "10분").
 
 
 2. 💡 Feedback (feedback)
@@ -64,6 +66,7 @@ You are an assistant generating a structured summary report of a phone conversat
 - 반드시 **한 가지 이상 구체적인 팁**을 주세요. 예: "'I like' 대신 'I'm into'라고 말하면 더 자연스럽습니다."
 - 영어 단어는 **영문 스펠링**만 사용하세요.
 - 100자 내외, 친절하고 긍정적으로 작성하세요.
+- 숫자는 그대로 유지하세요 (예: "3개의 예시").
 
 
 3. ✍️ **Native Expressions (native_expressions)**
@@ -71,7 +74,7 @@ You are an assistant generating a structured summary report of a phone conversat
 From the user's original sentences below, extract **up to 3**. For each:
 
 - "my_sentence": original sentence by user.
-- "native_sentence": a more natural, native-style English version.
+- "native_sentence": a more natural, native-style English version. Convert any numbers to text (e.g., "2 apples" → "two apples").
 - "keyword": one **key native idiom or phrase** from your version.
 - "keyword_kor": basic **dictionary-style** Korean translation of the keyword (e.g., "wrap up" → "마무리하다").
 
@@ -81,6 +84,7 @@ From the user's original sentences below, extract **up to 3**. For each:
 - Extract up to 5 meaningful exchanges from the full conversation.
 - These should include both user statements and {voice_name}'s responses.
 - Include interesting questions, reactions, and interactions between {member_name} and {voice_name}.
+- Convert any numbers to words in English only (e.g., "3 times" → "three times"), but keep numbers as digits in Korean (e.g., "2개").
 - Tags must be specific and meaningful (e.g., "Michael Jackson", "favorite artist").
 - Avoid generic words like "sentence", "talk", "English".
 - Format each item like this:
@@ -113,6 +117,7 @@ From the user's original sentences below, extract **up to 3**. For each:
 - In the summary, include BOTH what the user said AND how {voice_name} responded
 - Create a balanced summary that shows the interaction between both participants
 - Use simple JSON formatting — no markdown, no commentary
+- Convert all numbers to text words in English only (e.g., "2 hours" → "two hours"), but keep numbers as digits in Korean (e.g., "5분")
 
 
 Return your answer in **strict JSON format**:
