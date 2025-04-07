@@ -46,6 +46,9 @@ import com.ssafy.lipit_app.ui.screens.main.MainViewModel
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceIntent
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceScreen
 import com.ssafy.lipit_app.ui.screens.my_voice.MyVoiceViewModel
+import com.ssafy.lipit_app.ui.screens.onboarding.OnBoardingIntent
+import com.ssafy.lipit_app.ui.screens.onboarding.OnBoardingScreen
+import com.ssafy.lipit_app.ui.screens.onboarding.OnboardingViewModel
 import com.ssafy.lipit_app.ui.screens.report.ReportIntent
 import com.ssafy.lipit_app.ui.screens.report.ReportScreen
 import com.ssafy.lipit_app.ui.screens.report.ReportViewModel
@@ -62,7 +65,6 @@ fun NavGraph(
     initialDestination: String? = null
 ) {
 
-
     val context = LocalContext.current
     val secureDataStore = SecureDataStore.getInstance(context)
 
@@ -77,24 +79,11 @@ fun NavGraph(
     }
 
     val startDestination = when {
-        initialDestination == "onVoiceCall" -> {
-            Log.d(TAG, "통화 화면으로 직접 이동")
-            "onVoiceCall"
-        }
-
-        initialDestination == "inComingCall" -> {
-            "inComingCall"
-        }
-
-        secureDataStore.hasAccessTokenSync() -> {
-            Log.d(TAG, "토큰 있음: 메인 화면으로 이동")
-            "main"
-        }
-
-        else -> {
-            Log.d(TAG, "토큰 없음: 로그인 화면으로 이동")
-            "auth_start"
-        }
+        initialDestination == "onVoiceCall" -> "onVoiceCall"
+        initialDestination == "inComingCall" -> "inComingCall"
+        !secureDataStore.hasAccessTokenSync() -> "auth_start"
+        !secureDataStore.isOnboardingCompletedSync() -> "onboarding" // 온보딩 완료 안 됐을 때
+        else -> "main" // 토큰 있고 온보딩 완료됐을 때
     }
 
     DisposableEffect(navController) {
@@ -157,11 +146,63 @@ fun NavGraph(
                 state = state,
                 onIntent = { viewModel.onIntent(it) },
                 onSuccess = {
-                    Log.d(TAG, "로그인 성공: 메인 화면으로 이동 요청")
+                    // 로그인 성공 시 온보딩 체크
+                    if (!secureDataStore.isOnboardingCompletedSync()) {
+                        navController.navigate("onboarding") {
+                            popUpTo("login") { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    } else {
+                        navController.navigate("main") {
+                            popUpTo("login") { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
+                }
+            )
+        }
+
+        composable("onboarding") {
+            Log.d(TAG, "onboarding 화면 구성")
+            val viewModel: OnboardingViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    @Suppress("UNCHECKED_CAST")
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return OnboardingViewModel(context) as T
+                    }
+                }
+            )
+
+            // 상태 관찰
+            val state by viewModel.state.collectAsState()
+            val shouldNavigateToMain by viewModel.navigateToMain.collectAsState()
+
+            // 메인 화면으로 네비게이션
+            LaunchedEffect(shouldNavigateToMain) {
+                if (shouldNavigateToMain) {
                     navController.navigate("main") {
-                        popUpTo("login") { inclusive = true }
+                        popUpTo("auth_start") { inclusive = true }
                         launchSingleTop = true
                     }
+                    viewModel.onIntent(OnBoardingIntent.NavigationComplete)
+                }
+            }
+
+            // 화면 간 네비게이션 (state에서 navigateToMain 체크)
+            LaunchedEffect(state.navigateToMain) {
+                if (state.navigateToMain) {
+                    navController.navigate("main") {
+                        popUpTo("auth_start") { inclusive = true }
+                        launchSingleTop = true
+                    }
+                    viewModel.onIntent(OnBoardingIntent.NavigationComplete)
+                }
+            }
+
+            OnBoardingScreen(
+                onFinish = {
+                    // 마지막 단계에서 온보딩 완료 처리 (MVI 방식으로 Intent 전달)
+                    viewModel.onIntent(OnBoardingIntent.CompleteOnboarding)
                 }
             )
         }

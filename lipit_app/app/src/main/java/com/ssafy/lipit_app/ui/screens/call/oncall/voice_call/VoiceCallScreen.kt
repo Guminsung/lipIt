@@ -201,7 +201,7 @@ fun VoiceCallScreen(
             viewModel._state.update { it.copy(isLoading = false) }
 
             navController.navigate("reports?refresh=true") {
-                popUpTo("main") { inclusive = false }A
+                popUpTo("main") { inclusive = false }
                 launchSingleTop = true
             }
 
