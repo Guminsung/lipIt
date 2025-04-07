@@ -37,6 +37,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.ChatMessage
+import com.ssafy.lipit_app.ui.components.ListeningUi
 import com.ssafy.lipit_app.ui.components.TestLottieLoadingScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallScreen
@@ -62,7 +63,7 @@ fun VoiceCallScreen(
     val state by viewModel.state.collectAsState()
     val toastMessage = remember { mutableStateOf<String?>(null) }
 
-    // 서버 꺼져있을 때 다이얼로그 띄우기
+    // 서버 연결 에러 날 때 다이얼로그 띄우기
     if (viewModel.connectionError.value && !viewModel.isCallEnded) {
         AlertDialog(
             onDismissRequest = { viewModel.connectionError.value = false },
@@ -82,17 +83,19 @@ fun VoiceCallScreen(
         )
     }
 
-    
+
     // 가장 먼저 Player 초기화
     LaunchedEffect(Unit) {
         viewModel.initPlayerIfNeeded(context)
-
         textCallViewModel.setInitialMessages(viewModel.convertToTextMessages())
+
+        if (!viewModel.isCountdownRunning()) {
+            viewModel.startCountdown()
+        }
 
         viewModel.getLastAiMessage()?.let { lastAi ->
             onIntent(VoiceCallIntent.UpdateSubtitle(lastAi.text))
             onIntent(VoiceCallIntent.UpdateTranslation(lastAi.translatedText))
-            Log.d("CallScreen", "🆕 보이스 모드 진입 시 마지막 AI 자막 갱신")
         }
     }
 
@@ -137,11 +140,7 @@ fun VoiceCallScreen(
 
     // 초기화 로직 수행
     LaunchedEffect(Unit) {
-        val memberId = SharedPreferenceUtils.getMemberId()
-        viewModel.loadVoiceName(memberId = memberId)
-//        viewModel.sendStartCall(memberId = memberId, topic = null)
-        viewModel.startCountdown()
-        chatMessages.clear()
+        viewModel.loadVoiceName(memberId = SharedPreferenceUtils.getMemberId())
     }
 
     // AI 응답 수신 처리
@@ -152,7 +151,7 @@ fun VoiceCallScreen(
             Log.d("VoiceCallScreen", "🤖 AI: ${viewModel.aiMessage}")
             Log.d("VoiceCallScreen", "🤖 currentMode: ${state.currentMode}")
 
-            
+
             // 자막용 업뎃
             onIntent(VoiceCallIntent.UpdateSubtitle(viewModel.aiMessage))
             onIntent(VoiceCallIntent.UpdateTranslation(viewModel.aiMessageKor))
@@ -172,22 +171,22 @@ fun VoiceCallScreen(
     // 통화 종료 후 이동
     LaunchedEffect(viewModel.isCallEnded) {
         if (viewModel.isCallEnded) {
-            val totalChars = viewModel.chatMessages
-                .filter { it.type == "user" } // 사용자 입력만 카운트
-                .sumOf { it.message.length }
+            if (state.isReportCreated) {
+                viewModel._state.update { it.copy(isLoading = true) }
+                kotlinx.coroutines.delay(2000L)
+                viewModel._state.update { it.copy(isLoading = false) }
 
-            if (totalChars <= 100) { // 단어수가 100자가 안된다면
-                // 다이얼로그 띄우기 위한 상태값 업데이트
-                viewModel._state.update { it.copy(reportFailed = true) }
-            } else {
-                navController.navigate("report") {
+                navController.navigate("reports") {
                     popUpTo("call_screen") { inclusive = true }
                 }
+            } else {
+                viewModel._state.update { it.copy(reportFailed = true) }
             }
 
             viewModel.sendEndCall()
         }
     }
+
 
     if (state.reportFailed) {
         AlertDialog(
@@ -254,16 +253,34 @@ fun VoiceCallScreen(
 
                 VoiceCallHeader(state.leftTime, viewModel, state.voiceName)
                 Spacer(modifier = Modifier.height(28.dp))
+
                 VoiceVersionCall(state, onIntent)
             }
 
-            // 하단 영역: 버튼
+            /// 하단 영역: 버튼
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.BottomCenter
             ) {
-                CallActionButtons(state, onIntent, viewModel, navController, textState,  textCallViewModel)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    if (viewModel.isListening) {
+                        ListeningUi()
+                    }
+
+                    CallActionButtons(
+                        state = state,
+                        onIntent = onIntent,
+                        viewModel = viewModel,
+                        navController = navController,
+                        textState = textState,
+                        textCallViewModel = textCallViewModel
+                    )
+                }
             }
+
         }
     }
 

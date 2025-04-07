@@ -22,6 +22,10 @@ data class VoiceCallState(
     val isFinished: Boolean = false,
 
     val chatMessages: List<ChatMessage> = emptyList(),
-    val reportFailed: Boolean = false
+    val reportFailed: Boolean = false,
+
+    val isCallEnded: Boolean = false,
+
+    val isReportCreated: Boolean = false
 
 )
