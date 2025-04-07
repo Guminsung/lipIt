@@ -8,4 +8,5 @@ class Voice(Base):
 
     voice_id = Column(BigInteger, primary_key=True, index=True)
     voice_name = Column(String, nullable=False)
+    voice_type = Column(String, nullable=False, default="DEFAULT")  # DEFAULT, CELEB 등
     audio_url = Column(String, nullable=True)

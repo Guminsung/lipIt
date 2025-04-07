@@ -9,6 +9,29 @@ async def prompt_ai_response_node(state: dict) -> dict:
     max_history = 6
     timeout_suffix = " We've been talking for a while. Please end the call politely."
 
+    # voice_type과 voice_name 정보 가져오기
+    voice_type = state.get("voice_type", "CUSTOM")
+    voice_name = state.get("voice_name", "English Tutor")
+    
+    # 실제 유명인 모드 활성화 여부 확인
+    is_celebrity_mode = voice_type == "CELEB" and voice_name
+    celebrity_persona = ""
+    
+    if is_celebrity_mode:
+        # 유명인 persona 설정
+        celebrity_persona = f"""
+You are {voice_name}. This is a phone call where the user is talking directly with you, {voice_name}.
+
+Match your personality, speech style, and knowledge to {voice_name}:
+- Use first-person "I" perspective as {voice_name}
+- Reference your real background, career, achievements, and experiences
+- Maintain your personal communication style, catchphrases, and mannerisms
+- Include occasional subtle references to your well-known works or life events when relevant
+- Respond as you would in a casual phone conversation with a fan or friend
+
+IMPORTANT: This is not roleplaying - respond as the actual {voice_name} having a real conversation.
+"""
+
     history = state.get("messages", [])[-max_history:]
     retrieved_context = state.get("retrieved_context", [])
     memory_lines = convert_context_to_memory_lines(retrieved_context)
@@ -32,7 +55,8 @@ async def prompt_ai_response_node(state: dict) -> dict:
     if is_timeout:
         user_input += timeout_suffix
 
-    suffix = """
+    # 기본 프롬프트 suffix
+    base_suffix = """
 IMPORTANT: Keep your responses concise and short. All replies must be limited to at most 3 sentences.
 
 IMPORTANT: Convert all numbers to text in English responses only (e.g., "3 books" → "three books"). In Korean responses, keep numbers as digits (e.g., "3개", NOT "세 개").
@@ -49,6 +73,16 @@ IMPORTANT: You are having a natural conversation as a human. Do not mention that
 - Show emotions and personality in your responses
 - If asked about food, activities, or experiences, respond as if you have actually experienced them
 - Convert numeric digits to words in English only (e.g., "I ate 2 pizzas" → "I ate two pizzas"), but keep numbers as digits in Korean (e.g., "2시간")
+""".strip()
+
+    # 유명인 모드일 경우 suffix 추가
+    if is_celebrity_mode:
+        suffix = f"{celebrity_persona}\n\n{base_suffix}"
+    else:
+        suffix = base_suffix
+
+    # 예시 추가
+    suffix += """
 
 Example:
 human: I like pizza.
