@@ -35,6 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.auth.components.CustomFilledButton
+import kotlinx.coroutines.delay
 
 
 @Composable
@@ -48,18 +49,17 @@ fun LoginScreen(
     LaunchedEffect(state.isLoginSuccess) {
         if (state.isLoginSuccess) {
             Log.d("auth", "LaunchedEffect: onSuccess 호출됨")
-//            Toast.makeText(context, "로그인 성공!", Toast.LENGTH_SHORT).show()
             onSuccess()
             onIntent(LoginIntent.OnLoginHandled)
         }
     }
 
-
     LaunchedEffect(state.errorMessage) {
         state.errorMessage?.let {
-            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "아이디 정보를 다시 확인해주세요", Toast.LENGTH_SHORT).show()
         }
     }
+
 
     // ID
     Box(
@@ -177,17 +177,17 @@ fun LoginScreen(
 
                     ) {
 
-                    if (state.isLoginClicked) {
-                        // 로딩 인디케이터 표시
-                        CircularProgressIndicator(
-                            color = Color(0xFFE2C7FF),
-                            modifier = Modifier.padding(8.dp)
-                        )
-                    } else {
-                    CustomFilledButton(text = "LOGIN", context, state, onClick = {
-                        onIntent(LoginIntent.OnLoginClicked)
-                    })
-                        }
+//                    if (state.isLoginClicked) {
+//                        // 로딩 인디케이터 표시
+//                        CircularProgressIndicator(
+//                            color = Color(0xFFE2C7FF),
+//                            modifier = Modifier.padding(8.dp)
+//                        )
+//                    } else {
+                        CustomFilledButton(text = "LOGIN", context, state, onClick = {
+                            onIntent(LoginIntent.OnLoginClicked)
+                        })
+//                    }
                 }
 
                 Spacer(modifier = Modifier.height(94.dp))
