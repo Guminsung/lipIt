@@ -355,6 +355,14 @@ class VoiceCallViewModel : ViewModel() {
                                 val reportCreated = data.optBoolean("reportCreated", false)
                                 Log.d("WebSocket", "🔚 통화 종료 - report=$reportCreated")
 
+                                val duration = data.optInt("duration", 0)
+                                val endTime = data.optString("endTime", "N/A")
+
+                                Log.d("WebSocket", "🔚 통화 종료 수신됨")
+                                Log.d("WebSocket", "📍 종료 시각: $endTime")
+                                Log.d("WebSocket", "⏱️ 통화 시간: ${duration}s")
+                                Log.d("WebSocket", "📄 리포트 생성 여부: $reportCreated")
+
                                 _state.update {
                                     it.copy(
                                         isReportCreated = reportCreated,
@@ -454,8 +462,15 @@ class VoiceCallViewModel : ViewModel() {
         }
     }
 
+    private val MAX_QUEUE_SIZE = 10
+
     /** 수신된 오디오 저장 후 재생 큐에 추가 */
     private fun enqueueAndPlay(buffer: ByteBuffer) {
+        if (audioQueue.size >= MAX_QUEUE_SIZE) {
+            val removed = audioQueue.removeFirst()
+            removed.delete() // 디스크에서도 제거
+        }
+
         Log.d("ExoPlayer", "✅ enqueueAndPlay() 실행됨")
 
         val tempFile = File.createTempFile("tts_", ".wav")
@@ -495,9 +510,10 @@ class VoiceCallViewModel : ViewModel() {
             Log.d("ExoPlayer", "▶️ 재생 시작됨")
         } catch (e: Exception) {
             Log.e("ExoPlayer", "❌ 재생 실패: ${e.message}")
+            next.delete()
+
         }
     }
-
 
     override fun onCleared() {
         super.onCleared()
@@ -607,9 +623,19 @@ class VoiceCallViewModel : ViewModel() {
             return
         }
 
+        if (callId == null) {
+            Log.e("WebSocket", "❌ callId 없음 - end 전송 불가")
+            return
+        }
+
         val json = JSONObject().apply {
             put("action", "end")
+            put("data", JSONObject().apply {
+                put("callId", callId)
+            })
         }
+
+
         try {
             Log.d("WebSocket", "📤 서버에 end 메시지 전송")
 
