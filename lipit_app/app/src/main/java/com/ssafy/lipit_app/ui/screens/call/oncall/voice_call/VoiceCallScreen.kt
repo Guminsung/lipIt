@@ -1,6 +1,7 @@
 package com.ssafy.lipit_app.ui.screens.call.oncall.voice_call
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.util.Log
@@ -51,6 +52,7 @@ import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun VoiceCallScreen(
     onIntent: (VoiceCallIntent) -> Unit,
@@ -65,7 +67,7 @@ fun VoiceCallScreen(
     val toastMessage = remember { mutableStateOf<String?>(null) }
 
     // 서버 연결 에러 날 때 다이얼로그 띄우기
-    if (viewModel.connectionError.value && !viewModel.isCallEnded) {
+    if (viewModel.connectionError.value && !viewModel.state.value.isReportCreated) {
         AlertDialog(
             onDismissRequest = { viewModel.connectionError.value = false },
             title = { Text("⚠️ 서버 연결 실패") },
@@ -83,6 +85,7 @@ fun VoiceCallScreen(
             }
         )
     }
+
 
 
     // 가장 먼저 Player 초기화

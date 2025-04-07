@@ -2,7 +2,9 @@ package com.ssafy.lipit_app.util
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import org.java_websocket.client.WebSocketClient
+import org.java_websocket.enums.ReadyState
 
 /**
  * WebSocketHeartbeat
@@ -22,12 +24,23 @@ class WebSocketHeartbeat(
     /** PING 전송 작업 */
     private val pingRunnable = object : Runnable {
         override fun run() {
-            if (wsClient.isOpen) {
-                wsClient.send(pingMessage)
+            if (!wsClient.isOpen) { // OOM 방지
+                Log.w("Heartbeat", "WebSocket 연결 안 됨 - PING 생략")
+                return // 다음 루프를 돌리지 않음
             }
-
-            // 다음 PING 예약
-            handler.postDelayed(this, intervalMillis)
+            
+            try {
+                if (wsClient.isOpen && wsClient.readyState == ReadyState.OPEN) {
+                    wsClient.send(pingMessage)
+                    Log.d("Heartbeat", "💓 PING 전송")
+                } else {
+                    Log.w("Heartbeat", "⚠️ WebSocket 연결 안 됨 - PING 생략")
+                }
+            } catch (e: Exception) {
+                Log.e("Heartbeat", "❌ Ping 전송 실패: ${e.message}", e)
+            } finally {
+                handler.postDelayed(this, intervalMillis)
+            }
         }
     }
 

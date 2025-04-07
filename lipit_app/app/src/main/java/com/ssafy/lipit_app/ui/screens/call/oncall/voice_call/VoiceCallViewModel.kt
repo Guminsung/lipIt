@@ -130,12 +130,8 @@ class VoiceCallViewModel : ViewModel() {
                     it.copy(isLoading = true)
                 }
 
-                viewModelScope.launch {
-                    delay(2000L) // 리포트 생성 대기 시간
-                    _state.update {
-                        it.copy(isFinished = true)
-                    }
-                }
+                sendEndCall()
+
             }
         }
     }
@@ -457,15 +453,25 @@ class VoiceCallViewModel : ViewModel() {
 
     /** 연결 재시도 딜레이 */
     private fun reconnectWithDelay(delayMillis: Long = 2000) {
-        if (!isConnecting && !isConnected) {
-            mainHandler.postDelayed({ connectWebSocket() }, delayMillis)
+//        if (!isConnecting && !isConnected) {
+//            mainHandler.postDelayed({ connectWebSocket() }, delayMillis)
+//        }
+
+        if (!isConnected && !isConnecting) { // oom 방지
+            connectWebSocket()
         }
+
     }
 
-    private val MAX_QUEUE_SIZE = 10
+    private val MAX_QUEUE_SIZE = 3
 
     /** 수신된 오디오 저장 후 재생 큐에 추가 */
     private fun enqueueAndPlay(buffer: ByteBuffer) {
+        if (audioQueue.size >= MAX_QUEUE_SIZE && exoPlayer?.isPlaying == true) { // OOM 방지
+            Log.w("ExoPlayer", "❗️ 큐가 가득 차 있고 재생 중 → 새 오디오 무시")
+            return
+        }
+
         if (audioQueue.size >= MAX_QUEUE_SIZE) {
             val removed = audioQueue.removeFirst()
             removed.delete() // 디스크에서도 제거
@@ -479,6 +485,8 @@ class VoiceCallViewModel : ViewModel() {
             buffer.get(bytes)
             out.write(bytes)
         }
+
+        buffer.clear() // 메모리 초과 에러로 인한 추가
 
         Log.d("ExoPlayer", "📥 오디오 파일 저장 완료: ${tempFile.absolutePath}, size=${tempFile.length()}")
 
@@ -616,22 +624,20 @@ class VoiceCallViewModel : ViewModel() {
         exoPlayer?.stop()
         audioQueue.clear() //  남은 오디오 큐 비우기
 
-        releasePlayer() // 플레이어 완전 해제는 나중에 해도 OK
-
         if (ws == null || !isConnected) {
             Log.w("WebSocket", "❌ WebSocket 연결 안 되어 있음 - 종료 메시지 전송 생략")
             return
         }
 
         if (callId == null) {
-            Log.e("WebSocket", "❌ callId 없음 - end 전송 불가")
-            return
+            Log.w("WebSocket", "⚠️ callId 없음 - end 메시지에 포함되지 않음")
         }
 
+        // callId가 null이더라도 전송하도록 수정
         val json = JSONObject().apply {
             put("action", "end")
             put("data", JSONObject().apply {
-                put("callId", callId)
+                put("callId", callId ?: -1) // 임시값 or 서버에서 nullable 처리
             })
         }
 
@@ -666,8 +672,13 @@ class VoiceCallViewModel : ViewModel() {
         isConnecting = false
         connectionStatusText = "✅ 연결됨"
 
-        heartbeat = WebSocketHeartbeat(ws!!)
-        heartbeat?.start()
+        if (heartbeat == null) { // OOM 방지를 위해 중복 실행을 막음
+            heartbeat = WebSocketHeartbeat(ws!!)
+            heartbeat?.start()
+        }
+
+//        heartbeat = WebSocketHeartbeat(ws!!)
+//        heartbeat?.start()
 
         // 연결 후 바로 통화 시작 요청
         val memberId = SharedPreferenceUtils.getMemberId()
@@ -794,9 +805,13 @@ class VoiceCallViewModel : ViewModel() {
         isListening = false
 
         Log.d("STT", "🛑 STT 수동 종료")
-        speechRecognizer?.stopListening()
-        speechRecognizer?.cancel()
-        speechRecognizer?.destroy()
+
+        speechRecognizer?.apply {
+            stopListening()
+            cancel()
+            destroy()
+        }
+
         speechRecognizer = null
     }
 
