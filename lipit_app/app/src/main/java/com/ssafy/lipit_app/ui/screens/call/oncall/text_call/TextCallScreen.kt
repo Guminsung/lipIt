@@ -71,7 +71,8 @@ fun TextCallScreen(
             voiceCallViewModel._state.update { it.copy(isLoading = false) }
 
             navController.navigate("reports?refresh=true") {
-                popUpTo("call_screen") { inclusive = true }
+                popUpTo("main") { inclusive = false }
+                launchSingleTop = true
             }
 
         }
