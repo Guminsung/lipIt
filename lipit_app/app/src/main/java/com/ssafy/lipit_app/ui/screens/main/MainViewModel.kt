@@ -267,6 +267,9 @@ class MainViewModel(
                             )
                         }
 
+                        SharedPreferenceUtils.saveSelectedVoiceName(voice[0].voiceName)
+                        Log.d("MainViewModel", "선택된 음성 이름 저장: ${voice[0].voiceName}")
+
                         // 현재 선택된 Vocie 정보를 불러오면 BottomSheet 참조 내용 추가 업데이트
                         currentState.copy(
                             // 콜 아이템 업데이트
@@ -374,7 +377,6 @@ class MainViewModel(
         }
     }
 
-    // TODO AlarmManager : Delete
     // 알람 매니저 : 알림 삭제 구현
     private fun cancelScheduleAlarm(schedule: CallSchedule?, isDelete: Boolean = false) {
         // isDelete : 삭제여부 (true) 로 들어오면 삭제 이벤트

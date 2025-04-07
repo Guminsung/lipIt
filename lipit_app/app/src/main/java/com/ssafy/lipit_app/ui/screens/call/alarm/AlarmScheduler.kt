@@ -23,11 +23,12 @@ class AlarmScheduler(private val context: Context) {
      * @param callerName 발신자 이름
      * @param alarmId 고유 알람 ID (여러 알람 구분용)
      */
-    fun scheduleCallAlarm(time: LocalDateTime, callerName: String, alarmId: Int = 0) {
+    fun scheduleCallAlarm(time: LocalDateTime, callerName: String, alarmId: Int = 0, retryCount: Int) {
         // 알람이 울릴 때 실행될 인텐트 준비
         val intent = Intent(context, ScheduledCallReceiver::class.java).apply {
             putExtra("CALLER_NAME", callerName)
             putExtra("ALARM_ID", alarmId)
+            putExtra(CallActionReceiver.EXTRA_RETRY_COUNT, retryCount)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -60,7 +61,7 @@ class AlarmScheduler(private val context: Context) {
             )
         }
 
-        Log.d("AlarmScheduler", "통화 알림 예약됨: $callerName, 시간: $time, ID: $alarmId")
+        Log.d("AlarmScheduler", "통화 알림 예약됨: $callerName, 시간: $time, ID: $alarmId, 재시도: $retryCount")
     }
 
     /**

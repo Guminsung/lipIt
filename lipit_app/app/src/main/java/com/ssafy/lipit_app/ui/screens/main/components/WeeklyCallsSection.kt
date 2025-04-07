@@ -22,7 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -33,7 +32,6 @@ import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.ui.screens.main.CallItem
 import com.ssafy.lipit_app.ui.screens.main.MainIntent
 import com.ssafy.lipit_app.ui.screens.main.MainViewModel
-import kotlinx.coroutines.launch
 
 // 주간 전화 일정 한 눈에 보기
 @Composable
@@ -137,7 +135,7 @@ fun WeeklyCallsSection(
 
                 if (filteredItems.isNotEmpty()) {
                     Log.d("TAG", "WeeklyCallsSection: 데이터찾기 ${filteredItems}")
-                    dailyCallSchedule(filteredItems, viewModel = MainViewModel(context))
+                    DailyCallSchedule(filteredItems, viewModel = MainViewModel(context), onIntent = onIntent)
                 } else {
                     Box(
                         modifier = Modifier.height(70.dp),
