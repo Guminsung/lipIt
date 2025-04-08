@@ -1,7 +1,6 @@
 package com.ssafy.lipit_app
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -9,9 +8,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.compose.rememberNavController
@@ -35,8 +34,8 @@ class MainActivity : ComponentActivity() {
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        window.statusBarColor = Color.TRANSPARENT
-        window.navigationBarColor = Color.TRANSPARENT
+//        window.statusBarColor = Color.TRANSPARENT
+//        window.navigationBarColor = Color.TRANSPARENT
 
         // 아이콘 색상 지정 (true = 검정 아이콘, false = 흰색 아이콘)
         val controller = WindowInsetsControllerCompat(window, window.decorView)
@@ -58,10 +57,10 @@ class MainActivity : ComponentActivity() {
             LipItTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = Color.Transparent
                 ) {
                     NavGraph(
-                        navController = navController,
+                        navController =  navController,
                         initialDestination = initialDestination
                     )
                 }
