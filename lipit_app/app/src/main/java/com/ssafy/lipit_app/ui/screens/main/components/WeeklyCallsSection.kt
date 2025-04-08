@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -47,7 +48,6 @@ fun WeeklyCallsSection(
         initialPage = initialPage,
         pageCount = { days.size }
     )
-    val coroutineScope = rememberCoroutineScope()
 
     // pager 변경 감지해서 요일 업데이트
     LaunchedEffect(pagerState.currentPage) {
@@ -60,7 +60,8 @@ fun WeeklyCallsSection(
     LaunchedEffect(selectedDay) {
         val newIndex = days.indexOf(selectedDay)
         if (newIndex >= 0 && newIndex != pagerState.currentPage) {
-            pagerState.animateScrollToPage(newIndex)
+//            pagerState.animateScrollToPage(newIndex)
+            pagerState.scrollToPage(newIndex)
         }
     }
 
@@ -99,7 +100,7 @@ fun WeeklyCallsSection(
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
-                    )  {
+                    ) {
                         onIntent(MainIntent.OnSettingsClicked)
                     }
             )
@@ -135,7 +136,11 @@ fun WeeklyCallsSection(
 
                 if (filteredItems.isNotEmpty()) {
                     Log.d("TAG", "WeeklyCallsSection: 데이터찾기 ${filteredItems}")
-                    DailyCallSchedule(filteredItems, viewModel = MainViewModel(context), onIntent = onIntent)
+                    DailyCallSchedule(
+                        filteredItems,
+                        viewModel = MainViewModel(context),
+                        onIntent = onIntent
+                    )
                 } else {
                     Box(
                         modifier = Modifier.height(70.dp),
