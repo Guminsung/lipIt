@@ -838,13 +838,16 @@ class VoiceCallViewModel : ViewModel() {
 
 
     fun sendUserSpeech(text: String, textCallViewModel: TextCallViewModel? = null) {
+
+        val formattedText = "${text.trim()}."
+
         // 이미 마지막 메시지가 동일하면 추가 X - 중복 방지
         if (chatMessages.lastOrNull()?.message == text && chatMessages.lastOrNull()?.type == "user") {
             Log.d("VoiceCall", "⚠️ 중복 유저 메시지 감지 - 전송 생략: $text")
             return
         }
 
-        sendText(text) // 기존 웹소켓 전송 함수 재활용
+        sendText(formattedText) // 기존 웹소켓 전송 함수 재활용
 
         chatMessages.add(ChatMessage(type = "user", message = text))
 
@@ -852,7 +855,7 @@ class VoiceCallViewModel : ViewModel() {
         if (state.value.currentMode == "Text") {
             textCallViewModel?.addMessage(
                 ChatMessageText(
-                    text = text,
+                    text = formattedText,
                     translatedText = "",
                     isFromUser = true
                 )

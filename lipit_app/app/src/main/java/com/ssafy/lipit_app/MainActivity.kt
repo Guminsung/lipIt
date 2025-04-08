@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,8 +35,10 @@ class MainActivity : ComponentActivity() {
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-//        window.statusBarColor = Color.TRANSPARENT
-//        window.navigationBarColor = Color.TRANSPARENT
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = true
+            isAppearanceLightNavigationBars = true
+        }
 
         // 아이콘 색상 지정 (true = 검정 아이콘, false = 흰색 아이콘)
         val controller = WindowInsetsControllerCompat(window, window.decorView)
@@ -56,11 +59,12 @@ class MainActivity : ComponentActivity() {
 
             LipItTheme {
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize()
+                        .navigationBarsPadding(),
                     color = Color.Transparent
                 ) {
                     NavGraph(
-                        navController =  navController,
+                        navController = navController,
                         initialDestination = initialDestination
                     )
                 }

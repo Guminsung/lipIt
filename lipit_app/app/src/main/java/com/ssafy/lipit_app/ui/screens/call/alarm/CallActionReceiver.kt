@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.ssafy.lipit_app.MainActivity
+import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import java.time.LocalDateTime
 
 class CallActionReceiver : BroadcastReceiver() {
@@ -30,9 +31,12 @@ class CallActionReceiver : BroadcastReceiver() {
                 }
                 context.startActivity(acceptIntent)
 
+                val alarmId = intent.getIntExtra("ALARM_ID", 0)
+
                 CallNotificationHelper.stopVibration(context)
-                // 알림 취소
                 CallNotificationHelper.cancelCallNotification(context)
+
+                cancelAllRetryAlarms(context, alarmId)
             }
 
             ACTION_DECLINE_CALL -> {
@@ -106,6 +110,29 @@ class CallActionReceiver : BroadcastReceiver() {
                 CallNotificationHelper.stopVibration(context)
             }
         }
+    }
+
+    // 같은 발신자의 재시도 알람 모두 취소하는 함수
+    private fun cancelAllRetryAlarms(context: Context, baseAlarmId: Int) {
+        val alarmScheduler = AlarmScheduler(context)
+
+        // 현재 알람 취소
+        alarmScheduler.cancelAlarm(baseAlarmId)
+
+        // 재시도 알람 모두 취소 (최대 재시도 횟수만큼)
+        for (i in 1..MAX_RETRY_COUNT) {
+            val retryAlarmId = baseAlarmId + 1000 + i
+            alarmScheduler.cancelAlarm(retryAlarmId)
+
+            val registeredKey = SharedPreferenceUtils.PREF_ALARM_REGISTERED_PREFIX + retryAlarmId
+            val timestampKey = SharedPreferenceUtils.PREF_ALARM_TIMESTAMP_PREFIX + retryAlarmId
+            SharedPreferenceUtils.remove(registeredKey)
+            SharedPreferenceUtils.remove(timestampKey)
+
+            Log.d("CallReceiver", "재시도 알람 취소됨: ID=$retryAlarmId")
+        }
+
+        Log.d("CallReceiver", "모든 재시도 알람 취소 완료")
     }
 
 }
