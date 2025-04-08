@@ -94,7 +94,7 @@ fun VoiceCallScreen(
         textCallViewModel.setInitialMessages(viewModel.convertToTextMessages())
 
         if (!viewModel.isCountdownRunning()) {
-            viewModel.startCountdown()
+            viewModel.startCountdown(context)
         }
 
         viewModel.getLastAiMessage()?.let { lastAi ->
