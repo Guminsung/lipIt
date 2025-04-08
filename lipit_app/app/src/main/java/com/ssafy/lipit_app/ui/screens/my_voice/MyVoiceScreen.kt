@@ -279,13 +279,15 @@ fun MyVoiceScreen(
 
                 "Custom" -> {
                     // Custom 음성
-                    CustomVoiceScreen(
-                        customVoices = state.myCustomVoiceList,
-                        selectedVoiceName = state.selectedVoiceName,
-                        onVoiceChange = { voiceId ->
-                            onIntent(MyVoiceIntent.ChangeVoice(voiceId))
-                        }
-                    )
+                    Box(modifier = Modifier.padding(horizontal = 24.dp)) {
+                        CustomVoiceScreen(
+                            customVoices = state.myCustomVoiceList,
+                            selectedVoiceName = state.selectedVoiceName,
+                            onVoiceChange = { voiceId ->
+                                onIntent(MyVoiceIntent.ChangeVoice(voiceId))
+                            }
+                        )
+                    }
                 }
             }
         }
