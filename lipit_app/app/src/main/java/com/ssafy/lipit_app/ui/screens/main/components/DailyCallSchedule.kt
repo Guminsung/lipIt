@@ -47,10 +47,12 @@ fun DailyCallSchedule(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(horizontal = 10.dp)
             .shadow(
-                elevation = 10.dp,
+                elevation = 8.dp,
                 spotColor = Color(0xFFD09FE6),
-                ambientColor = Color(0xFFD09FE6)
+                ambientColor = Color(0xFFD09FE6),
+                shape = RoundedCornerShape(15.dp)
             )
             .width(300.dp)
             .height(70.dp)
