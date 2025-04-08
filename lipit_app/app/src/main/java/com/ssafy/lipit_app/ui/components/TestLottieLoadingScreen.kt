@@ -42,7 +42,7 @@ fun TestLottieLoadingScreen(text: String = "로딩 중...") {
 
             Text(
                 text = text,
-                color = Color(0xFF444444),
+                color = Color(0xFFFFFFFF),
                 fontSize = 18.sp,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
             )

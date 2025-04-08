@@ -204,12 +204,17 @@ fun VoiceCallScreen(
                 popUpTo("main") { inclusive = false }
                 launchSingleTop = true
             }
+        }
 
+        // 통화 종료는 됐지만 리포트 생성 실패한 경우 처리
+        if (state.isCallEnded && !state.isReportCreated) {
+            Log.d("VoiceCallScreen", "❗ 종료됨 + 리포트 생성 실패 → 다이얼로그 표시")
+            viewModel._state.update { it.copy(reportFailed = true) }
         }
     }
 
 
-    if (state.reportFailed) {
+    if (viewModel.connectionError.value && !viewModel.state.value.reportFailed && !viewModel.state.value.isReportCreated) {
         AlertDialog(
             onDismissRequest = {
                 viewModel.resetCall()
