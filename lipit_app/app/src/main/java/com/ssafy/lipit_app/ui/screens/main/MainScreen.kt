@@ -72,6 +72,7 @@ fun MainScreen(
     val state by viewModel.state.collectAsState() // 고정된 값이 아닌 상태 관찰 -> 실시간 UI 반영
     val context = LocalContext.current
 
+
     // ***** Bottom Sheet 관리 : show/hide 처리
     val bottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
