@@ -13,7 +13,7 @@ class CallActionReceiver : BroadcastReceiver() {
         const val ACTION_DECLINE_CALL = "com.ssafy.lipit_app.ACTION_DECLINE_CALL"
         const val ACTION_MISSED_CALL = "com.ssafy.lipit_app.ACTION_MISSED_CALL"
         const val MAX_RETRY_COUNT = 2   // 전화 재시도 횟수
-        const val RETRY_INTERVAL_MINUTES = 5  // 5분마다 전화시도
+        const val RETRY_INTERVAL_MINUTES = 1  // 5분마다 전화시도
         const val EXTRA_RETRY_COUNT = "RETRY_COUNT"
         const val MISSED_CALL_TIMEOUT_SECONDS = 15  // 30초 후 부재중 처리
     }
