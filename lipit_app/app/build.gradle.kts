@@ -167,6 +167,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview:1.5.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("androidx.compose.ui:ui-tooling:1.5.1") // Preview용
+    implementation("androidx.compose.ui:ui:1.5.1")
 
     // url을 통해 이미지를 불러오기 위한 이미지 라이브러리 - Coil
     implementation("io.coil-kt:coil-compose:2.4.0")
