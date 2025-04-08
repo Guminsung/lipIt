@@ -85,4 +85,17 @@ object SharedPreferenceUtils {
     fun getSelectedVoiceName(): String {
         return preferences?.getString("selected_voice_name", "Sarang") ?: "Sarang"
     }
+
+    fun getBoolean(key: String, defaultValue: Boolean): Boolean {
+        return preferences?.getBoolean(key, defaultValue) ?: defaultValue
+    }
+
+    fun saveBoolean(key: String, value: Boolean) {
+
+        preferences?.edit()?.apply {
+            putBoolean(key, value)
+            apply()
+        }
+    }
+
 }

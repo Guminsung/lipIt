@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,8 +48,7 @@ fun ThisWeekSchedules(
     callSchedules: List<CallSchedule>,
     onTapSchedule: (CallSchedule) -> Unit,
     onDeleteSchedule: (Long) -> Unit
-)
-{
+) {
     val today = LocalDate.now()
     val dayOfWeek: DayOfWeek = today.dayOfWeek
     val koreanDayName: String = dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN)
@@ -89,11 +90,7 @@ fun ThisWeekSchedules(
             ) {
                 // 스케줄 데이터가 없는 경우에는 Text, Category 아무것도 표시하지 않음
                 if (schedule.callScheduleId != -1L) {
-                    // 시간 텍스트
-                    // 24시간 표현
-//                    val time = schedule.scheduledTime.substringBeforeLast(":")
-//                    val divideTime = if (time.substringBeforeLast(":") < 12.toString()) "AM" else "PM"
-                    
+
                     // 12 시간표현
                     val hourMinute = schedule.scheduledTime.substringBeforeLast(":")
                     val hour = hourMinute.substringBefore(":").toInt()
@@ -115,16 +112,7 @@ fun ThisWeekSchedules(
                             color = Color(0xFF5F5F61)
                         )
                     )
-//                    Text(
-//                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 19.dp),
-//                        text = "$time $divideTime",
-//                        style = androidx.compose.ui.text.TextStyle(
-//                            fontSize = 18.sp,
-//                            lineHeight = 15.sp,
-//                            fontWeight = FontWeight(400),
-//                            color = Color(0xFF5F5F61)
-//                        )
-//                    )
+
 
                     Spacer(modifier = Modifier.weight(1f))
 
@@ -164,6 +152,16 @@ fun ThisWeekSchedules(
                     )
 
                     Spacer(modifier = Modifier.width(12.dp))
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Add, contentDescription = "add",
+                            tint = Color.LightGray
+                        )
+                    }
                 }
 
                 // LongClickEvent: 꾹 눌러 삭제
