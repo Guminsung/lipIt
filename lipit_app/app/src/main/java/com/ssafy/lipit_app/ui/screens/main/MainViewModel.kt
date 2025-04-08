@@ -304,6 +304,21 @@ class MainViewModel(
                 Log.d("MyVoiceViewModel", "API 응답: $selectedVoiceResult")
 
                 selectedVoiceResult.onSuccess { voice ->
+
+                    
+                    val newVoiceName = voice[0].voiceName
+                    val currentVoiceName = _state.value.callItem_name
+
+                    // 음성 이름이 변경되었는지 확인
+                    if (currentVoiceName.isNotEmpty() && currentVoiceName != newVoiceName) {
+                        // 음성 이름이 변경된 경우, 모든 알림 업데이트
+                        Log.d(
+                            "MainViewModel",
+                            "음성 이름 변경 감지: $currentVoiceName -> $newVoiceName"
+                        )
+                        updateAllScheduleAlarms(newVoiceName)
+                    }
+
                     // 2. 선택된 음성 정보 저장
                     _state.update { currentState ->
 
@@ -424,6 +439,40 @@ class MainViewModel(
         }
     }
 
+    // 음성 이름이 변경되었을 때, 기존 알림 스케쥴 모두 업데이트
+    private fun updateAllScheduleAlarms(newVoiceName: String) {
+        viewModelScope.launch {
+            try {
+                // 현재 등록된 스케쥴 모두 조회
+                val scheduleResult = scheduleRepository.getWeeklyCallsSchedule(memberId)
+
+                scheduleResult.onSuccess { schedules ->
+
+                    // 기존 알림 취소 + 새 음성 이름으로 재등록
+                    schedules.forEach { schedule ->
+                        alarmScheduler.cancelAlarm(schedule.callScheduleId.toInt())
+
+                        val scheduleDateTime = convertToLocalDateTime(schedule)
+                        alarmScheduler.scheduleCallAlarm(
+                            time = scheduleDateTime,
+                            callerName = newVoiceName,
+                            alarmId = schedule.callScheduleId.toInt(),
+                            retryCount = 0
+                        )
+                        Log.d(
+                            "MainViewModel",
+                            "알림 업데이트: ${schedule.scheduledDay} ${schedule.scheduledTime}, 새 음성 이름: $newVoiceName"
+                        )
+                    }
+                }.onFailure { e ->
+                    Log.e("MainViewModel", "알림 업데이트 실패: ${e.message}", e)
+                }
+            } catch (e: Exception) {
+                Log.e("MainViewModel", "알림 업데이트 중 예외 발생: ${e.message}", e)
+            }
+        }
+    }
+
     // 알람 매니저 : 알림 삭제 구현
     private fun cancelScheduleAlarm(schedule: CallSchedule?, isDelete: Boolean = false) {
         // isDelete : 삭제여부 (true) 로 들어오면 삭제 이벤트
@@ -442,7 +491,6 @@ class MainViewModel(
         Log.d("Alarm", "Alarm _---------- 알람 정보 업데이트: $schedule, 삭제여부: $isDelete")
     }
 
-    // 누락된 convertDayOfWeek 함수 추가
     private fun convertDayOfWeek(day: String): java.time.DayOfWeek {
         return when (day.uppercase()) {
             "MONDAY" -> java.time.DayOfWeek.MONDAY
