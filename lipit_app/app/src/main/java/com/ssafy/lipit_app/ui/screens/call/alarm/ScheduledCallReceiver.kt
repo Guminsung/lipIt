@@ -74,7 +74,7 @@ class ScheduledCallReceiver : BroadcastReceiver() {
                     CallNotificationHelper.cancelCallNotification(context)
 
                     // 부재중 알림 표시
-                    CallNotificationHelper.showMissedCallNotification(context, callerName)
+                    CallNotificationHelper.showMissedCallNotification(context, callerName, retryCount)
                     Log.d(TAG, "통화 응답 없음 - 부재중 처리")
                 }
             }, CallActionReceiver.MISSED_CALL_TIMEOUT_SECONDS * 1000L)
