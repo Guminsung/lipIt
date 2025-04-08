@@ -11,6 +11,7 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -784,6 +785,13 @@ class VoiceCallViewModel : ViewModel() {
                         // restartSpeechToText(context, onResult)
                         stopSpeechToText()
                         showNoInputMessage()
+                        // 사용자에게 대신 대답 알림
+                        Toast.makeText(
+                            context,
+                            "음성 입력이 되지 않아 AI에게 재응답을 요청했습니다.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
                     }
 
                     else -> {
@@ -858,11 +866,10 @@ class VoiceCallViewModel : ViewModel() {
 
 
     fun showNoInputMessage() {
-//        if (systemMessage.value == null) {
-//            systemMessage.value = "음성이 감지되지 않았어요. 대신 AI가 다시 물어봐 달라고 했어요."
-//            sendUserSpeech("It’s a bit quiet. Could you repeat that for me?")
-//        }
         sendUserSpeech("It’s a bit quiet. Could you repeat that for me?")
+
+        // 사용자에게 알림 추가
+        //Toast.makeText(LocalContext.current, "음성 입력이 되지 않아 AI에게 재응답을 요청했습니다.", Toast.LENGTH_SHORT).show()
 
     }
 
