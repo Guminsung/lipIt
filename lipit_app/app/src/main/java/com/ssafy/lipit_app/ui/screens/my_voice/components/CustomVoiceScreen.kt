@@ -95,7 +95,7 @@ fun CustomVoiceScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = 10.dp, top = 20.dp),
+                    .padding(bottom = 10.dp, top = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // 커스텀 음성 목록 표시
@@ -152,7 +152,7 @@ fun CustomColumn(
             )
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = null // 클릭 효과(리플) 제거하여 깜빡임 최소화
+                indication = null
             ) { onVoiceChange(voices.voiceId) }
             .padding(horizontal = 18.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
