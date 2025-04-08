@@ -26,7 +26,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,10 +42,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.call.alarm.CallNotificationHelper
+import com.ssafy.lipit_app.util.SharedPreferenceUtils
 
 @Composable
 fun IncomingCallScreen(
@@ -57,6 +56,11 @@ fun IncomingCallScreen(
 
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        val memberId = SharedPreferenceUtils.getMemberId()
+        viewModel.fetchSelectedVoiceName(memberId)
+    }
 
 
     LaunchedEffect(state.callDeclined) {
@@ -95,7 +99,7 @@ fun IncomingCallScreen(
 
         Column(
             modifier = Modifier
-                .padding(top = 100.dp, start = 20.dp, end = 20.dp, bottom = 40.dp)
+                .padding(top = 150.dp, start = 20.dp, end = 20.dp, bottom = 40.dp)
                 .align(Alignment.TopCenter)
         ) {
             // 보이스 이름 출력 영역

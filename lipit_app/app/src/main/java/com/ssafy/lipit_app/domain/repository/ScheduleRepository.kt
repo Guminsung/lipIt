@@ -76,4 +76,26 @@ class ScheduleRepository {
         }
     }
 
+    // 오늘의 스케줄 조회
+    suspend fun getTodaySchedule(
+        memberId: Long,
+        callScheduleDay: String
+    ): Result<ScheduleResponse> {
+        return try {
+            val response = RetrofitUtil.scheduleService.getTodaySchedule(memberId, callScheduleDay)
+
+            if (response.isSuccessful) {
+                val data = response.body()?.data
+                if (data != null) Result.success(data)
+                else Result.failure(Exception("데이터 없음"))
+            } else {
+                val error = response.errorBody()?.string()
+                Result.failure(Exception("오늘의 일정 API 실패: $error"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+
 }
