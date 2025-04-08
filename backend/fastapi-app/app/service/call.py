@@ -135,30 +135,6 @@ async def add_message_to_call(
 
         await save_call(db, call_record)
 
-        # member의 total_report_count 증가 - raw SQL 사용
-        try:
-            await db.execute(
-                text(
-                    """
-                    UPDATE member 
-                    SET total_report_count = COALESCE(total_report_count, 0) + 1,
-                        total_call_duration = COALESCE(total_call_duration, 0) + :duration
-                    WHERE member_id = :member_id
-                """
-                ),
-                {"member_id": call_record.member_id, "duration": duration},
-            )
-            await db.commit()
-            logger.info(
-                f"Member {call_record.member_id}의 total_report_count를 증가시키고 total_call_duration에 {duration}을 추가했습니다."
-            )
-        except Exception as e:
-            logger.error(
-                f"total_report_count/total_call_duration 업데이트 실패: {str(e)}"
-            )
-            # 이 오류로 인해 전체 흐름이 중단되지 않도록 pass
-            pass
-
         # "human" 메시지의 content 길이 합산
         total_human_content_length = sum(
             len(m.get("content", ""))
@@ -168,6 +144,44 @@ async def add_message_to_call(
 
         # 조건에 따라 reportCreated 설정
         reportCreated = total_human_content_length > 100
+
+        # member의 통화 시간 업데이트 - raw SQL 사용
+        try:
+            # total_report_count는 reportCreated가 true일 때만 증가
+            update_sql = """
+                UPDATE member 
+                SET total_call_duration = COALESCE(total_call_duration, 0) + :duration
+                WHERE member_id = :member_id
+            """
+            
+            # reportCreated가 true인 경우에만 total_report_count 증가 포함
+            if reportCreated:
+                update_sql = """
+                    UPDATE member 
+                    SET total_report_count = COALESCE(total_report_count, 0) + 1,
+                        total_call_duration = COALESCE(total_call_duration, 0) + :duration
+                    WHERE member_id = :member_id
+                """
+            
+            await db.execute(
+                text(update_sql),
+                {"member_id": call_record.member_id, "duration": duration},
+            )
+            await db.commit()
+            
+            # 로그 메시지 조건부 변경
+            if reportCreated:
+                logger.info(
+                    f"Member {call_record.member_id}의 total_report_count를 증가시키고 total_call_duration에 {duration}을 추가했습니다."
+                )
+            else:
+                logger.info(
+                    f"Member {call_record.member_id}의 total_call_duration에 {duration}을 추가했습니다."
+                )
+        except Exception as e:
+            logger.error(f"멤버 통계 업데이트 실패: {str(e)}")
+            # 이 오류로 인해 전체 흐름이 중단되지 않도록 pass
+            pass
 
         if reportCreated:
             # 리포트 생성
@@ -214,28 +228,6 @@ async def end_call(db: AsyncSession, call_id: int) -> EndCallResponse:
 
     await save_call(db, call_record)
 
-    # member의 total_report_count 증가 - raw SQL 사용
-    try:
-        await db.execute(
-            text(
-                """
-                UPDATE member 
-                SET total_report_count = COALESCE(total_report_count, 0) + 1,
-                    total_call_duration = COALESCE(total_call_duration, 0) + :duration
-                WHERE member_id = :member_id
-            """
-            ),
-            {"member_id": call_record.member_id, "duration": duration},
-        )
-        await db.commit()
-        logger.info(
-            f"Member {call_record.member_id}의 total_report_count를 증가시키고 total_call_duration에 {duration}을 추가했습니다."
-        )
-    except Exception as e:
-        logger.error(f"total_report_count/total_call_duration 업데이트 실패: {str(e)}")
-        # 이 오류로 인해 전체 흐름이 중단되지 않도록 pass
-        pass
-
     # "human" 메시지의 content 길이 합산
     total_human_content_length = sum(
         len(m.get("content", ""))
@@ -246,8 +238,46 @@ async def end_call(db: AsyncSession, call_id: int) -> EndCallResponse:
     # 조건에 따라 reportCreated 설정
     reportCreated = total_human_content_length > 100
 
+    # member의 통화 시간 업데이트 - raw SQL 사용
+    try:
+        # total_report_count는 reportCreated가 true일 때만 증가
+        update_sql = """
+            UPDATE member 
+            SET total_call_duration = COALESCE(total_call_duration, 0) + :duration
+            WHERE member_id = :member_id
+        """
+        
+        # reportCreated가 true인 경우에만 total_report_count 증가 포함
+        if reportCreated:
+            update_sql = """
+                UPDATE member 
+                SET total_report_count = COALESCE(total_report_count, 0) + 1,
+                    total_call_duration = COALESCE(total_call_duration, 0) + :duration
+                WHERE member_id = :member_id
+            """
+        
+        await db.execute(
+            text(update_sql),
+            {"member_id": call_record.member_id, "duration": duration},
+        )
+        await db.commit()
+        
+        # 로그 메시지 조건부 변경
+        if reportCreated:
+            logger.info(
+                f"Member {call_record.member_id}의 total_report_count를 증가시키고 total_call_duration에 {duration}을 추가했습니다."
+            )
+        else:
+            logger.info(
+                f"Member {call_record.member_id}의 total_call_duration에 {duration}을 추가했습니다."
+            )
+    except Exception as e:
+        logger.error(f"멤버 통계 업데이트 실패: {str(e)}")
+        # 이 오류로 인해 전체 흐름이 중단되지 않도록 pass
+        pass
+
     if reportCreated:
-        # 리포트 생성 (비동기 태스크)
+        # 리포트 생성
         asyncio.create_task(
             generate_report(
                 db=db,
