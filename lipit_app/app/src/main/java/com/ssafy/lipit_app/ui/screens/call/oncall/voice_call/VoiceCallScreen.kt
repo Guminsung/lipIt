@@ -3,6 +3,7 @@ package com.ssafy.lipit_app.ui.screens.call.oncall.voice_call
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
 import android.widget.Toast
@@ -39,6 +40,8 @@ import com.ssafy.lipit_app.data.model.ChatMessage
 import com.ssafy.lipit_app.data.model.ChatMessageText
 import com.ssafy.lipit_app.ui.components.ListeningUi
 import com.ssafy.lipit_app.ui.components.TestLottieLoadingScreen
+import com.ssafy.lipit_app.ui.screens.call.alarm.AlarmScheduler
+import com.ssafy.lipit_app.ui.screens.call.alarm.CallActionReceiver
 import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallViewModel
@@ -99,6 +102,8 @@ fun VoiceCallScreen(
             onIntent(VoiceCallIntent.UpdateSubtitle(lastAi.text))
             onIntent(VoiceCallIntent.UpdateTranslation(lastAi.translatedText))
         }
+
+        cancelAllTodayAlarms(context)
     }
 
 
@@ -346,4 +351,41 @@ fun CallScreen(voiceViewModel: VoiceCallViewModel, navController: NavController)
     }
 }
 
+private fun cancelAllTodayAlarms(context: Context) {
+    val alarmScheduler = AlarmScheduler(context)
+    val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+
+    // 등록된 알람 ID 찾기
+    val registeredAlarmIds = prefs.all.keys
+        .filter { it.startsWith(SharedPreferenceUtils.PREF_ALARM_REGISTERED_PREFIX) }
+        .map { it.removePrefix(SharedPreferenceUtils.PREF_ALARM_REGISTERED_PREFIX).toInt() }
+
+    // 각 알람 취소
+    for (alarmId in registeredAlarmIds) {
+        // 기본 알람 취소
+        alarmScheduler.cancelAlarm(alarmId)
+
+        // 재시도 알람도 모두 취소 (최대 재시도 횟수만큼)
+        for (i in 1..CallActionReceiver.MAX_RETRY_COUNT) {
+            val retryAlarmId = alarmId + 1000 + i
+            alarmScheduler.cancelAlarm(retryAlarmId)
+
+            // SharedPreferences에서도 삭제
+            val registeredKey = SharedPreferenceUtils.PREF_ALARM_REGISTERED_PREFIX + retryAlarmId
+            val timestampKey = SharedPreferenceUtils.PREF_ALARM_TIMESTAMP_PREFIX + retryAlarmId
+            SharedPreferenceUtils.remove(registeredKey)
+            SharedPreferenceUtils.remove(timestampKey)
+        }
+
+        // 원래 알람 정보도 삭제
+        val registeredKey = SharedPreferenceUtils.PREF_ALARM_REGISTERED_PREFIX + alarmId
+        val timestampKey = SharedPreferenceUtils.PREF_ALARM_TIMESTAMP_PREFIX + alarmId
+        SharedPreferenceUtils.remove(registeredKey)
+        SharedPreferenceUtils.remove(timestampKey)
+
+        Log.d("VoiceCallScreen", "오늘의 모든 알람 취소: ID=$alarmId 및 관련 재시도 알람")
+    }
+
+    Log.d("VoiceCallScreen", "오늘 예정된 모든 알람 취소 완료")
+}
 
