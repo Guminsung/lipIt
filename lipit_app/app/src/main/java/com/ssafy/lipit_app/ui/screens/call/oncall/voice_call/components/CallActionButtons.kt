@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.components
 
+import android.widget.Toast
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -28,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -209,17 +211,24 @@ fun CallActionButtons(
                 // 보내기 버튼 클릭
                 .clickable {
                     // 보내기 한 번만 누르는 버전
-                    val message = textState.value.trim()
-                    if (message.isNotBlank()) {
-                        viewModel.sendUserSpeech(message, textCallViewModel) // textViewModel 연결
-                        textState.value = ""
+                    if (viewModel.isWaitingResponse) {
+                        // AI 응답 중이면 토스트만 띄움
+                        Toast
+                            .makeText(context, "AI가 응답 중입니다..", Toast.LENGTH_SHORT)
+                            .show()
                     } else {
-                        // 말 안 하면 showNoInputMessage()에서 처리됨
-                        viewModel.startSpeechToText(context) { result ->
-                            if (result.isNotBlank()) {
-                                viewModel.sendUserSpeech(result)
-                            } else {
-                                viewModel.showNoInputMessage()
+                        val message = textState.value.trim()
+                        if (message.isNotBlank()) {
+                            viewModel.sendUserSpeech(message, textCallViewModel) // textViewModel 연결
+                            textState.value = ""
+                        } else {
+                            // 말 안 하면 showNoInputMessage()에서 처리됨
+                            viewModel.startSpeechToText(context) { result ->
+                                if (result.isNotBlank()) {
+                                    viewModel.sendUserSpeech(result)
+                                } else {
+                                    viewModel.showNoInputMessage()
+                                }
                             }
                         }
                     }
@@ -250,10 +259,11 @@ fun CallActionButtons(
         ) {
             Icon(
                 painterResource(id = R.drawable.call_mic_icon),
-                contentDescription = "메뉴",
+                contentDescription = "음성 보내기",
                 Modifier
                     .width(39.dp)
-                    .height(62.dp),
+                    .height(62.dp)
+                    .alpha(if (viewModel.isWaitingResponse) 0.5f else 1f),
                 tint = Color(0xFFFDF8FF)
             )
         }
