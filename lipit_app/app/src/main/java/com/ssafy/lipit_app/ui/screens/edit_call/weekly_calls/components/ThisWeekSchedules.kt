@@ -90,12 +90,24 @@ fun ThisWeekSchedules(
                 // 스케줄 데이터가 없는 경우에는 Text, Category 아무것도 표시하지 않음
                 if (schedule.callScheduleId != -1L) {
                     // 시간 텍스트
-                    val time = schedule.scheduledTime.substringBeforeLast(":")
-                    val divideTime = if (time.substringBeforeLast(":") < 12.toString()) "AM" else "PM"
+                    // 24시간 표현
+//                    val time = schedule.scheduledTime.substringBeforeLast(":")
+//                    val divideTime = if (time.substringBeforeLast(":") < 12.toString()) "AM" else "PM"
+                    
+                    // 12 시간표현
+                    val hourMinute = schedule.scheduledTime.substringBeforeLast(":")
+                    val hour = hourMinute.substringBefore(":").toInt()
+                    val minute = hourMinute.substringAfter(":").padStart(2, '0')
+                    val amPm = if (hour < 12) "AM" else "PM"
+                    val hour12 = when (hour) {
+                        0 -> 12  // 0시는 12 AM
+                        in 1..12 -> hour  // 1시~12시는 그대로
+                        else -> hour - 12  // 13시~23시는 -12
+                    }
 
                     Text(
                         modifier = Modifier.padding(horizontal = 20.dp, vertical = 19.dp),
-                        text = "$time $divideTime",
+                        text = "$hour12:$minute $amPm",
                         style = androidx.compose.ui.text.TextStyle(
                             fontSize = 18.sp,
                             lineHeight = 15.sp,
@@ -103,6 +115,16 @@ fun ThisWeekSchedules(
                             color = Color(0xFF5F5F61)
                         )
                     )
+//                    Text(
+//                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 19.dp),
+//                        text = "$time $divideTime",
+//                        style = androidx.compose.ui.text.TextStyle(
+//                            fontSize = 18.sp,
+//                            lineHeight = 15.sp,
+//                            fontWeight = FontWeight(400),
+//                            color = Color(0xFF5F5F61)
+//                        )
+//                    )
 
                     Spacer(modifier = Modifier.weight(1f))
 
