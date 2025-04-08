@@ -15,7 +15,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Text
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -33,92 +37,120 @@ import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.report.components.Report
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ReportScreen(
     state: ReportState,
-    onIntent: (ReportIntent) -> Unit
+    onIntent: (ReportIntent) -> Unit,
+    shouldRefresh: Boolean
 ) {
+
+    // pull & refresh 기능 상태 관리
+    val isRefreshing = state.isLoading
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isRefreshing,
+        onRefresh = {
+            Log.d("ReportScreen", "🔄 당겨서 새로고침 동작!")
+            onIntent(ReportIntent.LoadReportList)
+        }
+    )
+
+    // call에서 넘어올때 강제 새로고침 시행
+    LaunchedEffect(shouldRefresh) {
+        if (shouldRefresh) {
+            onIntent(ReportIntent.LoadReportList)
+            Log.d("ReportScreen", "강제 새로고침 실행")
+        }
+    }
 
     LaunchedEffect(Unit) {
         onIntent(ReportIntent.LoadReportList)
         Log.d("ReportScreen", "리포트 개수: ${state.totalReportList.size}")
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(Color.Transparent, Color.Transparent)
-                ),
-                shape = RectangleShape
-            )
-            .paint(
-                painter = painterResource(id = R.drawable.bg_myvoice),
-                contentScale = ContentScale.FillBounds
-            )
-            .padding(top = 24.dp, start = 24.dp, end = 24.dp)
+            .pullRefresh(pullRefreshState) // 여기에 추가
     ) {
-        Text(
-            text = "Reports",
-            color = Color.White,
-            fontWeight = FontWeight.Bold,
-            fontSize = 30.sp,
-            modifier = Modifier.padding(top = 46.dp)
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color.Transparent)
+                    ),
+                    shape = RectangleShape
+                )
+                .paint(
+                    painter = painterResource(id = R.drawable.bg_myvoice),
+                    contentScale = ContentScale.FillBounds
+                )
+                .padding(top = 24.dp, start = 24.dp, end = 24.dp)
+        ) {
+            Text(
+                text = "Reports",
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 30.sp,
+                modifier = Modifier.padding(top = 46.dp)
+            )
 
-        Spacer(modifier = Modifier.height(26.dp))
+            Spacer(modifier = Modifier.height(26.dp))
 
-        when {
-            state.isLoading -> {
-                LoadingView()
-            }
-
-            state.totalReportList.isNotEmpty() -> {
-                // 리포트 내용
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(20.dp)
-                ) {
-                    items(state.totalReportList) { reports ->
-                        Report(report = reports,
-                            onReportItemClick = { reportId ->
-                                onIntent(ReportIntent.NavigateToReportDetail(reportId))
-                            }
-                        )
-                    }
+            when {
+                state.isLoading -> {
+                    LoadingView()
                 }
-            }
 
-            else -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Top
-                ) {
-                    Spacer(modifier = Modifier.height(40.dp))
-
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.TopCenter
+                state.totalReportList.isNotEmpty() -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
-                        Text(
-                            "아직 리포트가 없어요! \uD83D\uDC23",
-                            style = TextStyle(fontSize = 14.sp, color = Color.White)
-                        )
+                        items(state.totalReportList) { reports ->
+                            Report(
+                                report = reports,
+                                onReportItemClick = { reportId ->
+                                    onIntent(ReportIntent.NavigateToReportDetail(reportId))
+                                }
+                            )
+                        }
                     }
+                }
 
-                    Spacer(modifier = Modifier.weight(3f))
+                else -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Top
+                    ) {
+                        Spacer(modifier = Modifier.height(40.dp))
+
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.TopCenter
+                        ) {
+                            Text(
+                                "아직 리포트가 없어요! 🐣",
+                                style = TextStyle(fontSize = 14.sp, color = Color.White)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.weight(3f))
+                    }
                 }
             }
-
-
         }
 
+        // 새로고침 인디케이터 추가
+        PullRefreshIndicator(
+            refreshing = isRefreshing,
+            state = pullRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
     }
 }
-
-
 
 
 @Composable

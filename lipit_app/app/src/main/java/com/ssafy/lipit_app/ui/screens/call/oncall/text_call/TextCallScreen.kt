@@ -1,16 +1,21 @@
 package com.ssafy.lipit_app.ui.screens.call.oncall.text_call
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -20,9 +25,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.data.model.ChatMessageText
+import com.ssafy.lipit_app.ui.components.TestLottieLoadingScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.TextCallFooter
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components.TextCallHeader
@@ -32,6 +40,7 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun TextCallScreen(
     viewModel: TextCallViewModel,
@@ -42,38 +51,89 @@ fun TextCallScreen(
 ) {
     val listState = rememberLazyListState()
     val context = LocalContext.current
+    val voiceCallState by voiceCallViewModel.state.collectAsState()
+    val isKeyboardOpen = isKeyboardOpen()
 
     val state = viewModel.state.collectAsState().value
     Log.d("TextCall", "📦 메시지 수: ${state.messages.size}")
 
-    val voiceCallState by voiceCallViewModel.state.collectAsState() // time 동기화를 위해 가져옴
+    // 로딩 화면 보여주기
+    if (voiceCallState.isLoading) {
+        TestLottieLoadingScreen("리포트 생성 중...")
+    }
 
+    LaunchedEffect(
+        key1 = voiceCallState.isCallEnded,
+        key2 = voiceCallState.isReportCreated
+    ) {
+        if (voiceCallState.isCallEnded && voiceCallState.isReportCreated) {
+            Log.d("TextCallScreen", "📍 종료됨 + 리포트 생성됨 → 이동")
+            voiceCallViewModel._state.update { it.copy(isLoading = true) }
 
-    // 통화 종료 후 이동
-    LaunchedEffect(voiceCallViewModel.isCallEnded) {
-        if (voiceCallViewModel.isCallEnded) {
-            if (voiceCallViewModel.state.value.isReportCreated) {
-                // 로딩 화면 보여주고 reports로 이동
-                voiceCallViewModel._state.update { it.copy(isLoading = true) }
+            delay(15000L) // 로딩 보여주는 시간
 
-                delay(5000L) // 리포트 생성 시간에 따라 조절
+            voiceCallViewModel._state.update { it.copy(isLoading = false) }
 
-                voiceCallViewModel._state.update { it.copy(isLoading = false) }
-
-                navController.navigate("reports") {
-                    popUpTo("call_screen") { inclusive = true }
-                }
-            } else {
-                // 리포트 생성 실패 다이얼로그
-                voiceCallViewModel._state.update { it.copy(reportFailed = true) }
+            navController.navigate("reports?refresh=true") {
+                popUpTo("main") { inclusive = false }
+                launchSingleTop = true
             }
+
+        }
+
+
+        // 통화 종료는 됐지만 리포트 생성 실패한 경우 처리
+        if (voiceCallState.isCallEnded && !voiceCallState.isReportCreated) {
+            Log.d("VoiceCallScreen", "❗ 종료됨 + 리포트 생성 실패 → 다이얼로그 표시")
+            viewModel.setReportFailed()
+
+        }
+    }
+
+    LaunchedEffect(voiceCallViewModel.aiMessage) {
+        if (voiceCallViewModel.aiMessage.isNotBlank() &&
+            voiceCallViewModel.state.value.currentMode == "Text"
+        ) {
+            Log.d("TextCallScreen", "🤖 AI 응답 감지됨 → TextCallViewModel에 추가")
+
+            viewModel.addMessage(
+                ChatMessageText(
+                    text = voiceCallViewModel.aiMessage,
+                    translatedText = voiceCallViewModel.aiMessageKor,
+                    isFromUser = false
+                )
+            )
+
+            voiceCallViewModel.clearAiMessage()
         }
     }
 
 
-//    if (voiceCallState.isLoading) {
-//        TestLottieLoadingScreen("리포트 생성 중...")
-//    }
+
+    if (voiceCallViewModel.connectionError.value && !voiceCallViewModel.state.value.reportFailed && !voiceCallViewModel.state.value.isReportCreated) {
+        AlertDialog(
+
+            onDismissRequest = {
+                voiceCallViewModel.resetCall()
+                navController.navigate("main") {
+                    popUpTo("call_screen") { inclusive = true }
+                }
+            },
+            title = { Text("Report 생성 실패", fontWeight = FontWeight.Bold) },
+            text = { Text("사용 글자 수가 100자 이하인 경우, 리포트가 생성되지 않습니다.") },
+            confirmButton = {
+                Text(
+                    "확인",
+                    modifier = Modifier.clickable {
+                        voiceCallViewModel.resetCall()
+                        navController.navigate("main") {
+                            popUpTo("call_screen") { inclusive = true }
+                        }
+                    }
+                )
+            }
+        )
+    }
 
     // 대화 내역이 바뀌면 마지막으로 스크롤
     LaunchedEffect(state.messages.size) {
@@ -83,7 +143,7 @@ fun TextCallScreen(
     Box(
         modifier = Modifier
             .fillMaxWidth(),
-        contentAlignment = Alignment.TopCenter
+        //contentAlignment = Alignment.TopCenter,
     ) {
         // 배경
         Image(
@@ -100,6 +160,7 @@ fun TextCallScreen(
             modifier = Modifier
                 .padding(top = 55.dp, start = 20.dp, end = 20.dp, bottom = 40.dp)
                 .fillMaxSize()
+                .align(Alignment.TopStart)
         ) {
             // 모드 변경
             ModeChangeButton(
@@ -107,7 +168,6 @@ fun TextCallScreen(
                 onToggle = {
                     // 모드 전환: 텍스트 → 보이스로 바꾸는 시점이면 chatMessages 동기화
                     voiceCallViewModel.syncFromTextMessages(viewModel.getMessages())
-
                     onModeToggle()
                 }
             )
@@ -116,12 +176,12 @@ fun TextCallScreen(
             TextCallHeader(
                 voiceName = voiceCallState.voiceName,
                 leftTime = voiceCallState.leftTime,
-                voiceCallViewModel = VoiceCallViewModel()
+                voiceCallViewModel = voiceCallViewModel
             )
 
 
             // 대화 내역(채팅 ver.)
-            Box(
+            Column(
                 modifier = Modifier.weight(1f)
             ) {
                 TextVersionCall(state, onIntent, listState)
@@ -131,6 +191,12 @@ fun TextCallScreen(
 
             // 하단 영역 (텍스트 입력 공간, 번역 여부 및 텍스트 보내기 버튼)
             TextCallFooter(state.inputText, state.showTranslation, onIntent = onIntent)
+
+            if (isKeyboardOpen) {
+                Spacer(modifier = Modifier.height(30.dp)) // 키보드 열렸을 때만 여백 줌
+            } else {
+                Spacer(modifier = Modifier.height(5.dp))
+            }
         }
     }
 }
@@ -148,4 +214,9 @@ fun TextVersionCall(
     }
 }
 
+@Composable
+fun isKeyboardOpen(): Boolean {
+    val ime = androidx.compose.foundation.layout.WindowInsets.ime
+    return ime.getBottom(androidx.compose.ui.platform.LocalDensity.current) > 0
+}
 

@@ -1,6 +1,5 @@
 package com.ssafy.lipit_app.ui.screens.call.oncall.text_call.components
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -80,10 +79,6 @@ fun TextCallHeader(
                 .clickable {
                     // 전화 끊기
                     voiceCallViewModel.sendEndCall() // 연결되어 있으면 종료 메시지 보내고
-                    Toast
-                        .makeText(context, "통화 종료 요청을 보냈습니다.", Toast.LENGTH_SHORT)
-                        .show()
-
                 }
         ) {
             Icon(

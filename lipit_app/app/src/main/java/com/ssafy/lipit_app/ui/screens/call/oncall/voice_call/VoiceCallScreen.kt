@@ -1,6 +1,7 @@
 package com.ssafy.lipit_app.ui.screens.call.oncall.voice_call
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.util.Log
@@ -33,10 +34,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.rememberLottieComposition
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.ChatMessage
+import com.ssafy.lipit_app.data.model.ChatMessageText
 import com.ssafy.lipit_app.ui.components.ListeningUi
 import com.ssafy.lipit_app.ui.components.TestLottieLoadingScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.ModeChangeButton
@@ -51,6 +51,7 @@ import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun VoiceCallScreen(
     onIntent: (VoiceCallIntent) -> Unit,
@@ -65,7 +66,7 @@ fun VoiceCallScreen(
     val toastMessage = remember { mutableStateOf<String?>(null) }
 
     // 서버 연결 에러 날 때 다이얼로그 띄우기
-    if (viewModel.connectionError.value && !viewModel.isCallEnded) {
+    if (viewModel.connectionError.value && !viewModel.state.value.isReportCreated) {
         AlertDialog(
             onDismissRequest = { viewModel.connectionError.value = false },
             title = { Text("⚠️ 서버 연결 실패") },
@@ -157,6 +158,17 @@ fun VoiceCallScreen(
             onIntent(VoiceCallIntent.UpdateSubtitle(viewModel.aiMessage))
             onIntent(VoiceCallIntent.UpdateTranslation(viewModel.aiMessageKor))
 
+            // 텍스트 모드일 때 텍스트 뷰모델에도 반영
+            if (viewModel.state.value.currentMode == "Text") {
+                textCallViewModel.addMessage(
+                    ChatMessageText(
+                        text = viewModel.aiMessage,
+                        translatedText = viewModel.aiMessageKor,
+                        isFromUser = false
+                    )
+                )
+            }
+
             viewModel.clearAiMessage()
         }
     }
@@ -170,28 +182,39 @@ fun VoiceCallScreen(
     }
 
     // 통화 종료 후 이동
-    LaunchedEffect(viewModel.isCallEnded) {
-        if (viewModel.isCallEnded) {
-            if (viewModel.state.value.isReportCreated) {
-                // 로딩 화면 보여주고 reports로 이동
-                viewModel._state.update { it.copy(isLoading = true) }
+    // 로딩 화면 보여주기
+    if (state.isLoading) {
+        TestLottieLoadingScreen("리포트 생성 중...")
+    }
 
-                delay(5000L) // 리포트 생성 시간에 따라 조절
 
-                viewModel._state.update { it.copy(isLoading = false) }
+    LaunchedEffect(
+        key1 = state.isCallEnded,
+        key2 = state.isReportCreated
+    ) {
+        if (state.isCallEnded && state.isReportCreated) {
+            Log.d("VoiceCallScreen", "📍 종료됨 + 리포트 생성됨 → 이동")
+            viewModel._state.update { it.copy(isLoading = true) }
 
-                navController.navigate("reports") {
-                    popUpTo("call_screen") { inclusive = true }
-                }
-            } else {
-                // 리포트 생성 실패 다이얼로그
-                viewModel._state.update { it.copy(reportFailed = true) }
+            delay(15000L) // 로딩 보여주는 시간
+
+            viewModel._state.update { it.copy(isLoading = false) }
+
+            navController.navigate("reports?refresh=true") {
+                popUpTo("main") { inclusive = false }
+                launchSingleTop = true
             }
+        }
+
+        // 통화 종료는 됐지만 리포트 생성 실패한 경우 처리
+        if (state.isCallEnded && !state.isReportCreated) {
+            Log.d("VoiceCallScreen", "❗ 종료됨 + 리포트 생성 실패 → 다이얼로그 표시")
+            viewModel._state.update { it.copy(reportFailed = true) }
         }
     }
 
 
-    if (state.reportFailed) {
+    if (viewModel.connectionError.value && !viewModel.state.value.reportFailed && !viewModel.state.value.isReportCreated) {
         AlertDialog(
             onDismissRequest = {
                 viewModel.resetCall()
@@ -213,16 +236,6 @@ fun VoiceCallScreen(
                 )
             }
         )
-    }
-
-
-    // 리포트 생성 중 로딩 다이얼로그 표시
-    val composition by rememberLottieComposition(
-        LottieCompositionSpec.RawRes(R.raw.loader)
-    )
-
-    if (state.isLoading) {
-        TestLottieLoadingScreen("리포트 생성 중...")
     }
 
 

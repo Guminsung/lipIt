@@ -16,6 +16,11 @@ class TextCallViewModel : ViewModel() {
 
     }
 
+    fun setReportFailed() {
+        _state.update { it.copy(reportFailed = true) }
+    }
+
+
     fun addMessage(message: ChatMessageText) {
         if (state.value.messages.any { it.text == message.text && !it.isFromUser }) {
             Log.d("TextCall", "❗ 중복 메시지 감지, 추가 생략: ${message.text}")

@@ -413,27 +413,37 @@ fun NavGraph(
         }
 
         // 레포트 관련 화면들
-        composable("reports") {
-            Log.d(TAG, "reports 화면 구성")
+        composable(route = "reports?refresh={refresh}",
+            arguments = listOf(
+                navArgument("refresh") {
+                    defaultValue = "false"
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val shouldRefresh = backStackEntry.arguments?.getString("refresh")?.toBoolean() ?: false
             val viewModel = viewModel<ReportViewModel>()
+
+            LaunchedEffect(shouldRefresh) {
+                if (shouldRefresh) {
+                    viewModel.refreshReportList()  // 새로고침 강제 트리거
+                }
+            }
+
             ReportScreen(
                 state = viewModel.state.collectAsState().value,
                 onIntent = { intent ->
                     when (intent) {
                         is ReportIntent.NavigateToReportDetail -> {
-                            val reportId = intent.reportId
-                            Log.d(TAG, "레포트 상세 화면으로 이동 요청: reportId=$reportId")
-                            navController.navigate("report_detail_screen/$reportId")
+                            navController.navigate("report_detail_screen/${intent.reportId}")
                         }
-
-                        else -> {
-                            Log.d(TAG, "Report 인텐트 처리: $intent")
-                            viewModel.onIntent(intent)
-                        }
+                        else -> viewModel.onIntent(intent)
                     }
-                }
+                },
+                shouldRefresh = shouldRefresh
             )
         }
+
 
         composable(
             route = "report_detail_screen/{reportId}",

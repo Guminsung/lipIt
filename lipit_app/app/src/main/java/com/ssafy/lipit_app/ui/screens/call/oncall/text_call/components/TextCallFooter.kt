@@ -55,7 +55,7 @@ fun TextCallFooter(
             onValueChange = { newText -> onIntent(TextCallIntent.UpdateInputText(newText)) },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(51.dp)
+                .height(53.dp)
                 .focusable(true)
                 .weight(1f),
             shape = RoundedCornerShape(15.dp),
