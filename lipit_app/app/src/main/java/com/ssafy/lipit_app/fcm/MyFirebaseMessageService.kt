@@ -33,12 +33,16 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         when (type) {
             "DAILY_SENTENCE" -> {
                 val original_daily_sentance = remoteMessage.data["title"] ?: ""
-                val translated_daily_sentance = remoteMessage.data["body"] ?: ""
+                val fullBody = remoteMessage.data["body"] ?: ""
+                val translated_daily_sentance = fullBody.removePrefix("오늘의 문장").trim()
 
                 // 내부 SharedPreferences에 저장
                 // 흐름: 새로운 문장 수신 -> 저장 -> 브로드 캐스트로 전송
                 DailySentenceManager.save(original_daily_sentance, translated_daily_sentance)
-                Log.d("FCM", "data 확인용 - type: $type, original: $original_daily_sentance, translated: $translated_daily_sentance")
+                Log.d(
+                    "FCM data",
+                    "data 확인용 - type: $type, original: $original_daily_sentance, translated: $translated_daily_sentance"
+                )
 
                 // 실시간 UI 반영을 위한 브로드캐스트
                 val intent = Intent("DAILY_SENTENCE_UPDATED")
