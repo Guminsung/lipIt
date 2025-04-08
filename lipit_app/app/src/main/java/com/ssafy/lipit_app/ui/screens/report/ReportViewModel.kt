@@ -24,10 +24,7 @@ class ReportViewModel : ViewModel() {
     private val memberId: Long by lazy {
         SharedPreferenceUtils.getMemberId()
     }
-
-    init {
-        loadReportList()
-    }
+    
 
     fun onIntent(intent: ReportIntent) {
         when (intent) {
@@ -71,6 +68,11 @@ class ReportViewModel : ViewModel() {
                 }
             }
         }
+    }
+
+    fun refreshReportList() {
+        _state.update { it.copy(totalReportList = emptyList()) }
+        loadReportList()
     }
 
 
