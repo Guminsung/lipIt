@@ -88,6 +88,8 @@ fun VoiceCallScreen(
 
     // 가장 먼저 Player 초기화
     LaunchedEffect(Unit) {
+        viewModel.fetchTodayTopicAndStartCall()
+
         viewModel.initPlayerIfNeeded(context)
         textCallViewModel.setInitialMessages(viewModel.convertToTextMessages())
 

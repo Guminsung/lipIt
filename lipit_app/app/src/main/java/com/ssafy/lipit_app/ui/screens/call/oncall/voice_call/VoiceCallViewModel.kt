@@ -24,6 +24,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import com.ssafy.lipit_app.data.model.ChatMessage
 import com.ssafy.lipit_app.data.model.ChatMessageText
 import com.ssafy.lipit_app.domain.repository.MyVoiceRepository
+import com.ssafy.lipit_app.domain.repository.ScheduleRepository
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallViewModel
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
 import com.ssafy.lipit_app.util.WebSocketHeartbeat
@@ -48,6 +49,7 @@ class VoiceCallViewModel : ViewModel() {
     var currentMode by mutableStateOf("Voice") // or "Text"
     val chatMessages = mutableStateListOf<ChatMessage>()
     private var remainingSeconds: Int = 300 // 남은 시간 카운트 (5분)
+    private var currentTopic: String? = null
 
 
     // 모드 변경 관련
@@ -81,6 +83,30 @@ class VoiceCallViewModel : ViewModel() {
             ChatMessage(type = "user", message = text)
         )
     }
+
+    fun getTodayString(): String {
+        return java.time.LocalDate.now().dayOfWeek.name
+    }
+
+    fun fetchTodayTopicAndStartCall() {
+        viewModelScope.launch {
+            val today = getTodayString()
+            val memberId = SharedPreferenceUtils.getMemberId()
+
+            val result = ScheduleRepository().getTodaySchedule(memberId, today)
+            result.onSuccess { schedule ->
+                val topic = schedule.topicCategory
+                Log.d("VoiceCall", "🎯 오늘의 토픽: $topic")
+
+                // topic 저장 후 sendStartCall
+                sendStartCall(memberId, topic)
+            }.onFailure { e ->
+                Log.e("VoiceCall", "❌ 오늘의 토픽 불러오기 실패: ${e.message}")
+                sendStartCall(memberId, null) // 자유주제 처리
+            }
+        }
+    }
+
 
 
     // 남은 시간 카운트 관련
@@ -345,6 +371,7 @@ class VoiceCallViewModel : ViewModel() {
                                 if (data.has("callId")) {
                                     callId = data.getLong("callId")
                                 }
+
                                 isWaitingResponse = true
                             }
 
@@ -681,6 +708,10 @@ class VoiceCallViewModel : ViewModel() {
         audioQueue.clear() // 통화 연속 시도 시 이전 기록 비우기
     }
 
+    fun setCurrentTopic(topic: String?) {
+        currentTopic = topic
+    }
+
     private fun onWebSocketOpened() {
         isConnected = true
         isConnecting = false
@@ -691,12 +722,11 @@ class VoiceCallViewModel : ViewModel() {
             heartbeat?.start()
         }
 
-//        heartbeat = WebSocketHeartbeat(ws!!)
-//        heartbeat?.start()
+
 
         // 연결 후 바로 통화 시작 요청
         val memberId = SharedPreferenceUtils.getMemberId()
-        sendStartCall(memberId = memberId, topic = null)
+        //sendStartCall(memberId = memberId, topic = currentTopic)
     }
 
 

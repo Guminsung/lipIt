@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.temporal.TemporalAdjuster
 import java.time.temporal.TemporalAdjusters
 
 class MainViewModel(
@@ -545,4 +544,5 @@ class MainViewModel(
             else -> throw IllegalArgumentException("유효하지 않은 요일: $day")
         }
     }
+
 }
