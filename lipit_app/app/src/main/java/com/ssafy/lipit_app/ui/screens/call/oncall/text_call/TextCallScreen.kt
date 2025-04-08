@@ -1,5 +1,6 @@
 package com.ssafy.lipit_app.ui.screens.call.oncall.text_call
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -39,6 +40,7 @@ import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun TextCallScreen(
     viewModel: TextCallViewModel,
@@ -78,6 +80,14 @@ fun TextCallScreen(
             }
 
         }
+
+
+        // 통화 종료는 됐지만 리포트 생성 실패한 경우 처리
+        if (voiceCallState.isCallEnded && !voiceCallState.isReportCreated) {
+            Log.d("VoiceCallScreen", "❗ 종료됨 + 리포트 생성 실패 → 다이얼로그 표시")
+            viewModel.setReportFailed()
+
+        }
     }
 
     LaunchedEffect(voiceCallViewModel.aiMessage) {
@@ -100,8 +110,9 @@ fun TextCallScreen(
 
 
 
-    if (voiceCallState.reportFailed) {
+    if (voiceCallViewModel.connectionError.value && !voiceCallViewModel.state.value.reportFailed && !voiceCallViewModel.state.value.isReportCreated) {
         AlertDialog(
+
             onDismissRequest = {
                 voiceCallViewModel.resetCall()
                 navController.navigate("main") {
@@ -132,7 +143,7 @@ fun TextCallScreen(
     Box(
         modifier = Modifier
             .fillMaxWidth(),
-        contentAlignment = Alignment.TopCenter,
+        //contentAlignment = Alignment.TopCenter,
     ) {
         // 배경
         Image(
@@ -149,14 +160,14 @@ fun TextCallScreen(
             modifier = Modifier
                 .padding(top = 55.dp, start = 20.dp, end = 20.dp, bottom = 40.dp)
                 .fillMaxSize()
-            ) {
+                .align(Alignment.TopStart)
+        ) {
             // 모드 변경
             ModeChangeButton(
                 currentMode = state.currentMode,
                 onToggle = {
                     // 모드 전환: 텍스트 → 보이스로 바꾸는 시점이면 chatMessages 동기화
                     voiceCallViewModel.syncFromTextMessages(viewModel.getMessages())
-
                     onModeToggle()
                 }
             )
@@ -170,7 +181,7 @@ fun TextCallScreen(
 
 
             // 대화 내역(채팅 ver.)
-            Box(
+            Column(
                 modifier = Modifier.weight(1f)
             ) {
                 TextVersionCall(state, onIntent, listState)

@@ -407,17 +407,21 @@ class VoiceCallViewModel : ViewModel() {
 
             /** 연결 종료 */
             override fun onClose(code: Int, reason: String?, remote: Boolean) {
-                if (!connectionError.value) {
+                // 정상 종료 코드일 경우는 connectionError로 간주하지 않음
+                val isNormalClose = code == 1000 || code == 1001
+
+                if (!isNormalClose && !connectionError.value) {
                     connectionError.value = true
-                } // 연결 실패 알림용
+                    Log.d("WebSocket", "⚠️ 비정상 종료로 인한 연결 오류 처리")
+                }
 
                 Log.d("WebSocket", "🔌 onClose: code=$code, reason=$reason")
+
                 mainHandler.post {
                     isConnected = false
                     isWaitingResponse = false
                     connectionStatusText = "❌ 연결 종료 ($code)"
 
-                    // 하트비트 정지
                     heartbeat?.stop()
                     heartbeat = null
 
@@ -662,6 +666,15 @@ class VoiceCallViewModel : ViewModel() {
     }
 
     fun resetCall() {
+        _state.update {
+            it.copy(
+                isCallEnded = false,
+                isReportCreated = false,
+                reportFailed = false,
+                reportFailReason = null
+            )
+        }
+
         callId = null
         isCallEnded = false
         audioQueue.clear() // 통화 연속 시도 시 이전 기록 비우기
