@@ -51,6 +51,8 @@ class VoiceCallViewModel : ViewModel() {
     private var remainingSeconds: Int = 300 // 남은 시간 카운트 (5분)
     private var currentTopic: String? = null
 
+    private val _isAudioLoading = MutableStateFlow(false)
+    val isAudioLoading: StateFlow<Boolean> = _isAudioLoading
 
     // 모드 변경 관련
     fun toggleMode() {
@@ -569,6 +571,9 @@ class VoiceCallViewModel : ViewModel() {
             exoPlayer?.setMediaItem(MediaItem.fromUri(Uri.fromFile(next)))
             exoPlayer?.prepare()
             exoPlayer?.play()
+
+            _isAudioLoading.value = false
+
             Log.d("ExoPlayer", "▶️ 재생 시작됨")
         } catch (e: Exception) {
             Log.e("ExoPlayer", "❌ 재생 실패: ${e.message}")
@@ -749,6 +754,7 @@ class VoiceCallViewModel : ViewModel() {
         val memberId = SharedPreferenceUtils.getMemberId()
         //sendStartCall(memberId = memberId, topic = currentTopic)
     }
+
 
 
     // ===================================================================
@@ -953,5 +959,13 @@ class VoiceCallViewModel : ViewModel() {
             }
     }
 
+    // == 음성 로딩 화면 추가 ==
+    fun onReceiveAIMessage(message: String) {
+        _isAudioLoading.value = true  // 무조건 로딩 시작
+    }
+
+    fun onTTSPlaybackReady() {
+        _isAudioLoading.value = false
+    }
 
 }
