@@ -181,11 +181,14 @@ object CallNotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val retryString =
+            if (retryCount == 0) "${callerName}님으로부터 부재중 전화" else "${callerName}님으로부터 부재중 전화(${retryCount + 1})"
+
         // 알림 생성
         val builder = NotificationCompat.Builder(context, CALL_CHANNEL_ID)
             .setSmallIcon(R.drawable.notification_icon)
             .setContentTitle("부재중 전화")
-            .setContentText("${callerName}님으로부터 부재중 전화(${retryCount + 1})")
+            .setContentText(retryString)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_CALL)
             .setContentIntent(contentIntent)
