@@ -82,8 +82,8 @@ fun CelebVoiceScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(400.dp)
-                .padding(horizontal = 16.dp, vertical = 24.dp)
+                .height(500.dp)
+                .padding(bottom = 60.dp, start = 24.dp, end = 24.dp)
                 .clip(RoundedCornerShape(32.dp))
                 .clickable {
                     isFlipped = !isFlipped
