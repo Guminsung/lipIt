@@ -19,28 +19,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
 
 @Composable
 fun TextCallHeader(
     voiceName: String,
     leftTime: String,
-    onHangUp: () -> Unit
+    voiceCallViewModel: VoiceCallViewModel
 ) {
-
-//    LaunchedEffect(viewModel.isCallEnded) {
-//        if (viewModel.isCallEnded) {
-//            navController.navigate("main") {
-//                popUpTo("call_screen") { inclusive = true }
-//            }
-//        }
-//    }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -77,12 +70,15 @@ fun TextCallHeader(
         }
 
         // 끊기 버튼
+        val context = LocalContext.current
+
         Box(
             modifier = Modifier
                 .clip(shape = CircleShape)
                 .background(Color(0xFFFE4239))
                 .clickable {
-                    //viewModel.sendEndCall()
+                    // 전화 끊기
+                    voiceCallViewModel.sendEndCall() // 연결되어 있으면 종료 메시지 보내고
                 }
         ) {
             Icon(

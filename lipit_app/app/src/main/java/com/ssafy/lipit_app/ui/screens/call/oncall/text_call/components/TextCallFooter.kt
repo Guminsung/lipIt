@@ -55,7 +55,7 @@ fun TextCallFooter(
             onValueChange = { newText -> onIntent(TextCallIntent.UpdateInputText(newText)) },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(51.dp)
+                .height(53.dp)
                 .focusable(true)
                 .weight(1f),
             shape = RoundedCornerShape(15.dp),
@@ -109,7 +109,7 @@ fun TextCallFooter(
                     },
                 )
             } else {
-                // ㅑ번역 버튼
+                // 번역 버튼
                 Box(
                     modifier = Modifier
                         .size(51.dp)

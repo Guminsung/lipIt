@@ -1,7 +1,5 @@
 package com.ssafy.lipit_app.data.remote
 
-import com.ssafy.lipit_app.data.model.request_dto.report.NativeExpression
-import com.ssafy.lipit_app.data.model.request_dto.report.ReportScript
 import com.ssafy.lipit_app.data.model.request_dto.report.ReportSummary
 import com.ssafy.lipit_app.data.model.response_dto.BaseResponse
 import com.ssafy.lipit_app.data.model.response_dto.report.NativeResponse

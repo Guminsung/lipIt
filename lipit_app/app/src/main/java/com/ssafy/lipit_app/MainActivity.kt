@@ -1,24 +1,18 @@
 package com.ssafy.lipit_app
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.core.content.ContextCompat
+import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.compose.rememberNavController
 import com.ssafy.lipit_app.base.ApplicationClass
 import com.ssafy.lipit_app.navigation.NavGraph
@@ -40,6 +34,14 @@ class MainActivity : ComponentActivity() {
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+//        window.statusBarColor = Color.TRANSPARENT
+//        window.navigationBarColor = Color.TRANSPARENT
+
+        // 아이콘 색상 지정 (true = 검정 아이콘, false = 흰색 아이콘)
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        controller.isAppearanceLightStatusBars = true
+        controller.isAppearanceLightNavigationBars = true
+
         // 알림 채널 생성
         CallNotificationHelper.createCallNotificationChannel(this)
         // 알람 스케줄러 초기화
@@ -52,41 +54,13 @@ class MainActivity : ComponentActivity() {
 
             val navController = rememberNavController()
 
-            // 알림 권한 요청
-            val requestPermissionLauncher = rememberLauncherForActivityResult(
-                ActivityResultContracts.RequestPermission()
-            ) { isGranted: Boolean ->
-                if (isGranted) {
-                    Toast.makeText(this@MainActivity, "알림 권한이 부여되었습니다", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this@MainActivity, "알림을 표시하려면 알림 권한이 필요합니다", Toast.LENGTH_SHORT)
-                        .show()
-                }
-            }
-
-            // 권한 체크
-            LaunchedEffect(Unit) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    when {
-                        ContextCompat.checkSelfPermission(
-                            this@MainActivity,
-                            Manifest.permission.POST_NOTIFICATIONS
-                        ) != PackageManager.PERMISSION_GRANTED -> {
-                            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                        }
-                    }
-                }
-            }
-
-
-
             LipItTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = Color.Transparent
                 ) {
                     NavGraph(
-                        navController = navController,
+                        navController =  navController,
                         initialDestination = initialDestination
                     )
                 }

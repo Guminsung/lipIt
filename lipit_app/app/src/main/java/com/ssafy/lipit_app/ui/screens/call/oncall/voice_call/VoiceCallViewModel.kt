@@ -11,6 +11,7 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +47,7 @@ class VoiceCallViewModel : ViewModel() {
     val state: StateFlow<VoiceCallState> = _state
     var currentMode by mutableStateOf("Voice") // or "Text"
     val chatMessages = mutableStateListOf<ChatMessage>()
+    private var remainingSeconds: Int = 300 // 남은 시간 카운트 (5분)
 
 
     // 모드 변경 관련
@@ -129,12 +131,8 @@ class VoiceCallViewModel : ViewModel() {
                     it.copy(isLoading = true)
                 }
 
-                viewModelScope.launch {
-                    delay(2000L) // 리포트 생성 대기 시간
-                    _state.update {
-                        it.copy(isFinished = true)
-                    }
-                }
+                sendEndCall()
+
             }
         }
     }
@@ -203,28 +201,37 @@ class VoiceCallViewModel : ViewModel() {
         timerJob?.cancel() // 기존에 타이머가 있다면 정지시킴
 
         timerJob = viewModelScope.launch {
-            var remaining = initialSeconds
-            while (remaining >= 0) {
-                val minutes = remaining / 60
-                val seconds = remaining % 60
+            remainingSeconds = initialSeconds  // 텍스트 모드와의 연동을 위해 저장된 값에서 시작
+            while (remainingSeconds >= 0) {
+                val minutes = remainingSeconds / 60
+                val seconds = remainingSeconds % 60
                 val timeString = String.format("%02d:%02d", minutes, seconds)
 
                 _state.update { it.copy(leftTime = timeString) }
 
                 delay(1000L) // 1초 기다리고 text에 반영
-                remaining--
+                remainingSeconds--
 
-                // 5분이 종료되면 로딩 화면 출력(리포트 생성 중.. or 리포트 생성 실패!) 후 Main으로 돌아가기
-                if (remaining == 0) {
+                // 5분이 종료되면 로딩 화면 출력(리포트 생성 중.. or 리포트 생성 실패!) 후
+                // main으로 돌아가거니 아님 레포트로 이동
+                if (remainingSeconds == 0) {
                     onIntent(VoiceCallIntent.timerIsOver)
                 }
             }
         }
     }
 
+    // 남은 시간 카운트 되고 있는지 여부 체크
+    fun isCountdownRunning(): Boolean {
+        return timerJob?.isActive == true
+    }
+
+
     fun stopCountdown() {
         timerJob?.cancel()
+        timerJob = null // remainingSeconds는 유지 (초기화 X)
     }
+
 
     // 웹 소켓 채팅 관련
 
@@ -345,11 +352,36 @@ class VoiceCallViewModel : ViewModel() {
                                 val reportCreated = data.optBoolean("reportCreated", false)
                                 Log.d("WebSocket", "🔚 통화 종료 - report=$reportCreated")
 
+                                val duration = data.optInt("duration", 0)
+                                val endTime = data.optString("endTime", "N/A")
+
+                                Log.d("WebSocket", "🔚 통화 종료 수신됨")
+                                Log.d("WebSocket", "📍 종료 시각: $endTime")
+                                Log.d("WebSocket", "⏱️ 통화 시간: ${duration}s")
+                                Log.d("WebSocket", "📄 리포트 생성 여부: $reportCreated")
+
+                                _state.update {
+                                    it.copy(
+                                        isReportCreated = reportCreated,
+                                        isCallEnded = true
+                                    )
+                                }
+
                                 if (data.has("aiMessage")) {
                                     aiMessage = data.getString("aiMessage")
                                 }
                                 if (data.has("aiMessageKor")) {
                                     aiMessageKor = data.getString("aiMessageKor")
+                                }
+
+                                // 서버로부터 end 수신 후 WebSocket 닫기
+                                try {
+                                    Log.d("WebSocket", "🔒 서버 end 수신 후 클라이언트 ws.close() 실행")
+                                    ws?.close()
+                                    isConnected = false
+                                    isConnecting = false
+                                } catch (e: Exception) {
+                                    Log.e("WebSocket", "❌ onMessage-end 내 닫기 실패: ${e.message}")
                                 }
 
                                 isWaitingResponse = false
@@ -376,17 +408,21 @@ class VoiceCallViewModel : ViewModel() {
 
             /** 연결 종료 */
             override fun onClose(code: Int, reason: String?, remote: Boolean) {
-                if (!connectionError.value) {
+                // 정상 종료 코드일 경우는 connectionError로 간주하지 않음
+                val isNormalClose = code == 1000 || code == 1001
+
+                if (!isNormalClose && !connectionError.value) {
                     connectionError.value = true
-                } // 연결 실패 알림용
+                    Log.d("WebSocket", "⚠️ 비정상 종료로 인한 연결 오류 처리")
+                }
 
                 Log.d("WebSocket", "🔌 onClose: code=$code, reason=$reason")
+
                 mainHandler.post {
                     isConnected = false
                     isWaitingResponse = false
                     connectionStatusText = "❌ 연결 종료 ($code)"
 
-                    // 하트비트 정지
                     heartbeat?.stop()
                     heartbeat = null
 
@@ -422,13 +458,30 @@ class VoiceCallViewModel : ViewModel() {
 
     /** 연결 재시도 딜레이 */
     private fun reconnectWithDelay(delayMillis: Long = 2000) {
-        if (!isConnecting && !isConnected) {
-            mainHandler.postDelayed({ connectWebSocket() }, delayMillis)
+//        if (!isConnecting && !isConnected) {
+//            mainHandler.postDelayed({ connectWebSocket() }, delayMillis)
+//        }
+
+        if (!isConnected && !isConnecting) { // oom 방지
+            connectWebSocket()
         }
+
     }
+
+    private val MAX_QUEUE_SIZE = 3
 
     /** 수신된 오디오 저장 후 재생 큐에 추가 */
     private fun enqueueAndPlay(buffer: ByteBuffer) {
+        if (audioQueue.size >= MAX_QUEUE_SIZE && exoPlayer?.isPlaying == true) { // OOM 방지
+            Log.w("ExoPlayer", "❗️ 큐가 가득 차 있고 재생 중 → 새 오디오 무시")
+            return
+        }
+
+        if (audioQueue.size >= MAX_QUEUE_SIZE) {
+            val removed = audioQueue.removeFirst()
+            removed.delete() // 디스크에서도 제거
+        }
+
         Log.d("ExoPlayer", "✅ enqueueAndPlay() 실행됨")
 
         val tempFile = File.createTempFile("tts_", ".wav")
@@ -437,6 +490,8 @@ class VoiceCallViewModel : ViewModel() {
             buffer.get(bytes)
             out.write(bytes)
         }
+
+        buffer.clear() // 메모리 초과 에러로 인한 추가
 
         Log.d("ExoPlayer", "📥 오디오 파일 저장 완료: ${tempFile.absolutePath}, size=${tempFile.length()}")
 
@@ -468,9 +523,10 @@ class VoiceCallViewModel : ViewModel() {
             Log.d("ExoPlayer", "▶️ 재생 시작됨")
         } catch (e: Exception) {
             Log.e("ExoPlayer", "❌ 재생 실패: ${e.message}")
+            next.delete()
+
         }
     }
-
 
     override fun onCleared() {
         super.onCleared()
@@ -568,6 +624,9 @@ class VoiceCallViewModel : ViewModel() {
         stopSpeechToText()  // 음성 인식 종료
         stopCountdown()  // 타이머 종료
         releasePlayer()  // 플레이어 해제
+
+        // 전화 종료 후 목소리 즉시 멈추기
+        exoPlayer?.stop()
         audioQueue.clear() //  남은 오디오 큐 비우기
 
         if (ws == null || !isConnected) {
@@ -575,14 +634,24 @@ class VoiceCallViewModel : ViewModel() {
             return
         }
 
+        if (callId == null) {
+            Log.w("WebSocket", "⚠️ callId 없음 - end 메시지에 포함되지 않음")
+        }
+
+        // callId가 null이더라도 전송하도록 수정
         val json = JSONObject().apply {
             put("action", "end")
+            put("data", JSONObject().apply {
+                put("callId", callId ?: -1) // 임시값 or 서버에서 nullable 처리
+            })
         }
+
+
         try {
+            Log.d("WebSocket", "📤 서버에 end 메시지 전송")
+
             ws?.send(json.toString())
-            ws?.close()                 // WebSocket 강제 종료
-            isConnected = false
-            isConnecting = false
+            // close()는 서버가 "end" 보내고 나서하는 것으로 수정함 -> onMessage에서 확인 가능
         } catch (e: Exception) {
             Log.e("WebSocket", "❌ 종료 메시지 전송 실패: ${e.message}", e)
         }
@@ -598,6 +667,15 @@ class VoiceCallViewModel : ViewModel() {
     }
 
     fun resetCall() {
+        _state.update {
+            it.copy(
+                isCallEnded = false,
+                isReportCreated = false,
+                reportFailed = false,
+                reportFailReason = null
+            )
+        }
+
         callId = null
         isCallEnded = false
         audioQueue.clear() // 통화 연속 시도 시 이전 기록 비우기
@@ -608,8 +686,13 @@ class VoiceCallViewModel : ViewModel() {
         isConnecting = false
         connectionStatusText = "✅ 연결됨"
 
-        heartbeat = WebSocketHeartbeat(ws!!)
-        heartbeat?.start()
+        if (heartbeat == null) { // OOM 방지를 위해 중복 실행을 막음
+            heartbeat = WebSocketHeartbeat(ws!!)
+            heartbeat?.start()
+        }
+
+//        heartbeat = WebSocketHeartbeat(ws!!)
+//        heartbeat?.start()
 
         // 연결 후 바로 통화 시작 요청
         val memberId = SharedPreferenceUtils.getMemberId()
@@ -625,7 +708,7 @@ class VoiceCallViewModel : ViewModel() {
     // 보내기 버튼으로 녹음을 멈추기 위해서 전역으로 수정
     private var appContext: Context? = null
     private var speechRecognizer: SpeechRecognizer? = null
-    private var isListening = false
+    var isListening = false
     var latestSpeechResult by mutableStateOf("")
     val systemMessage = mutableStateOf<String?>(null)
     var fullSpeechBuffer = StringBuilder()
@@ -699,10 +782,18 @@ class VoiceCallViewModel : ViewModel() {
                 when (error) {
                     SpeechRecognizer.ERROR_SPEECH_TIMEOUT,
                     SpeechRecognizer.ERROR_NO_MATCH -> {
-                        //restartSpeechToText(context, onResult)
+                        // restartSpeechToText(context, onResult)
                         stopSpeechToText()
                         showNoInputMessage()
+                        // 사용자에게 대신 대답 알림
+                        Toast.makeText(
+                            context,
+                            "음성 입력이 되지 않아 AI에게 재응답을 요청했습니다.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
                     }
+
                     else -> {
                         stopSpeechToText()
                     }
@@ -735,9 +826,13 @@ class VoiceCallViewModel : ViewModel() {
         isListening = false
 
         Log.d("STT", "🛑 STT 수동 종료")
-        speechRecognizer?.stopListening()
-        speechRecognizer?.cancel()
-        speechRecognizer?.destroy()
+
+        speechRecognizer?.apply {
+            stopListening()
+            cancel()
+            destroy()
+        }
+
         speechRecognizer = null
     }
 
@@ -771,11 +866,10 @@ class VoiceCallViewModel : ViewModel() {
 
 
     fun showNoInputMessage() {
-//        if (systemMessage.value == null) {
-//            systemMessage.value = "음성이 감지되지 않았어요. 대신 AI가 다시 물어봐 달라고 했어요."
-//            sendUserSpeech("It’s a bit quiet. Could you repeat that for me?")
-//        }
         sendUserSpeech("It’s a bit quiet. Could you repeat that for me?")
+
+        // 사용자에게 알림 추가
+        //Toast.makeText(LocalContext.current, "음성 입력이 되지 않아 AI에게 재응답을 요청했습니다.", Toast.LENGTH_SHORT).show()
 
     }
 
