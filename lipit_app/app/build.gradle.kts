@@ -197,6 +197,7 @@ dependencies {
     implementation("com.arthenica:ffmpeg-kit-full:6.0")
 
     implementation ("androidx.compose.foundation:foundation-layout:1.3.1")
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.33.2-alpha")
 
 }
 
