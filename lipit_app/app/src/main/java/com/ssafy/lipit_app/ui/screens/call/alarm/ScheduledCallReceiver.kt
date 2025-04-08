@@ -81,6 +81,7 @@ class ScheduledCallReceiver : BroadcastReceiver() {
 
             Log.d(TAG, "통화 알림 표시 성공")
         } catch (e: Exception) {
+            CallNotificationHelper.stopVibration(context)
             Log.e(TAG, "통화 알림 표시 실패: ${e.message}", e)
         }
     }

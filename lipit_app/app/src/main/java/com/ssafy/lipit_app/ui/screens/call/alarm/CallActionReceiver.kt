@@ -100,6 +100,8 @@ class CallActionReceiver : BroadcastReceiver() {
                 } else {
                     Log.d("CallReceiver", "최대 재시도 횟수에 도달했습니다")
                 }
+
+                CallNotificationHelper.stopVibration(context)
             }
         }
     }
