@@ -18,7 +18,8 @@ fun CustomVoicePlayer(
     videoUrl: String?,
     isLooping: Boolean = false,
     isVisible: Boolean = true,
-    onPlayStateChanged: (Boolean) -> Unit = {}
+    onPlayStateChanged: (Boolean) -> Unit = {},
+    onPlaybackReady: () -> Unit = {}
 ) {
     val context = LocalContext.current
 
@@ -53,6 +54,9 @@ fun CustomVoicePlayer(
                     super.onPlaybackStateChanged(playbackState)
                     if (playbackState == Player.STATE_ENDED) {
                         onPlayStateChanged(false)
+                    }
+                    if (playbackState == Player.STATE_READY) {
+                        onPlaybackReady()
                     }
                 }
             })

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +36,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.data.model.ChatMessage
 import com.ssafy.lipit_app.data.model.ChatMessageText
@@ -67,6 +72,7 @@ fun VoiceCallScreen(
     val chatMessages = viewModel.chatMessages
     val state by viewModel.state.collectAsState()
     val toastMessage = remember { mutableStateOf<String?>(null) }
+    val isAudioLoading by viewModel.isAudioLoading.collectAsState()
 
     // 서버 연결 에러 날 때 다이얼로그 띄우기
     if (viewModel.connectionError.value && !viewModel.state.value.isReportCreated) {
@@ -86,6 +92,27 @@ fun VoiceCallScreen(
                 )
             }
         )
+    }
+
+    if (isAudioLoading) {
+        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loader))
+
+        if (composition != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                LottieAnimation(
+                    composition = composition,
+                    iterations = LottieConstants.IterateForever,
+                    modifier = Modifier
+                        .width(64.dp)
+                        .height(64.dp)
+                )
+            }
+        }
     }
 
 
@@ -155,6 +182,8 @@ fun VoiceCallScreen(
     // AI 응답 수신 처리
     LaunchedEffect(viewModel.aiMessage) {
         if (viewModel.aiMessage.isNotBlank()) {
+            viewModel.onReceiveAIMessage(viewModel.aiMessage)
+
             viewModel.addAiMessage(viewModel.aiMessage, viewModel.aiMessageKor)
 
             Log.d("VoiceCallScreen", "🤖 AI: ${viewModel.aiMessage}")
@@ -301,6 +330,24 @@ fun VoiceCallScreen(
                         textState = textState,
                         textCallViewModel = textCallViewModel
                     )
+                }
+
+                if (isAudioLoading) {
+                    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.voice_loading))
+                    if (composition != null) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(bottom = 160.dp),
+                            contentAlignment = Alignment.BottomCenter
+                        ) {
+                            LottieAnimation(
+                                composition = composition,
+                                iterations = LottieConstants.IterateForever,
+                                modifier = Modifier.width(80.dp).height(80.dp)
+                            )
+                        }
+                    }
                 }
             }
 
