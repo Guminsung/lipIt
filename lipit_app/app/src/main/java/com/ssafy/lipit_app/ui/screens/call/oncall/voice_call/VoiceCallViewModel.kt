@@ -90,6 +90,12 @@ class VoiceCallViewModel : ViewModel() {
 
     fun fetchTodayTopicAndStartCall() {
         viewModelScope.launch {
+            // 이미 통화 중이라면 새로 시작 안 함
+            if (callId != null) {
+                Log.d("VoiceCall", "📵 이미 callId 있음 → 대화 시작 생략")
+                return@launch
+            }
+
             val today = getTodayString()
             val memberId = SharedPreferenceUtils.getMemberId()
 
