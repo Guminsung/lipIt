@@ -29,11 +29,20 @@ object CallNotificationHelper {
 
     // 진동 패턴 정의: 0ms 대기, 500ms 진동, 500ms 대기, 500ms 진동 (반복)
     private val VIBRATION_PATTERN = longArrayOf(0, 500, 500, 500)
+    private var vibrator: Vibrator? = null
+    private var applicationContext: Context? = null
+    private var isVibrating = false
 
     /**
      * 전화 알림 채널 생성
      */
     fun createCallNotificationChannel(context: Context) {
+
+        if (applicationContext == null) {
+            applicationContext = context.applicationContext
+        }
+
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CALL_CHANNEL_ID,
@@ -57,30 +66,28 @@ object CallNotificationHelper {
      */
     @SuppressLint("ServiceCast")
     fun startVibration(context: Context) {
-        // SDK 버전에 따라 Vibrator 획득 방법이 다름
-        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-            vibratorManager.defaultVibrator
-        } else {
-            @Suppress("DEPRECATION")
-            context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        }
 
-        // 진동 지원 여부 확인
-        if (!vibrator.hasVibrator()) {
-            Log.d("CallNotificationHelper", "기기가 진동을 지원하지 않습니다")
+        if (isVibrating) {
+            Log.d("Vibration", "이미 진동 중입니다")
             return
         }
+        try {
+            // Vibrator 가져오기 (기존 객체 재사용 또는 새로 생성)
+            vibrator = vibrator ?: getVibrator(context)
 
-        // API 레벨에 따라 다른 방식으로 진동 실행
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Android 8.0 이상에서는 VibrationEffect 사용
-            val vibrationEffect = VibrationEffect.createWaveform(VIBRATION_PATTERN, 1) // 두 번째 파라미터 -1: 반복 안함, 0 이상: 해당 인덱스부터 반복
-            vibrator.vibrate(vibrationEffect)
-        } else {
-            // Android 8.0 미만에서는 deprecated API 사용
-            @Suppress("DEPRECATION")
-            vibrator.vibrate(VIBRATION_PATTERN, 1) // 두 번째 파라미터 -1: 반복 안함, 0 이상: 해당 인덱스부터 반복
+            Log.d("Vibration", "진동 시작: ${vibrator.hashCode()}")
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val vibrationEffect = VibrationEffect.createWaveform(VIBRATION_PATTERN, 0) // 인덱스 0부터 반복
+                vibrator?.vibrate(vibrationEffect)
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator?.vibrate(VIBRATION_PATTERN, 0) // 인덱스 0부터 반복
+            }
+
+            isVibrating = true
+        } catch (e: Exception) {
+            Log.e("Vibration", "진동 시작 중 오류: ${e.message}")
         }
     }
 
@@ -89,15 +96,50 @@ object CallNotificationHelper {
      */
     @SuppressLint("ServiceCast")
     fun stopVibration(context: Context) {
-        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-            vibratorManager.defaultVibrator
-        } else {
-            @Suppress("DEPRECATION")
-            context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        if (!isVibrating) {
+            Log.d("Vibration", "진동 중이 아닙니다")
+            return
         }
+        try {
 
-        vibrator.cancel()
+            val vibratorToUse = vibrator ?: getVibrator(context)
+
+            Log.d("Vibration", "진동 중지: ${vibratorToUse?.hashCode()}")
+
+            vibratorToUse?.cancel()
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val stopEffect = VibrationEffect.createOneShot(1, 0) // 1ms, 강도 0 (실질적으로 중지)
+                vibratorToUse?.vibrate(stopEffect)
+            }
+
+            isVibrating = false
+
+        } catch (e: Exception) {
+            Log.e("Vibration", "진동 중지 중 오류: ${e.message}")
+        }
+    }
+
+    /**
+     * Vibrator 서비스 가져오기
+     */
+    private fun getVibrator(context: Context): Vibrator? {
+        try {
+            // 저장된 애플리케이션 컨텍스트 사용
+            val ctx = applicationContext ?: context.applicationContext
+            applicationContext = ctx
+
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val vibratorManager = ctx.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
+                vibratorManager?.defaultVibrator
+            } else {
+                @Suppress("DEPRECATION")
+                ctx.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+            }
+        } catch (e: Exception) {
+            Log.e("Vibration", "Vibrator 서비스 가져오기 실패: ${e.message}")
+            return null
+        }
     }
 
     /**
@@ -213,9 +255,11 @@ object CallNotificationHelper {
      * 전화 알림 취소
      */
     fun cancelCallNotification(context: Context) {
-        stopVibration(context)
 
-        val notificationManager = NotificationManagerCompat.from(context)
+        val ctx = applicationContext ?: context.applicationContext
+        stopVibration(ctx)
+
+        val notificationManager = NotificationManagerCompat.from(ctx)
         notificationManager.cancel(CALL_NOTIFICATION_ID)
     }
 

@@ -30,6 +30,7 @@ class CallActionReceiver : BroadcastReceiver() {
                 }
                 context.startActivity(acceptIntent)
 
+                CallNotificationHelper.stopVibration(context)
                 // 알림 취소
                 CallNotificationHelper.cancelCallNotification(context)
             }
@@ -67,6 +68,7 @@ class CallActionReceiver : BroadcastReceiver() {
                     Log.d("CallReceiver", "최대 재시도 횟수에 도달했습니다")
                 }
 
+                CallNotificationHelper.stopVibration(context)
                 // 알림 취소
                 CallNotificationHelper.cancelCallNotification(context)
             }
