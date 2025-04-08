@@ -15,8 +15,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -42,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -49,6 +52,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
@@ -196,21 +200,17 @@ fun EditCallScreen(
     }
 }
 
-
 @Composable
 fun CategoryDropDownMenu(selectedCategory: String, onCategorySelected: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
 
-    //  카테고리: 스포츠, 여행, 영화/책 , 음식, 게임(강추), 음악, 건강
+    // 카테고리: 스포츠, 여행, 영화/책, 음식, 게임, 음악, 건강
     val options = listOf("스포츠", "여행", "영화/책", "음식", "게임", "음악", "건강")
-
-    var selectedOption by remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier
-            .wrapContentSize(Alignment.TopStart)
-            .clip(RoundedCornerShape(15.dp))
-            .background(Color(0xFFFDF8FF), shape = RoundedCornerShape(15.dp))
+            .fillMaxWidth()
+            .background(Color.Transparent) // 박스 배경을 투명하게 설정
     ) {
         // 드롭다운을 여는 버튼
         Row(
@@ -222,6 +222,8 @@ fun CategoryDropDownMenu(selectedCategory: String, onCategorySelected: (String) 
                     color = Color(0xFFE6E6E6),
                     shape = RoundedCornerShape(size = 15.dp)
                 )
+                .clip(RoundedCornerShape(15.dp))
+                .background(Color(0xFFFDF8FF))
                 .clickable { expanded = true },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
@@ -238,86 +240,63 @@ fun CategoryDropDownMenu(selectedCategory: String, onCategorySelected: (String) 
                     .padding(start = 18.dp)
             )
 
-            // 드롭다운 띄울 화살표 아이콘
-            Box(
+            // 드롭다운 화살표 아이콘
+            Icon(
+                painterResource(id = R.drawable.edit_call_dropdown_icon),
+                contentDescription = "드롭다운",
                 modifier = Modifier
                     .padding(end = 18.dp)
-            ) {
-                Icon(
-                    painterResource(id = R.drawable.edit_call_dropdown_icon),
-                    contentDescription = "드롭다운",
-                    modifier = Modifier
-                        .width(14.dp)
-                        .height(7.dp),
-                    tint = Color(0xFFD3D3D3)
-                )
-            }
+                    .width(14.dp)
+                    .height(7.dp),
+                tint = Color(0xFFD3D3D3)
+            )
         }
 
-        // 드롭다운 메뉴
+        // 드롭다운 메뉴 - 오버레이로 표시
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
             modifier = Modifier
+                .width(with(LocalDensity.current) {
+                    // 부모와 같은 너비로 설정
+                    (LocalConfiguration.current.screenWidthDp - 40).dp
+                })
+                // 먼저 클리핑을 적용한 후 배경을 설정해야 합니다
+//                .clip(RoundedCornerShape(15.dp))
                 .background(Color(0xFFFDF8FF))
-                .clip(RoundedCornerShape(30.dp))
-                .width(200.dp)
-                .padding(10.dp)
-
+                .padding(vertical = 4.dp)
+                .heightIn(max = 250.dp), // 높이 제한
+            offset = DpOffset(0.dp, (-5).dp), // 약간 위로 올려서 겹치게 표시
         ) {
             options.forEach { label ->
-                val isSelected = selectedOption == label
-
                 DropdownMenuItem(
                     text = {
                         Text(
                             text = label,
                             style = TextStyle(
-                                fontSize = 14.sp,
-                                lineHeight = 25.sp,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight(400),
                                 color = Color(0xFF222124),
                             )
-                        )
-
-                    },
-                    onClick = {
-                        selectedOption = label
-                        expanded = false
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            if (isSelected) Color(0xFFF1F1F1) else Color.Transparent
-                        )
-                )
-            }
-        }
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.background(Color(0xFFFDF8FF))
-        ) {
-            options.forEach { label ->
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = label,
-                            style = TextStyle(fontSize = 14.sp, color = Color(0xFF222124))
                         )
                     },
                     onClick = {
                         onCategorySelected(label)
                         expanded = false
-                    }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        // 클리핑을 먼저 적용하고 배경 설정
+                        .clip(RoundedCornerShape(15.dp))
+                        .background(
+                            if (selectedCategory == label) Color(0xFFF1F1F1) else Color(0xFFFDF8FF)
+                        )
                 )
             }
-        } //... DropdownMenu
-
+        }
     }
 }
-
 
 @Composable
 fun WheelTimePicker(
@@ -328,6 +307,12 @@ fun WheelTimePicker(
         verticalAlignment = Alignment.CenterVertically
     ) {
         WheelColumn((0..23).map { it.toString().padStart(2, '0') }, hour, onHourChanged)
+        Text(
+            text = ":",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
         WheelColumn((0..59).map { it.toString().padStart(2, '0') }, minute, onMinuteChanged)
     }
 }
@@ -338,8 +323,10 @@ fun WheelColumn(
     initialIndex: Int,
     onSelectedChanged: (Int) -> Unit
 ) {
-
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialIndex)
+    // 패딩 항목을 고려하여 초기 인덱스 조정
+    val paddingItemCount = 2
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialIndex + paddingItemCount)
+    val coroutineScope = rememberCoroutineScope()
     var selectedIndex by remember { mutableIntStateOf(initialIndex) }
 
     // 스크롤이 멈추면 가장 가까운 아이템으로 스냅
@@ -356,11 +343,16 @@ fun WheelColumn(
                 firstVisibleIndex
             }
 
-            // 스크롤 애니메이션
-            listState.animateScrollToItem(targetIndex)
+            // 실제 선택된 값의 인덱스 계산 (LazyColumn에 패딩 항목이 있으므로 조정)
+            val adjustedIndex = (targetIndex - paddingItemCount).coerceIn(0, items.size - 1)
 
-            // 실제 선택된 값의 인덱스 (LazyColumn에 패딩 항목이 있으므로 조정)
-            val adjustedIndex = (targetIndex - 2).coerceIn(0, items.size - 1)
+            // 조정된 인덱스에 패딩을 다시 더해 실제 스크롤할 위치 계산
+            val scrollToIndex = adjustedIndex + paddingItemCount
+
+            // 스크롤 애니메이션 (범위 내 인덱스로만 스크롤)
+            coroutineScope.launch {
+                listState.animateScrollToItem(scrollToIndex)
+            }
 
             // 선택된 항목 업데이트
             selectedIndex = adjustedIndex
@@ -376,8 +368,8 @@ fun WheelColumn(
         verticalArrangement = Arrangement.Center,
         contentPadding = PaddingValues(vertical = 55.dp) // 여백 증가
     ) {
-        items(items.size + 4) { index ->
-            val adjustedIndex = index - 2
+        items(items.size + paddingItemCount * 2) { index ->
+            val adjustedIndex = index - paddingItemCount
 
             if (adjustedIndex in items.indices) {
                 val isSelected = adjustedIndex == selectedIndex
@@ -391,10 +383,14 @@ fun WheelColumn(
                     textAlign = TextAlign.Center,
                     color = if (isSelected) Color.Black else Color.Gray
                 )
+            } else {
+                // 패딩 아이템을 위한 빈 공간
+                Spacer(modifier = Modifier.height(40.dp))
             }
         }
     }
 }
+
 
 @Composable
 fun EditCallButtons(
@@ -540,7 +536,7 @@ fun EditCallsPreview() {
             memberId = -1L,
             scheduleDay = "MONDAY",
             scheduledTime = "00:00:00",
-            topicCategory = null,
+            topicCategory = "FOOD",
         ),
         onSuccess = { _, _ -> }
     )
