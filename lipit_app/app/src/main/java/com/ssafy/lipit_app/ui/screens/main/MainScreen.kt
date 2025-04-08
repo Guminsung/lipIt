@@ -22,8 +22,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
@@ -58,7 +60,6 @@ import com.ssafy.lipit_app.ui.screens.main.components.ReportAndVoiceBtn
 import com.ssafy.lipit_app.ui.screens.main.components.TodaysSentence
 import com.ssafy.lipit_app.ui.screens.main.components.WeeklyCallsSection
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
-import kotlinx.coroutines.delay
 
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -68,9 +69,6 @@ fun MainScreen(
     viewModel: MainViewModel,
     onSuccess: () -> Unit
 ) {
-    //TransparentStatusBar()
-
-
     val state by viewModel.state.collectAsState() // 고정된 값이 아닌 상태 관찰 -> 실시간 UI 반영
     val context = LocalContext.current
 
@@ -87,7 +85,7 @@ fun MainScreen(
         }
     }
     LaunchedEffect(bottomSheetState.isVisible) {
-        if (!bottomSheetState.isVisible) { // && state.isSettingsSheetVisible
+        if (!bottomSheetState.isVisible) {
             onIntent(MainIntent.OnCloseSettingsSheet)
             onIntent(MainIntent.ResetBottomSheetContent)
         }
@@ -235,15 +233,6 @@ fun MainScreen(
         // ***** 기존 MainScreen UI
         var selectedDay by remember { mutableStateOf(state.selectedDay) }
 
-//        Column(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .background(Color(0xFFFDF8FF))
-//                .padding(start = 20.dp, end = 20.dp, top = 40.dp)
-//        ) {
-//            var selectedDay by remember { mutableStateOf(state.selectedDay) }
-//        }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -251,44 +240,54 @@ fun MainScreen(
                 .padding(start = 20.dp, end = 20.dp, top = 70.dp),
 
             ) {
-            UserInfoSection(state.userName, state, onIntent, state.level) // 상단의 유저 이름, 등급 부분
-            TodaysSentence(viewModel, context) // 오늘의 문장
 
-//            val filteredItems = state.callItems.filter { it.scheduleDay == selectedDay }
-//            Log.d("TAG", "MainScreen: CallItem 데이터 내용 : ${filteredItems}")
-            WeeklyCallsSection(
-                selectedDay = selectedDay,
-                callItems = state.callItems,
-                onIntent = {
-                    Log.d("TAG", "MainScreen: ${state.callItems}")
-                    if (it is MainIntent.OnDaySelected) {
-                        selectedDay = it.day
-                    } else {
-                        onIntent(it) // 나머지 이벤트 넘기기 (예: OnSettingsClicked)
+            // 스크롤 버전 영역
+            Column(
+                modifier = Modifier
+                    .weight(0.88f)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                UserInfoSection(state.userName, state, onIntent, state.level) // 상단의 유저 이름, 등급 부분
+                TodaysSentence(viewModel, context) // 오늘의 문장
+
+                WeeklyCallsSection(
+                    selectedDay = selectedDay,
+                    callItems = state.callItems,
+                    onIntent = {
+                        Log.d("TAG", "MainScreen: ${state.callItems}")
+                        if (it is MainIntent.OnDaySelected) {
+                            selectedDay = it.day
+                        } else {
+                            onIntent(it) // 나머지 이벤트 넘기기 (예: OnSettingsClicked)
+                        }
                     }
-                }
-            )
+                )
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-            // 리포트 & 마이 보이스로 넘어가는 버튼들
-            ReportAndVoiceBtn(onIntent)
+                // 리포트 & 마이 보이스로 넘어가는 버튼들
+                ReportAndVoiceBtn(onIntent)
 
-            // 레벨업 파트
-            NextLevel(
-                reportPercentage = state.reportPercent,
-                callTimePercentage = state.callPercent
-            )
+                // 레벨업 파트
+                NextLevel(
+                    reportPercentage = state.reportPercent,
+                    callTimePercentage = state.callPercent
+                )
+            }
 
-            Spacer(modifier = Modifier.height(20.dp))
 
             // 전화 걸기 버튼
             Box(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.12f),
                 contentAlignment = Alignment.Center
             ) {
                 CallButton(onIntent)
             }
+
+            Spacer(modifier = Modifier.weight(0.06f))
+
         }
     }
 }
