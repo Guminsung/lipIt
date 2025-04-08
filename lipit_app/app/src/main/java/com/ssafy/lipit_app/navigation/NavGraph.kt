@@ -325,8 +325,11 @@ fun NavGraph(
             val viewModel = viewModel<IncomingCallViewModel>()
             val state by viewModel.state.collectAsState()
 
-            IncomingCallScreen(state = state,
-                onIntent = { viewModel.onIntent(it) })
+            IncomingCallScreen(
+                onIntent = { viewModel.onIntent(it) },
+                viewModel = IncomingCallViewModel(),
+                navController = navController
+            )
         }
 
         composable("onVoiceCall") {
