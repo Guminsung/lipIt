@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.call.alarm.CallNotificationHelper
 
 @Composable
 fun IncomingCallScreen(
@@ -52,21 +54,16 @@ fun IncomingCallScreen(
 ) {
 
     val state by viewModel.state.collectAsState()
-
     val context = LocalContext.current
+
 
     LaunchedEffect(state.callDeclined) {
         if (state.callDeclined) {
+
+            CallNotificationHelper.stopVibration(context)
+
             val activity = (context as? Activity)
             activity?.finishAffinity() // 앱 종료
-        }
-    }
-
-    LaunchedEffect(state.callAccepted) {
-        if (state.callAccepted) {
-            navController.navigate("call_screen") {
-                popUpTo("incoming_call") { inclusive = true }
-            }
         }
     }
 
@@ -134,11 +131,13 @@ fun IncomingCallScreen(
         ) {
             // 전화 받기 버튼
             AcceptCallBtn(onClick = {
+                CallNotificationHelper.stopVibration(context)
                 onIntent(IncomingCallIntent.Accept)
             })
 
             // 전화 거절 버튼
             DeclineCallBtn(onClick = {
+                CallNotificationHelper.stopVibration(context)
                 onIntent(IncomingCallIntent.Decline)
             })
         }
@@ -278,15 +277,3 @@ fun AcceptCallBtn(
     }
 
 }
-
-
-//@Preview(showBackground = true)
-//@Composable
-//fun IncomingCallScreenPreview() {
-//    IncomingCallScreen(
-//        state = IncomingCallState(
-//            voiceName = "Harry Potter"
-//        ),
-//        onIntent = {}
-//    )
-//}
