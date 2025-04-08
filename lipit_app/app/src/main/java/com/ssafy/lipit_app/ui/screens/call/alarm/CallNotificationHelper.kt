@@ -1,6 +1,7 @@
 package com.ssafy.lipit_app.ui.screens.call.alarm
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -9,6 +10,10 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -22,6 +27,9 @@ object CallNotificationHelper {
     const val CALL_NOTIFICATION_ID = 1001
     private const val MISSED_CALL_NOTIFICATION_ID = 1002
 
+    // 진동 패턴 정의: 0ms 대기, 500ms 진동, 500ms 대기, 500ms 진동 (반복)
+    private val VIBRATION_PATTERN = longArrayOf(0, 500, 500, 500)
+
     /**
      * 전화 알림 채널 생성
      */
@@ -34,12 +42,62 @@ object CallNotificationHelper {
             ).apply {
                 description = "수신 전화 알림을 표시합니다"
                 setShowBadge(true)
+                enableVibration(true)
+                vibrationPattern = VIBRATION_PATTERN
             }
 
             val notificationManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
+    }
+
+    /**
+     * 진동 시작
+     */
+    @SuppressLint("ServiceCast")
+    fun startVibration(context: Context) {
+        // SDK 버전에 따라 Vibrator 획득 방법이 다름
+        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+
+        // 진동 지원 여부 확인
+        if (!vibrator.hasVibrator()) {
+            Log.d("CallNotificationHelper", "기기가 진동을 지원하지 않습니다")
+            return
+        }
+
+        // API 레벨에 따라 다른 방식으로 진동 실행
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Android 8.0 이상에서는 VibrationEffect 사용
+            val vibrationEffect = VibrationEffect.createWaveform(VIBRATION_PATTERN, 1) // 두 번째 파라미터 -1: 반복 안함, 0 이상: 해당 인덱스부터 반복
+            vibrator.vibrate(vibrationEffect)
+        } else {
+            // Android 8.0 미만에서는 deprecated API 사용
+            @Suppress("DEPRECATION")
+            vibrator.vibrate(VIBRATION_PATTERN, 1) // 두 번째 파라미터 -1: 반복 안함, 0 이상: 해당 인덱스부터 반복
+        }
+    }
+
+    /**
+     * 진동 중지
+     */
+    @SuppressLint("ServiceCast")
+    fun stopVibration(context: Context) {
+        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+
+        vibrator.cancel()
     }
 
     /**
@@ -138,6 +196,8 @@ object CallNotificationHelper {
                 .setAutoCancel(true)
         }
 
+        startVibration(context)
+
         // 알림 표시
         val notificationManager = NotificationManagerCompat.from(context)
         if (ActivityCompat.checkSelfPermission(
@@ -153,6 +213,8 @@ object CallNotificationHelper {
      * 전화 알림 취소
      */
     fun cancelCallNotification(context: Context) {
+        stopVibration(context)
+
         val notificationManager = NotificationManagerCompat.from(context)
         notificationManager.cancel(CALL_NOTIFICATION_ID)
     }

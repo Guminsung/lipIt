@@ -8,6 +8,7 @@
     <!-- 저장소 권한 (Android 13 미만) -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
 
@@ -26,6 +27,8 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
+    <!-- 진동 권한 -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <queries>
         <intent>
