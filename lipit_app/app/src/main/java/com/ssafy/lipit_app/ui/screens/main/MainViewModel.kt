@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.lipit_app.data.model.request_dto.auth.LogoutRequest
+import com.ssafy.lipit_app.data.model.response_dto.schedule.ScheduleResponse
 import com.ssafy.lipit_app.data.model.response_dto.schedule.TopicCategory
 import com.ssafy.lipit_app.domain.repository.MyVoiceRepository
 import com.ssafy.lipit_app.domain.repository.ScheduleRepository
@@ -19,6 +20,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.temporal.TemporalAdjuster
+import java.time.temporal.TemporalAdjusters
 
 class MainViewModel(
     private val context: Context
@@ -28,6 +33,8 @@ class MainViewModel(
 
     private val scheduleRepository by lazy { ScheduleRepository() }
     private val voiceRepository by lazy { MyVoiceRepository() }
+
+    private val alarmScheduler by lazy { AlarmScheduler(context) }
 
     // 멤버 ID 가져오기
     private val memberId: Long by lazy {
@@ -212,6 +219,20 @@ class MainViewModel(
                 val currentState = _state.value
 
                 val callItems = schedules.map { schedule ->
+
+                    // 알림 스케줄은 처음 한번만 등록
+                    val alarmId = schedule.callScheduleId.toInt()
+                    val isAlarmRegistered = isAlarmAlreadyRegistered(alarmId)
+
+                    if (!isAlarmRegistered) {
+                        Log.d(
+                            "MainViewModel",
+                            "알람 최초 등록: ${schedule.scheduledDay} ${schedule.scheduledTime}"
+                        )
+                        registerScheduleAlarm(schedule, currentState.callItem_name)
+                        markAlarmAsRegistered(alarmId)
+                    }
+
                     CallItem(
                         id = schedule.callScheduleId,
                         name = currentState.callItem_name,
@@ -245,6 +266,66 @@ class MainViewModel(
         }
     }
 
+    /**
+     * 한 번만 등록된 알람인지 확인하기 위한 SharedPreferences 키
+     */
+    private val PREF_ALARM_REGISTERED_PREFIX = "alarm_registered_"
+
+
+    /**
+     * 특정 알람이 이미 등록되었는지 확인
+     */
+    private fun isAlarmAlreadyRegistered(alarmId: Int): Boolean {
+        val key = PREF_ALARM_REGISTERED_PREFIX + alarmId
+        return SharedPreferenceUtils.getBoolean(key, false)
+    }
+
+    /**
+     * 알람을 등록된 상태로 표시
+     */
+    private fun markAlarmAsRegistered(alarmId: Int) {
+        val key = PREF_ALARM_REGISTERED_PREFIX + alarmId
+        SharedPreferenceUtils.saveBoolean(key, true)
+    }
+
+
+    private fun registerScheduleAlarm(schedule: ScheduleResponse, callerName: String) {
+        val scheduledDateTime = convertToLocalDateTime(schedule)
+
+        val alarmId = schedule.callScheduleId.toInt()
+
+        // 알림 예약
+        alarmScheduler.scheduleCallAlarm(
+            time = scheduledDateTime,
+            callerName = callerName,
+            alarmId = alarmId,
+            retryCount = 0
+        )
+    }
+
+    private fun convertToLocalDateTime(schedule: ScheduleResponse): LocalDateTime {
+
+        val scheduleDay = schedule.scheduledDay
+        val scheduleTime = schedule.scheduledTime
+
+        val today = LocalDate.now()
+        val targetDate = today.with(TemporalAdjusters.nextOrSame(convertDayOfWeek(scheduleDay)))
+        Log.d("TAG", "today: $today, targetDate: $targetDate")
+        // 시간 파싱
+        val timeParts = scheduleTime.split(":")
+        val hour = timeParts[0].toInt()
+        val minute = timeParts[1].toInt()
+
+        // LocalDateTime 생성
+        return LocalDateTime.of(
+            targetDate.year,
+            targetDate.monthValue,
+            targetDate.dayOfMonth,
+            hour,
+            minute
+        )
+    }
+
     // Weekly calls - 현재 선택된 Voice 받아오기
     private fun loadInitialData() {
         Log.d("schedule", "로그 호출")
@@ -257,6 +338,21 @@ class MainViewModel(
                 Log.d("MyVoiceViewModel", "API 응답: $selectedVoiceResult")
 
                 selectedVoiceResult.onSuccess { voice ->
+
+
+                    val newVoiceName = voice[0].voiceName
+                    val currentVoiceName = _state.value.callItem_name
+
+                    // 음성 이름이 변경되었는지 확인
+                    if (currentVoiceName.isNotEmpty() && currentVoiceName != newVoiceName) {
+                        // 음성 이름이 변경된 경우, 모든 알림 업데이트
+                        Log.d(
+                            "MainViewModel",
+                            "음성 이름 변경 감지: $currentVoiceName -> $newVoiceName"
+                        )
+                        updateAllScheduleAlarms(newVoiceName)
+                    }
+
                     // 2. 선택된 음성 정보 저장
                     _state.update { currentState ->
 
@@ -365,7 +461,7 @@ class MainViewModel(
 
         viewModelScope.launch {
             val result = scheduleRepository.deleteSchedule(
-                callScheduleId = scheduleId.toLong(),
+                callScheduleId = scheduleId,
                 memberId = memberId
             )
 
@@ -373,6 +469,48 @@ class MainViewModel(
                 getWeeklyCallsSchedule() // 삭제 후 다시 조회
             } else {
                 Log.e("MainViewModel", "삭제 실패: ${result.exceptionOrNull()?.message}")
+            }
+        }
+    }
+
+    // 음성 이름이 변경되었을 때, 기존 알림 스케쥴 모두 업데이트
+    private fun updateAllScheduleAlarms(newVoiceName: String) {
+        viewModelScope.launch {
+            try {
+                // 현재 등록된 스케쥴 모두 조회
+                val scheduleResult = scheduleRepository.getWeeklyCallsSchedule(memberId)
+
+                scheduleResult.onSuccess { schedules ->
+                    schedules.forEach  { schedule ->
+                        val alarmId = schedule.callScheduleId.toInt()
+
+                        // 기존 알람 취소
+                        alarmScheduler.cancelAlarm(alarmId)
+
+                        // 알람이 한 번이라도 등록된 적이 있는지 확인
+                        val wasRegistered = isAlarmAlreadyRegistered(alarmId)
+
+                        if (wasRegistered) {
+                            // 새 음성 이름으로 재등록
+                            val scheduleDateTime = convertToLocalDateTime(schedule)
+                            alarmScheduler.scheduleCallAlarm(
+                                time = scheduleDateTime,
+                                callerName = newVoiceName,
+                                alarmId = alarmId,
+                                retryCount = 0
+                            )
+                            Log.d(
+                                "MainViewModel",
+                                "알림 업데이트: ${schedule.scheduledDay} ${schedule.scheduledTime}, " +
+                                        "새 음성 이름: $newVoiceName"
+                            )
+                        }
+                    }
+                }.onFailure { e ->
+                    Log.e("MainViewModel", "알림 업데이트 실패: ${e.message}", e)
+                }
+            } catch (e: Exception) {
+                Log.e("MainViewModel", "알림 업데이트 중 예외 발생: ${e.message}", e)
             }
         }
     }
@@ -393,5 +531,18 @@ class MainViewModel(
         }
 
         Log.d("Alarm", "Alarm _---------- 알람 정보 업데이트: $schedule, 삭제여부: $isDelete")
+    }
+
+    private fun convertDayOfWeek(day: String): java.time.DayOfWeek {
+        return when (day.uppercase()) {
+            "MONDAY" -> java.time.DayOfWeek.MONDAY
+            "TUESDAY" -> java.time.DayOfWeek.TUESDAY
+            "WEDNESDAY" -> java.time.DayOfWeek.WEDNESDAY
+            "THURSDAY" -> java.time.DayOfWeek.THURSDAY
+            "FRIDAY" -> java.time.DayOfWeek.FRIDAY
+            "SATURDAY" -> java.time.DayOfWeek.SATURDAY
+            "SUNDAY" -> java.time.DayOfWeek.SUNDAY
+            else -> throw IllegalArgumentException("유효하지 않은 요일: $day")
+        }
     }
 }

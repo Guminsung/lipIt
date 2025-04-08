@@ -36,7 +36,8 @@ object CallNotificationHelper {
                 setShowBadge(true)
             }
 
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notificationManager =
+                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
     }
@@ -77,7 +78,7 @@ object CallNotificationHelper {
             Intent(context, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 putExtra("NAVIGATION_DESTINATION", "inComingCall")
-                                                            },
+            },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -90,9 +91,10 @@ object CallNotificationHelper {
                 } else {
                     setIcon(
                         IconCompat.createWithResource(
-                        context,
-                        R.drawable.ic_launcher_foreground
-                    ))
+                            context,
+                            R.drawable.ic_launcher_foreground
+                        )
+                    )
                 }
             }
             .build()
@@ -106,11 +108,13 @@ object CallNotificationHelper {
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_CALL)
                 .setFullScreenIntent(contentIntent, true)
-                .setStyle(NotificationCompat.CallStyle.forIncomingCall(
-                    caller,
-                    finalDeclineIntent,
-                    acceptIntent
-                ))
+                .setStyle(
+                    NotificationCompat.CallStyle.forIncomingCall(
+                        caller,
+                        finalDeclineIntent,
+                        acceptIntent
+                    )
+                )
                 .setAutoCancel(true)
         } else {
             // Android 11 이하에서는 일반 알림 사용
@@ -165,7 +169,7 @@ object CallNotificationHelper {
     /**
      * 부재중 전화 알림 표시
      */
-    fun showMissedCallNotification(context: Context, callerName: String) {
+    fun showMissedCallNotification(context: Context, callerName: String, retryCount: Int) {
         // 알림을 탭했을 때 열릴 액티비티
         val contentIntent = PendingIntent.getActivity(
             context,
@@ -177,11 +181,14 @@ object CallNotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val retryString =
+            if (retryCount == 0) "${callerName}님으로부터 부재중 전화" else "${callerName}님으로부터 부재중 전화(${retryCount + 1})"
+
         // 알림 생성
         val builder = NotificationCompat.Builder(context, CALL_CHANNEL_ID)
             .setSmallIcon(R.drawable.notification_icon)
             .setContentTitle("부재중 전화")
-            .setContentText("${callerName}님으로부터 부재중 전화가 있습니다")
+            .setContentText(retryString)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_CALL)
             .setContentIntent(contentIntent)
