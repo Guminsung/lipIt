@@ -8,6 +8,7 @@ import android.os.Looper
 import android.util.Log
 import android.os.Handler
 import android.telecom.Call
+import com.ssafy.lipit_app.util.SharedPreferenceUtils
 
 /**
  * 예약된 시간에 호출되어 통화 알림을 표시하는 BroadcastReceiver
@@ -25,6 +26,8 @@ class ScheduledCallReceiver : BroadcastReceiver() {
         val retryCount = intent.getIntExtra(CallActionReceiver.EXTRA_RETRY_COUNT, 0)
 
         Log.d(TAG, "발신자: $callerName, 알람 ID: $alarmId, 재시도: $retryCount")
+
+        clearAlarmData(alarmId)
 
         // 통화 알림 표시
         try {
@@ -85,8 +88,16 @@ class ScheduledCallReceiver : BroadcastReceiver() {
             Log.e(TAG, "통화 알림 표시 실패: ${e.message}", e)
         }
     }
+
+    private fun clearAlarmData(alarmId: Int) {
+        // 알람이 한 번 발생하면 등록 정보 삭제
+        val registeredKey = SharedPreferenceUtils.PREF_ALARM_REGISTERED_PREFIX + alarmId
+        val timestampKey = SharedPreferenceUtils.PREF_ALARM_TIMESTAMP_PREFIX + alarmId
+
+        SharedPreferenceUtils.remove(registeredKey)
+        SharedPreferenceUtils.remove(timestampKey)
+
+        Log.d(TAG, "알람 데이터 정리 완료: ID=$alarmId")
+    }
 }
 
-private fun Any.postDelayed(function: () -> Unit) {
-
-}

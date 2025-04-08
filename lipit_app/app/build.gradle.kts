@@ -91,12 +91,16 @@ dependencies {
     implementation(libs.androidx.ui.test.android)
     implementation(libs.androidx.compose.testing)
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+//    androidTestImplementation(libs.androidx.junit)
+//    androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    androidTestImplementation ("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation ("androidx.test.espresso:espresso-core:3.5.0")
+    androidTestImplementation ("androidx.compose.ui:ui-test-junit4:1.7.8")
 
     implementation("androidx.compose.material:material:1.7.5")     // material2 지원
     implementation("com.kizitonwose.calendar:compose:2.6.2")

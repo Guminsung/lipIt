@@ -2,6 +2,7 @@ package com.ssafy.lipit_app.ui.screens.main
 
 import android.content.Context
 import android.util.Log
+import androidx.collection.arrayMapOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.lipit_app.data.model.request_dto.auth.LogoutRequest
@@ -15,6 +16,8 @@ import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsState
 import com.ssafy.lipit_app.ui.screens.main.components.DailySentenceManager
 import com.ssafy.lipit_app.ui.screens.main.components.dayFullToShort
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
+import com.ssafy.lipit_app.util.SharedPreferenceUtils.PREF_ALARM_REGISTERED_PREFIX
+import com.ssafy.lipit_app.util.SharedPreferenceUtils.PREF_ALARM_TIMESTAMP_PREFIX
 import com.ssafy.lipit_app.util.sortSchedulesByDay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,6 +49,7 @@ class MainViewModel(
         val userName = SharedPreferenceUtils.getUserName()
         _state.value = _state.value.copy(userName = userName)
 
+        clearAllAlarms()
         loadInitialData()
     }
 
@@ -266,11 +270,6 @@ class MainViewModel(
         }
     }
 
-    /**
-     * 한 번만 등록된 알람인지 확인하기 위한 SharedPreferences 키
-     */
-    private val PREF_ALARM_REGISTERED_PREFIX = "alarm_registered_"
-
 
     /**
      * 특정 알람이 이미 등록되었는지 확인
@@ -291,16 +290,36 @@ class MainViewModel(
 
     private fun registerScheduleAlarm(schedule: ScheduleResponse, callerName: String) {
         val scheduledDateTime = convertToLocalDateTime(schedule)
-
         val alarmId = schedule.callScheduleId.toInt()
 
-        // 알림 예약
-        alarmScheduler.scheduleCallAlarm(
-            time = scheduledDateTime,
-            callerName = callerName,
-            alarmId = alarmId,
-            retryCount = 0
-        )
+        val existingTimestamp = getAlarmTimestamp(alarmId)
+        if (existingTimestamp != null && existingTimestamp == scheduledDateTime) {
+            Log.d("Alarm", "이미 동일한 시간에 알람이 등록되어 있음: $scheduledDateTime")
+            return
+        }
+
+        alarmScheduler.cancelAlarm(alarmId)
+
+        val now = LocalDateTime.now()
+        if (scheduledDateTime.isAfter(now)) {
+            // 알람 예약 시도
+            val success = alarmScheduler.scheduleCallAlarm(
+                time = scheduledDateTime,
+                callerName = callerName,
+                alarmId = alarmId,
+                retryCount = 0
+            )
+
+            if (success) {
+                saveAlarmTimestamp(alarmId, scheduledDateTime)
+                markAlarmAsRegistered(alarmId)
+                Log.d("Alarm", "알람 새로 등록: ID=$alarmId, 시간=${scheduledDateTime}")
+            } else {
+                Log.e("Alarm", "알람 등록 실패: ID=$alarmId")
+            }
+        } else {
+            Log.d("Alarm", "현재 시간보다 이전이라 알람 등록하지 않음: $scheduledDateTime")
+        }
     }
 
     private fun convertToLocalDateTime(schedule: ScheduleResponse): LocalDateTime {
@@ -310,20 +329,69 @@ class MainViewModel(
 
         val today = LocalDate.now()
         val targetDate = today.with(TemporalAdjusters.nextOrSame(convertDayOfWeek(scheduleDay)))
-        Log.d("TAG", "today: $today, targetDate: $targetDate")
+
         // 시간 파싱
         val timeParts = scheduleTime.split(":")
         val hour = timeParts[0].toInt()
         val minute = timeParts[1].toInt()
 
+        val now = LocalDateTime.now()
+        Log.d("TAG", "today: $today, targetDate: $targetDate, 시간= $hour:$minute ")
+
         // LocalDateTime 생성
-        return LocalDateTime.of(
+        var scheduledDateTime = LocalDateTime.of(
             targetDate.year,
             targetDate.monthValue,
             targetDate.dayOfMonth,
             hour,
             minute
         )
+
+        if (scheduledDateTime.isBefore(now)) {
+            scheduledDateTime = scheduledDateTime.plusWeeks(1)
+        }
+
+        Log.d("TAG", "원래 시간: $targetDate $hour:$minute, 조정된 시간: $scheduledDateTime")
+
+        return scheduledDateTime
+    }
+
+    // 알람 등록 시간 저장
+    private fun saveAlarmTimestamp(alarmId: Int, timestamp: LocalDateTime) {
+        val key = PREF_ALARM_TIMESTAMP_PREFIX + alarmId
+        SharedPreferenceUtils.saveString(key, timestamp.toString())
+    }
+
+    // 저장된 알람 시간 가져오기
+    private fun getAlarmTimestamp(alarmId: Int): LocalDateTime? {
+        val key = PREF_ALARM_TIMESTAMP_PREFIX + alarmId
+        val timestampStr = SharedPreferenceUtils.getString(key, "")
+        return if (timestampStr.isNotEmpty()) {
+            LocalDateTime.parse(timestampStr)
+        } else null
+    }
+
+    private fun clearAllAlarms() {
+        // 모든 등록된 알람 ID 가져오기
+        val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val registeredAlarmIds = prefs.all.keys
+            .filter { it.startsWith(PREF_ALARM_REGISTERED_PREFIX) }
+            .map { it.removePrefix(PREF_ALARM_REGISTERED_PREFIX).toInt() }
+
+        // 모든 알람 취소
+        for (alarmId in registeredAlarmIds) {
+            alarmScheduler.cancelAlarm(alarmId)
+
+            // SharedPreferences에서 알람 정보 삭제
+            val regKey = PREF_ALARM_REGISTERED_PREFIX + alarmId
+            val timestampKey = PREF_ALARM_TIMESTAMP_PREFIX + alarmId
+            SharedPreferenceUtils.remove(regKey)
+            SharedPreferenceUtils.remove(timestampKey)
+
+            Log.d("Alarm", "알람 초기화: ID=$alarmId")
+        }
+
+        Log.d("Alarm", "모든 알람 초기화 완료")
     }
 
     // Weekly calls - 현재 선택된 Voice 받아오기
