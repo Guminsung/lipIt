@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -38,13 +39,17 @@ import com.ssafy.lipit_app.util.CommonUtils.formatSeconds
 @Composable
 fun ReportFront(
     report: ReportListResponse,
-    onReportItemClick: (Long) -> Unit
+    onReportItemClick: (Long) -> Unit,
+    onMeasuredHeight: (Int) -> Unit
 ) {
 
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .onGloballyPositioned { layoutCoordinates ->
+                onMeasuredHeight(layoutCoordinates.size.height)
+            }
             .paint(
                 painter = painterResource(id = R.drawable.report_background),
                 contentScale = ContentScale.FillBounds
@@ -213,7 +218,7 @@ fun ReportFront(
                     lineHeight = 20.sp,
                     fontWeight = FontWeight(400),
                     color = Color(0xFFFFFFFF),
-                    )
+                )
             )
         }
 

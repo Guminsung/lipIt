@@ -5,21 +5,19 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.ssafy.lipit_app.R
@@ -29,19 +27,24 @@ import com.ssafy.lipit_app.data.model.response_dto.report.ReportListResponse
 @Composable
 fun ReportBack(
     report: ReportListResponse,
-    isVisible: Boolean
+    isVisible: Boolean,
+    height: Int
 ) {
+    val density = LocalDensity.current
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1f) // 가로:세로 = 1:1 비율 설정
+//            .aspectRatio(1f) // 가로:세로 = 1:1 비율 설정
+            .height(with(density) { height.toDp() }) // ReportFront의 높이 적용
+
             .border(
                 BorderStroke(1.dp, color = Color.White),
                 shape = RoundedCornerShape(25.dp)
             )
             .background(Color.Transparent, shape = RoundedCornerShape(25.dp))
             .paint(
-                painter = painterResource(id = R.drawable.bg_report_back),
+                painter = painterResource(id = R.drawable.report_background),
                 contentScale = ContentScale.FillBounds
             ),
 //            .padding(horizontal = 30.dp, vertical = 23.dp),
