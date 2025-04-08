@@ -3,7 +3,6 @@ package com.ssafy.lipit_app.ui.screens.report.components
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -20,10 +19,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.ssafy.lipit_app.data.model.response_dto.report.ReportListResponse
-import com.ssafy.lipit_app.ui.screens.report.ReportIntent
 
 @Composable
 fun Report(report: ReportListResponse, onReportItemClick: (Long) -> Unit) {
+    val cardHeight = remember { mutableStateOf(0) }
 
     // 카드가 뒤집혔는지 상태 저장
     var isFlipped by remember { mutableStateOf(false) }
@@ -63,7 +62,8 @@ fun Report(report: ReportListResponse, onReportItemClick: (Long) -> Unit) {
         ) {
             ReportFront(
                 report = report,
-                onReportItemClick = onReportItemClick
+                onReportItemClick = onReportItemClick,
+                onMeasuredHeight = { height -> cardHeight.value = height }
             )
         }
 
@@ -79,7 +79,9 @@ fun Report(report: ReportListResponse, onReportItemClick: (Long) -> Unit) {
                     alpha = if (isBackVisible) 1f else 0f
                 }
         ) {
-            ReportBack(report, isVisible = isBackVisible)
+            ReportBack(
+                report, isVisible = isBackVisible, height = cardHeight.value
+            )
         }
     }
 }
