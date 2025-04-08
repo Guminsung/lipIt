@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.lipit_app.data.model.request_dto.auth.LogoutRequest
+import com.ssafy.lipit_app.data.model.response_dto.schedule.ScheduleResponse
 import com.ssafy.lipit_app.data.model.response_dto.schedule.TopicCategory
 import com.ssafy.lipit_app.domain.repository.MyVoiceRepository
 import com.ssafy.lipit_app.domain.repository.ScheduleRepository
@@ -19,6 +20,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.temporal.TemporalAdjuster
+import java.time.temporal.TemporalAdjusters
 
 class MainViewModel(
     private val context: Context
@@ -28,6 +33,8 @@ class MainViewModel(
 
     private val scheduleRepository by lazy { ScheduleRepository() }
     private val voiceRepository by lazy { MyVoiceRepository() }
+
+    private val alarmScheduler by lazy { AlarmScheduler(context) }
 
     // 멤버 ID 가져오기
     private val memberId: Long by lazy {
@@ -212,6 +219,10 @@ class MainViewModel(
                 val currentState = _state.value
 
                 val callItems = schedules.map { schedule ->
+
+                    // 알림 스케쥴 등록
+                    registerScheduleAlarm(schedule, currentState.callItem_name)
+
                     CallItem(
                         id = schedule.callScheduleId,
                         name = currentState.callItem_name,
@@ -243,6 +254,42 @@ class MainViewModel(
                 Log.e("schedule", "스케줄 불러오기 실패", e)
             }
         }
+    }
+
+    private fun registerScheduleAlarm(schedule: ScheduleResponse, callerName: String) {
+        val scheduledDateTime = convertToLocalDateTime(schedule)
+
+        val alarmId = schedule.callScheduleId.toInt()
+
+        // 알림 예약
+        alarmScheduler.scheduleCallAlarm(
+            time = scheduledDateTime,
+            callerName = callerName,
+            alarmId = alarmId,
+            retryCount = 0
+        )
+    }
+
+    private fun convertToLocalDateTime(schedule: ScheduleResponse): LocalDateTime {
+
+        val scheduleDay = schedule.scheduledDay
+        val scheduleTime = schedule.scheduledTime
+
+        val today = LocalDate.now()
+        val targetDate = today.with(TemporalAdjusters.nextOrSame(convertDayOfWeek(scheduleDay)))
+        // 시간 파싱
+        val timeParts = scheduleTime.split(":")
+        val hour = timeParts[0].toInt()
+        val minute = timeParts[1].toInt()
+
+        // LocalDateTime 생성
+        return LocalDateTime.of(
+            targetDate.year,
+            targetDate.monthValue,
+            targetDate.dayOfMonth,
+            hour,
+            minute
+        )
     }
 
     // Weekly calls - 현재 선택된 Voice 받아오기
@@ -393,5 +440,19 @@ class MainViewModel(
         }
 
         Log.d("Alarm", "Alarm _---------- 알람 정보 업데이트: $schedule, 삭제여부: $isDelete")
+    }
+
+    // 누락된 convertDayOfWeek 함수 추가
+    private fun convertDayOfWeek(day: String): java.time.DayOfWeek {
+        return when (day.uppercase()) {
+            "MONDAY" -> java.time.DayOfWeek.MONDAY
+            "TUESDAY" -> java.time.DayOfWeek.TUESDAY
+            "WEDNESDAY" -> java.time.DayOfWeek.WEDNESDAY
+            "THURSDAY" -> java.time.DayOfWeek.THURSDAY
+            "FRIDAY" -> java.time.DayOfWeek.FRIDAY
+            "SATURDAY" -> java.time.DayOfWeek.SATURDAY
+            "SUNDAY" -> java.time.DayOfWeek.SUNDAY
+            else -> throw IllegalArgumentException("유효하지 않은 요일: $day")
+        }
     }
 }
