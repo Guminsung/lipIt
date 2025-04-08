@@ -67,13 +67,13 @@ fun TodaysSentence(viewModel: MainViewModel, context: Context) {
                 Text(
                     text = "${state.sentenceOriginal}",
                     style = TextStyle(
-                        fontSize = 15.sp,
+                        fontSize = 14.sp,
                         lineHeight = 20.sp,
                         fontWeight = FontWeight(400),
                         color = Color(0xFFFFFFFF),
                     ),
-                    maxLines = Int.MAX_VALUE, // 줄 수 제한 삭제
-                    overflow = TextOverflow.Clip, // 넘쳐도 글자 자르지 않음
+                    maxLines = 2, // 줄 수 제한
+                    overflow = TextOverflow.Ellipsis, // 넘치면 글자 자름
                     softWrap = true // 줄바꿈 허용
                 )
 
@@ -82,7 +82,7 @@ fun TodaysSentence(viewModel: MainViewModel, context: Context) {
                 Text(
                     text = "${state.sentenceTranslated}  ✦˚",
                     style = TextStyle(
-                        fontSize = 14.sp,
+                        fontSize = 13.sp,
                         lineHeight = 20.sp,
                         fontWeight = FontWeight(700),
                         color = Color(0xFFFFFFFF),
