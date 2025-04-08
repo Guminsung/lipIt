@@ -84,9 +84,8 @@ fun TextCallScreen(
 
         // 통화 종료는 됐지만 리포트 생성 실패한 경우 처리
         if (voiceCallState.isCallEnded && !voiceCallState.isReportCreated) {
-            Log.d("VoiceCallScreen", "❗ 종료됨 + 리포트 생성 실패 → 다이얼로그 표시")
-            viewModel.setReportFailed()
-
+            Log.d("TextCallScreen", "❗ 종료됨 + 리포트 생성 실패 → 다이얼로그 표시")
+            voiceCallViewModel._state.update { it.copy(reportFailed = true) }
         }
     }
 
@@ -110,9 +109,8 @@ fun TextCallScreen(
 
 
 
-    if (voiceCallViewModel.connectionError.value && !voiceCallViewModel.state.value.reportFailed && !voiceCallViewModel.state.value.isReportCreated) {
+    if (voiceCallViewModel.state.value.reportFailed && !voiceCallViewModel.state.value.isReportCreated) {
         AlertDialog(
-
             onDismissRequest = {
                 voiceCallViewModel.resetCall()
                 navController.navigate("main") {
