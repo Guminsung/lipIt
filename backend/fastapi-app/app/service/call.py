@@ -44,7 +44,11 @@ async def start_call(
     topic = request.topic
     if not topic:
         news = await get_random_news(db, category="경제")  # 사회, 생활, 날씨, 경제, IT
-        topic = news.title if news else ""
+        if news:
+            # 뉴스 제목과 내용을 함께 제공해서 AI가 대화하기 좋은 주제를 선택할 수 있게 함
+            topic = f"뉴스 제목: {news.title}\n\n뉴스 내용: {news.content}"
+        else:
+            topic = "일상 생활과 취미"  # 뉴스가 없는 경우 간단한 주제 사용
 
     state = {
         "call_id": -1,
