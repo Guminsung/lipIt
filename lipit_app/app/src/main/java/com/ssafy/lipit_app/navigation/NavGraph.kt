@@ -275,10 +275,10 @@ fun NavGraph(
             )
         }
 
-//        composable("call_screen") {
-//            val viewModel = viewModel<VoiceCallViewModel>()
-//            CallScreen(voiceViewModel = viewModel, navController = navController)
-//        }
+        composable("call_screen") {
+            val viewModel = viewModel<VoiceCallViewModel>()
+            CallScreen(voiceViewModel = viewModel, navController = navController)
+        }
 
 
 
@@ -324,17 +324,6 @@ fun NavGraph(
 
             val viewModel = viewModel<IncomingCallViewModel>()
             val state by viewModel.state.collectAsState()
-
-            // 통화 수락 시 onVoiceCall로 네비게이션
-            LaunchedEffect(state.callAccepted) {
-                if (state.callAccepted) {
-                    Log.d(TAG, "수신 전화 수락: onVoiceCall 이동")
-                    navController.navigate("onVoiceCall") {
-                        popUpTo("inComingCall") { inclusive = true }
-                        launchSingleTop = true
-                    }
-                }
-            }
 
             IncomingCallScreen(
                 onIntent = { viewModel.onIntent(it) },
