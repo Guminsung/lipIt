@@ -60,6 +60,8 @@ import com.ssafy.lipit_app.ui.screens.main.components.ReportAndVoiceBtn
 import com.ssafy.lipit_app.ui.screens.main.components.TodaysSentence
 import com.ssafy.lipit_app.ui.screens.main.components.WeeklyCallsSection
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -89,8 +91,12 @@ fun MainScreen(
         if (!bottomSheetState.isVisible) {
             onIntent(MainIntent.OnCloseSettingsSheet)
             onIntent(MainIntent.ResetBottomSheetContent)
+
+            onIntent(MainIntent.RefreshAfterVoiceChange) // 바텀 시트 닫히면 새로고침
         }
     }
+
+
 
     LaunchedEffect(Unit) {
         val memberId = SharedPreferenceUtils.getMemberId()

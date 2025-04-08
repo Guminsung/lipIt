@@ -34,4 +34,6 @@ sealed class MainIntent {
 
     // BottomSheet 에서 뒤로가기, 변경사항 이벤트를 감지하기 위한 기능
     object RefreshAfterVoiceChange : MainIntent()
+
+
 }
