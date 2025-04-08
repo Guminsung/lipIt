@@ -328,7 +328,6 @@ fun CallScreen(voiceViewModel: VoiceCallViewModel, navController: NavController)
         "Text" -> {
             LaunchedEffect(Unit) {
                 textViewModel.setInitialMessages(voiceViewModel.convertToTextMessages())
-
             }
 
             TextCallScreen(

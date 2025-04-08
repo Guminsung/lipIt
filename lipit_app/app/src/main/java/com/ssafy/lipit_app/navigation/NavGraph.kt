@@ -327,7 +327,6 @@ fun NavGraph(
 
             IncomingCallScreen(
                 onIntent = { viewModel.onIntent(it) },
-                viewModel = IncomingCallViewModel(),
                 navController = navController
             )
         }

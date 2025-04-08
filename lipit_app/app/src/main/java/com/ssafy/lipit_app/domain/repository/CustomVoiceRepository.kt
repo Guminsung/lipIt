@@ -1,6 +1,7 @@
 package com.ssafy.lipit_app.domain.repository
 
 import android.util.Log
+import com.arthenica.ffmpegkit.FFmpegKit
 import com.ssafy.lipit_app.BuildConfig
 import com.ssafy.lipit_app.base.ApplicationClass.Companion.client
 import com.ssafy.lipit_app.data.model.request_dto.custom_voice.S3UploadRequest
@@ -15,11 +16,10 @@ import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
+import okhttp3.Request
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Request
 import java.io.File
-import com.arthenica.ffmpegkit.FFmpegKit
 
 
 class CustomVoiceRepository {
@@ -169,6 +169,7 @@ class CustomVoiceRepository {
 
     // S3 에 저장하기 위한 주소를 얻어오는 과정
     suspend fun getPresignedUrl(fileName: String): Result<S3UploadResponse> {
+
         return try {
             val requestBody = mapOf("fileName" to fileName) // 🔥 Body로 JSON 전달
             val response = RetrofitUtil.presignService.getPresignedUrl(S3UploadRequest(fileName))

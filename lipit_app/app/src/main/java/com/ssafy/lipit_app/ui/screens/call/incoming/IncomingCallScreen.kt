@@ -1,6 +1,7 @@
 package com.ssafy.lipit_app.ui.screens.call.incoming
 
 import android.app.Activity
+import android.util.Log
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -41,29 +42,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
 
 @Composable
 fun IncomingCallScreen(
     onIntent: (IncomingCallIntent) -> Unit,
-    viewModel: IncomingCallViewModel,
     navController: NavController
 ) {
-
+    val viewModel: IncomingCallViewModel = viewModel()
     val state by viewModel.state.collectAsState()
 
     val context = LocalContext.current
 
     LaunchedEffect(state.callDeclined) {
         if (state.callDeclined) {
-            val activity = (context as? Activity)
-            activity?.finishAffinity() // 앱 종료
+            Log.d("IncomingCall", "✅ 거절됨 - 네비게이션 이동 시도")
+            (context as? Activity)?.finishAffinity()
         }
     }
 
     LaunchedEffect(state.callAccepted) {
         if (state.callAccepted) {
+            Log.d("IncomingCall", "✅ 수락됨 - 네비게이션 이동 시도")
+
             navController.navigate("call_screen") {
                 popUpTo("incoming_call") { inclusive = true }
             }
