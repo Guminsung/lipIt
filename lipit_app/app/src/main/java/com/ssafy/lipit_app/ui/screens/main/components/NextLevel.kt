@@ -110,7 +110,9 @@ fun NextLevel(reportPercentage: Int, callTimePercentage: Int) {
                     .padding(top = 15.dp, start = 15.dp, end = 15.dp, bottom = 20.dp)
             ) {
                 // 리포트 개수
-                ProgressBarWithLabel(
+
+
+             ProgressBarWithLabel(
                     label = "Number of Reports",
                     percent = reportPercentage,
                     modifier = Modifier

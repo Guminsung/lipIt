@@ -13,6 +13,8 @@ object SharedPreferenceUtils {
 
     private const val PREF_NAME = "member_pref"
     private const val KEY_MEMBER_ID = "member_id"
+    const val PREF_ALARM_REGISTERED_PREFIX = "alarm_registered_"
+    const val PREF_ALARM_TIMESTAMP_PREFIX = "alarm_timestamp_"
 
     private var preferences: SharedPreferences? = null
 
@@ -98,4 +100,21 @@ object SharedPreferenceUtils {
         }
     }
 
+    fun saveString(key: String, value: String) {
+        preferences?.edit()?.apply {
+            putString(key, value)
+            apply()
+        }
+    }
+
+    fun getString(key: String, defaultValue: String): String {
+        return preferences?.getString(key, defaultValue) ?: defaultValue
+    }
+
+    fun remove(key: String) {
+        preferences?.edit()?.apply {
+            remove(key)
+            apply()
+        }
+    }
 }
