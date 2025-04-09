@@ -128,6 +128,8 @@ fun CustomColumn(
     var isPlaying by remember { mutableStateOf(false) }
     val rememberedSelected = rememberUpdatedState(isSelected).value
 
+    Log.d("CustomColumn", "이미지 URL: $imageUrl, 비어있음: ${imageUrl.isEmpty()}")
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -164,28 +166,25 @@ fun CustomColumn(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
+            val painter = rememberAsyncImagePainter(
+                model = imageUrl.ifEmpty { R.drawable.img_add_image }
+            )
 
-            if (imageUrl.isNotEmpty()) {
+
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(Color.LightGray)
+            ) {
+                // 이미지 로딩 성공 시 표시
                 Image(
-                    painter = rememberAsyncImagePainter(model = imageUrl),
-                    contentDescription = "3D Avatar",
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color.Gray),
+                    painter = painter,
+                    contentDescription = "프로필 이미지",
+                    modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
 
-            } else {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground), // 프로필 이미지
-                    contentDescription = "Profile Image",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color.Gray)
-                )
             }
 
             Text(

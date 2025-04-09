@@ -192,7 +192,7 @@ object CallNotificationHelper {
                     setIcon(
                         IconCompat.createWithResource(
                             context,
-                            R.drawable.ic_launcher_foreground
+                            R.drawable.img_add_image
                         )
                     )
                 }

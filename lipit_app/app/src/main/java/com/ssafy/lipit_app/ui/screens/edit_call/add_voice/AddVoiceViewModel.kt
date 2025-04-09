@@ -334,12 +334,15 @@ class AddVoiceViewModel(context: Context) : ViewModel() {
 
 
                 // 4. Spring 서버에 저장 요청
+                val finalImageUrl = if (current.selectedImageUri != null) imagePresign.cdnUrl else ""
+
                 val saveResult = voiceRepository.saveCustomVoice(
                     memberId = memberId,
                     voiceName = current.voiceName,
                     audioUrl = audioPresign.cdnUrl,
-                    imageUrl = imagePresign.cdnUrl
+                    imageUrl = finalImageUrl
                 )
+
 
 //                if (saveResult.isSuccess) {
 //                    _state.update { it.copy(uploadSuccess = true, isUploading = false) }
