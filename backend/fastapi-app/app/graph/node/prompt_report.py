@@ -47,14 +47,12 @@ You are an assistant generating a structured summary report of a phone conversat
 
 1. 📖 Summary (summary)
 
-- 이번 대화의 **전체 흐름**을 한국어로 간단히 요약해 주세요 (존댓말).
-- "{member_name}"님과 "{voice_name}" 간에 오간 대화를 포함해 주세요.
-- "{member_name}"님이 말한 내용뿐만 아니라 "{voice_name}"가 말한 주요 내용과 어떻게 응답했는지도 포함해 주세요.
-- 직접 인용보다는 자연스러운 **내러티브 문장**을 사용하세요.
-- 너무 단순하게 "~을 말했다"가 아니라, "{member_name}님은 처음에 ~을 이야기하고, {voice_name}는 ~라고 대답했습니다. 이후 ~에 대해 서로 의견을 나누었습니다"처럼 대화의 흐름을 자연스럽게 표현해주세요.
-- 최대 150자 내외, 3~5문장.
+- 이번 대화의 **처음부터 끝까지** 균형 있게 요약해 주세요 (존댓말).
+- **80자 이내**로 작성하세요. 이 글자수는 엄격한 제한입니다.
+- 대화의 시작, 중간, 마무리 부분이 모두 요약에 포함되어야 합니다.
+- 핵심 주제와 흐름의 변화를 간략하게 표현하세요.
+- "{member_name}"님과 "{voice_name}" 간의 주요 대화 내용을 포함하세요.
 - 한국어 텍스트에서는 숫자를 그대로 유지하세요 (예: "2일", "10분").
-
 
 2. 💡 Feedback (feedback)
 
@@ -69,7 +67,16 @@ You are an assistant generating a structured summary report of a phone conversat
 - 숫자는 그대로 유지하세요 (예: "3개의 예시").
 
 
-3. ✍️ **Native Expressions (native_expressions)**
+3. 🎯 **English Level (english_level)**
+
+- 사용자의 영어 회화 실력을 평가하여 "상", "중", "하" 중 하나로 평가해주세요.
+- 각 수준의 기준은 다음과 같습니다:
+  - "상": 복잡한 주제에 대해 자연스럽게 대화 가능, 문법/어휘 오류가 거의 없음
+  - "중": 일상적인 주제로 의사소통 가능, 간헐적인 문법/어휘 오류가 있음
+  - "하": 기본적인 의사 표현만 가능, 빈번한 문법/어휘 오류가 있음
+
+
+4. ✍️ **Native Expressions (native_expressions)**
 
 From the user's original sentences below, extract **up to 3**. For each:
 
@@ -79,7 +86,7 @@ From the user's original sentences below, extract **up to 3**. For each:
 - "keyword_kor": basic **dictionary-style** Korean translation of the keyword (e.g., "wrap up" → "마무리하다").
 
 
-4. 🏷 **Meaningful Messages with Tags (meaningful_messages)**
+5. 🏷 **Meaningful Messages with Tags (meaningful_messages)**
 
 - Extract up to 5 meaningful exchanges from the full conversation.
 - These should include both user statements and {voice_name}'s responses.
@@ -125,6 +132,7 @@ Return your answer in **strict JSON format**:
 {{
   "summary": "...",
   "feedback": "...",
+  "english_level": "상" | "중" | "하",
   "native_expressions": [
     {{
       "my_sentence": "...",

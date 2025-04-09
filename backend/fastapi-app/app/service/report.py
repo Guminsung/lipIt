@@ -41,19 +41,23 @@ async def generate_report(
             member_name = "사용자"  # 기본값 설정
             
         # 통화에 사용된 음성 정보 조회
+        voice = None
+        voice_id = None
+        voice_name = "English Tutor"  # 기본값 설정
         try:
             voice = await get_voice_by_call_id(db, call_id)
+            voice_id = voice.voice_id
             voice_name = voice.voice_name
-            logger.info(f"Call {call_id}의 음성 이름을 조회했습니다: {voice_name}")
+            logger.info(f"Call {call_id}의 음성 정보를 조회했습니다: ID={voice_id}, 이름={voice_name}")
         except Exception as e:
             logger.error(f"음성 정보 조회 실패: {str(e)}")
-            voice_name = "English Tutor"  # 기본값 설정
 
         # 상태 구성
         state = {
             "member_id": member_id,
             "member_name": member_name,  # 사용자 이름 추가
             "voice_name": voice_name,    # 음성 이름 추가
+            "voice_id": voice_id,        # 음성 ID 추가
             "call_id": call_id,
             "duration": duration,
             "messages": messages,
@@ -71,6 +75,11 @@ async def generate_report(
         if "voice_name" not in result:
             result["voice_name"] = voice_name
             logger.info(f"📌 result에 voice_name({voice_name})을 추가했습니다.")
+            
+        # voice_id가 result에 없으면 추가
+        if "voice_id" not in result:
+            result["voice_id"] = voice_id
+            logger.info(f"📌 result에 voice_id({voice_id})을 추가했습니다.")
 
         # 사용자 메시지 기반 단어 수
         word_count = sum(
@@ -136,6 +145,27 @@ async def save_report_result(
     summary = state.get("summary", "요약 없음")
     feedback = state.get("feedback", "피드백 없음")
     
+    # 영어 레벨 가져오기 (parse_report에서 추출된 값)
+    english_level = state.get("english_level", "중")  # 기본값은 중
+    logger.info(f"🎯 영어 레벨: {english_level}")
+    
+    # voice_id 가져오기 (generate_report에서 이미 조회)
+    voice_id = state.get("voice_id")
+    logger.info(f"🎤 Voice ID: {voice_id}")
+    
+    # 셀럽 비디오 URL 설정
+    celeb_video_url = None
+    if voice_id and english_level:
+        level_mapping = {
+            "상": "advanced",
+            "중": "intermediate",
+            "하": "low"
+        }
+        level_code = level_mapping.get(english_level)
+        if level_code:
+            celeb_video_url = f"https://dlxayir1dj7sa.cloudfront.net/celeb-video/{voice_id}_{level_code}.mp4"
+            logger.info(f"🎬 셀럽 비디오 URL 설정: {celeb_video_url}")
+    
     # 템플릿 변수가 남아 있으면 실제 이름으로 교체
     if "{member_name}" in summary:
         summary = summary.replace("{member_name}", member_name)
@@ -152,7 +182,7 @@ async def save_report_result(
         memberId=state["member_id"],
         callId=state["call_id"],
         callDuration=state["duration"],
-        celebVideoUrl=None,
+        celebVideoUrl=celeb_video_url,
         wordCount=word_count,
         sentenceCount=sentence_count,
         communicationSummary=summary,

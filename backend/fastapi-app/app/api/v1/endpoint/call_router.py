@@ -50,7 +50,10 @@ router.api_doc(
     methods=["PATCH"],
     request_model=UserMessageRequest,
     response_model=APIResponse[AIMessageResponse],
-    request_example={"userMessage": "I don't like sports that much."},
+    request_example={
+        "callId": 1,
+        "userMessage": "I don't like sports that much."
+    },
     success_model=AIMessageResponse,
     success_example={
         200: {
