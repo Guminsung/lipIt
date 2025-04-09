@@ -97,6 +97,21 @@ class VoiceCallViewModel : ViewModel() {
                 delay(500L)
             }
 
+            // 문자 수 합산
+            val totalChars = chatMessages.sumOf { it.message.length }
+
+            if (totalChars < 100) {
+                _state.update {
+                    it.copy(
+                        isCallEnded = true,
+                        isReportCreated = false,
+                        reportFailed = true,  // 기존 플래그 사용
+                        reportFailReason = "length_short" // 100자 미만 → 이유 명시
+                    )
+                }
+                return@launch
+            }
+
             Log.d("VoiceCall", "🛑 발언 끝남 → 종료 진행")
             onIntent(VoiceCallIntent.timerIsOver) // 기존 종료 로직 그대로 사용
         }
@@ -177,11 +192,27 @@ class VoiceCallViewModel : ViewModel() {
 
             // 타이머 종료 후
             is VoiceCallIntent.timerIsOver -> {
-                _state.update {
-                    it.copy(isLoading = true)
-                }
+                val totalLength = chatMessages.sumOf { it.message.length }
 
-                sendEndCall()
+                if (totalLength < 100) {
+                    _state.update {
+                        it.copy(
+                            isCallEnded = true,
+                            isReportCreated = false,
+                            reportFailed = true,
+                            reportFailReason = "length_short",
+                            isLoading = false
+                        )
+                    }
+
+                    sendEndCall()
+                } else {
+                    _state.update {
+                        it.copy(isLoading = true)
+                    }
+
+                    sendEndCall()
+                }
 
             }
         }
@@ -754,7 +785,6 @@ class VoiceCallViewModel : ViewModel() {
         val memberId = SharedPreferenceUtils.getMemberId()
         //sendStartCall(memberId = memberId, topic = currentTopic)
     }
-
 
 
     // ===================================================================

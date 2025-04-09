@@ -12,7 +12,6 @@ import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.main.components.DailySentenceManager
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
-
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d("FCM", "새 토큰: $token")
@@ -43,6 +42,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     "FCM data",
                     "data 확인용 - type: $type, original: $original_daily_sentance, translated: $translated_daily_sentance"
                 )
+
+                DailySentenceManager.getOriginal()
 
                 // 실시간 UI 반영을 위한 브로드캐스트
                 val intent = Intent("DAILY_SENTENCE_UPDATED")
