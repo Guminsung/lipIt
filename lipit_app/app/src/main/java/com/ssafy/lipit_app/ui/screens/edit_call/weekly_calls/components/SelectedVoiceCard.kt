@@ -68,12 +68,12 @@ fun SelectedVoiceCard(
                         .size(52.dp)
                         .clip(CircleShape),
                     contentScale = ContentScale.Crop,
-                    placeholder = painterResource(id = R.drawable.profile_test_img),
-                    error = painterResource(id = R.drawable.profile_test_img)
+                    placeholder = painterResource(id = R.drawable.img_add_image),
+                    error = painterResource(id = R.drawable.img_add_image)
                 )
             } else {
                 Image(
-                    painter = painterResource(id = R.drawable.profile_test_img),
+                    painter = painterResource(id = R.drawable.img_add_image),
                     contentDescription = "기본 프로필",
                     modifier = Modifier
                         .size(52.dp)

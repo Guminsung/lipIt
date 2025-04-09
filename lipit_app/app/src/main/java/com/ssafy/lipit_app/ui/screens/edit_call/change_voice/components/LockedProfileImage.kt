@@ -50,7 +50,7 @@ fun LockedProfileImage(
                 contentDescription = "프로필 이미지",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
-                error = painterResource(id = R.drawable.profile_test_img)
+                error = painterResource(id = R.drawable.img_add_image)
             )
 
             // 잠금 상태일 때 반투명 오버레이 추가
