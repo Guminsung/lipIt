@@ -38,6 +38,7 @@ fun TestLottieLoadingScreen(text: String = "로딩 중...") {
 
         Box(
             modifier = Modifier
+                .fillMaxSize()
                 .clip(RoundedCornerShape(20.dp))
                 .background(Color.Black.copy(alpha = 0.6f), shape = RoundedCornerShape(20.dp)),
             contentAlignment = Alignment.Center
