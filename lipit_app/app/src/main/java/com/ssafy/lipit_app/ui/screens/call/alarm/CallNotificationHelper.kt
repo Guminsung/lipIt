@@ -1,3 +1,7 @@
+/**
+ * CallNotificationHelper.kt
+ * 통화 알림을 관리하는 유틸리티 클래스
+ */
 package com.ssafy.lipit_app.ui.screens.call.alarm
 
 import android.Manifest
@@ -22,26 +26,31 @@ import androidx.core.graphics.drawable.IconCompat
 import com.ssafy.lipit_app.MainActivity
 import com.ssafy.lipit_app.R
 
+/**
+ * 통화 알림 관련 기능을 제공하는 싱글톤 객체
+ */
 object CallNotificationHelper {
+    // 상수 정의
+    private const val TAG = "CallNotification"
     private const val CALL_CHANNEL_ID = "call_channel"
     const val CALL_NOTIFICATION_ID = 1001
     private const val MISSED_CALL_NOTIFICATION_ID = 1002
 
-    // 진동 패턴 정의: 0ms 대기, 500ms 진동, 500ms 대기, 500ms 진동 (반복)
+    // 진동 패턴: 0ms 대기, 500ms 진동, 500ms 대기, 500ms 진동 (반복)
     private val VIBRATION_PATTERN = longArrayOf(0, 500, 500, 500)
+
+    // 상태 관리 변수
     private var vibrator: Vibrator? = null
     private var applicationContext: Context? = null
     private var isVibrating = false
 
     /**
-     * 전화 알림 채널 생성
+     * 통화 알림 채널 생성 - 앱 시작 시 한 번만 호출
      */
     fun createCallNotificationChannel(context: Context) {
-
         if (applicationContext == null) {
             applicationContext = context.applicationContext
         }
-
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -58,6 +67,7 @@ object CallNotificationHelper {
             val notificationManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
+            Log.d(TAG, "통화 알림 채널 생성됨")
         }
     }
 
@@ -66,57 +76,45 @@ object CallNotificationHelper {
      */
     @SuppressLint("ServiceCast")
     fun startVibration(context: Context) {
-
         if (isVibrating) {
-            Log.d("Vibration", "이미 진동 중입니다")
+            Log.d(TAG, "이미 진동 중입니다")
             return
         }
+
         try {
-            // Vibrator 가져오기 (기존 객체 재사용 또는 새로 생성)
             vibrator = vibrator ?: getVibrator(context)
 
-            Log.d("Vibration", "진동 시작: ${vibrator.hashCode()}")
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val vibrationEffect = VibrationEffect.createWaveform(VIBRATION_PATTERN, 0) // 인덱스 0부터 반복
+                val vibrationEffect = VibrationEffect.createWaveform(VIBRATION_PATTERN, 0)
                 vibrator?.vibrate(vibrationEffect)
             } else {
                 @Suppress("DEPRECATION")
-                vibrator?.vibrate(VIBRATION_PATTERN, 0) // 인덱스 0부터 반복
+                vibrator?.vibrate(VIBRATION_PATTERN, 0)
             }
 
             isVibrating = true
+            Log.d(TAG, "진동 시작")
         } catch (e: Exception) {
-            Log.e("Vibration", "진동 시작 중 오류: ${e.message}")
+            Log.e(TAG, "진동 시작 중 오류: ${e.message}")
         }
     }
 
     /**
      * 진동 중지
      */
-    @SuppressLint("ServiceCast")
     fun stopVibration(context: Context) {
         if (!isVibrating) {
-            Log.d("Vibration", "진동 중이 아닙니다")
             return
         }
+
         try {
-
             val vibratorToUse = vibrator ?: getVibrator(context)
-
-            Log.d("Vibration", "진동 중지: ${vibratorToUse?.hashCode()}")
-
             vibratorToUse?.cancel()
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val stopEffect = VibrationEffect.createOneShot(1, 0) // 1ms, 강도 0 (실질적으로 중지)
-                vibratorToUse?.vibrate(stopEffect)
-            }
-
             isVibrating = false
-
+            Log.d(TAG, "진동 중지")
         } catch (e: Exception) {
-            Log.e("Vibration", "진동 중지 중 오류: ${e.message}")
+            Log.e(TAG, "진동 중지 중 오류: ${e.message}")
         }
     }
 
@@ -125,7 +123,6 @@ object CallNotificationHelper {
      */
     private fun getVibrator(context: Context): Vibrator? {
         try {
-            // 저장된 애플리케이션 컨텍스트 사용
             val ctx = applicationContext ?: context.applicationContext
             applicationContext = ctx
 
@@ -137,13 +134,13 @@ object CallNotificationHelper {
                 ctx.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
             }
         } catch (e: Exception) {
-            Log.e("Vibration", "Vibrator 서비스 가져오기 실패: ${e.message}")
+            Log.e(TAG, "Vibrator 서비스 가져오기 실패: ${e.message}")
             return null
         }
     }
 
     /**
-     * CallStyle 알림 표시
+     * 수신 통화 알림 표시
      */
     fun showCallNotification(
         context: Context,
@@ -151,7 +148,7 @@ object CallNotificationHelper {
         callerPhotoUri: Uri? = null,
         declineIntent: PendingIntent? = null
     ) {
-        // 수락
+        // 수락 인텐트
         val acceptIntent = PendingIntent.getBroadcast(
             context,
             0,
@@ -161,7 +158,7 @@ object CallNotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // 거절
+        // 거절 인텐트 (외부에서 제공되지 않은 경우 기본값 사용)
         val finalDeclineIntent = declineIntent ?: PendingIntent.getBroadcast(
             context,
             1,
@@ -171,7 +168,7 @@ object CallNotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // 알림을 탭했을 때 열릴 액티비티
+        // 알림 탭 시 실행될 인텐트
         val contentIntent = PendingIntent.getActivity(
             context,
             2,
@@ -189,18 +186,14 @@ object CallNotificationHelper {
                 if (callerPhotoUri != null) {
                     setIcon(IconCompat.createWithContentUri(callerPhotoUri))
                 } else {
-                    setIcon(
-                        IconCompat.createWithResource(
-                            context,
-                            R.drawable.img_add_image
-                        )
-                    )
+                    setIcon(IconCompat.createWithResource(context, R.drawable.img_add_image))
                 }
             }
             .build()
 
-        // 알림 생성
+        // 알림 빌더 생성 (Android 버전에 따라 다른 스타일 적용)
         val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Android 12 이상: CallStyle 지원
             NotificationCompat.Builder(context, CALL_CHANNEL_ID)
                 .setSmallIcon(R.drawable.notification_icon)
                 .setContentTitle("Lip It")
@@ -217,7 +210,7 @@ object CallNotificationHelper {
                 )
                 .setAutoCancel(true)
         } else {
-            // Android 11 이하에서는 일반 알림 사용
+            // Android 11 이하: 일반 알림 + 액션 버튼
             NotificationCompat.Builder(context, CALL_CHANNEL_ID)
                 .setSmallIcon(R.drawable.notification_icon)
                 .setContentTitle("Lip It")
@@ -225,46 +218,48 @@ object CallNotificationHelper {
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_CALL)
                 .setFullScreenIntent(contentIntent, true)
-                .addAction(
-                    R.drawable.incoming_call_decline,
-                    "거절",
-                    finalDeclineIntent
-                )
-                .addAction(
-                    R.drawable.incoming_call_accept,
-                    "수락",
-                    acceptIntent
-                )
+                .addAction(R.drawable.incoming_call_decline, "거절", finalDeclineIntent)
+                .addAction(R.drawable.incoming_call_accept, "수락", acceptIntent)
                 .setAutoCancel(true)
         }
 
+        // 진동 시작
         startVibration(context)
 
-        // 알림 표시
+        // 알림 표시 (권한 확인)
         val notificationManager = NotificationManagerCompat.from(context)
-        if (ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
-        ) {
+        if (hasNotificationPermission(context)) {
             notificationManager.notify(CALL_NOTIFICATION_ID, builder.build())
+            Log.d(TAG, "통화 알림 표시됨: $callerName")
+        } else {
+            Log.w(TAG, "알림 권한 없음")
         }
     }
 
     /**
-     * 전화 알림 취소
+     * 알림 권한 확인
+     */
+    private fun hasNotificationPermission(context: Context): Boolean {
+        return ActivityCompat.checkSelfPermission(
+            context,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+    }
+
+    /**
+     * 통화 알림 취소
      */
     fun cancelCallNotification(context: Context) {
-
         val ctx = applicationContext ?: context.applicationContext
         stopVibration(ctx)
 
         val notificationManager = NotificationManagerCompat.from(ctx)
         notificationManager.cancel(CALL_NOTIFICATION_ID)
+        Log.d(TAG, "통화 알림 취소됨")
     }
 
     /**
-     * 알림이 아직 활성 상태인지 확인
+     * 알림이 활성 상태인지 확인
      */
     fun isNotificationActive(context: Context, notificationId: Int): Boolean {
         val notificationManager = NotificationManagerCompat.from(context)
@@ -276,7 +271,7 @@ object CallNotificationHelper {
      * 부재중 전화 알림 표시
      */
     fun showMissedCallNotification(context: Context, callerName: String, retryCount: Int) {
-        // 알림을 탭했을 때 열릴 액티비티
+        // 알림 탭 시 실행될 인텐트
         val contentIntent = PendingIntent.getActivity(
             context,
             2,
@@ -287,28 +282,27 @@ object CallNotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val retryString =
-            if (retryCount == 0) "${callerName}님으로부터 부재중 전화" else "${callerName}님으로부터 부재중 전화(${retryCount + 1})"
+        // 부재중 전화 횟수에 따른 텍스트
+        val missedCallText = if (retryCount == 0)
+            "${callerName}님으로부터 부재중 전화"
+        else
+            "${callerName}님으로부터 부재중 전화(${retryCount + 1})"
 
         // 알림 생성
         val builder = NotificationCompat.Builder(context, CALL_CHANNEL_ID)
             .setSmallIcon(R.drawable.notification_icon)
             .setContentTitle("부재중 전화")
-            .setContentText(retryString)
+            .setContentText(missedCallText)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_CALL)
             .setContentIntent(contentIntent)
             .setAutoCancel(true)
 
-        // 알림 표시
+        // 알림 표시 (권한 확인)
         val notificationManager = NotificationManagerCompat.from(context)
-        if (ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
-        ) {
+        if (hasNotificationPermission(context)) {
             notificationManager.notify(MISSED_CALL_NOTIFICATION_ID, builder.build())
+            Log.d(TAG, "부재중 전화 알림 표시됨: $callerName (재시도: $retryCount)")
         }
     }
-
 }

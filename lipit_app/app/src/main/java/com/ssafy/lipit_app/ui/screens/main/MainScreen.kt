@@ -50,6 +50,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.auth.components.MypagePopup
+import com.ssafy.lipit_app.ui.screens.call.alarm.AlarmScheduler
+import com.ssafy.lipit_app.ui.screens.call.alarm.CallActionReceiver
+import com.ssafy.lipit_app.ui.screens.call.alarm.DailyCallTracker
 import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceState
 import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallScreen
@@ -61,6 +64,7 @@ import com.ssafy.lipit_app.ui.screens.main.components.ReportAndVoiceBtn
 import com.ssafy.lipit_app.ui.screens.main.components.TodaysSentence
 import com.ssafy.lipit_app.ui.screens.main.components.WeeklyCallsSection
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
+import java.time.LocalDate
 
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -304,13 +308,24 @@ fun MainScreen(
 // 전화 걸기 버튼
 @Composable
 fun CallButton(onIntent: (MainIntent) -> Unit) {
+
+    val context = LocalContext.current
     Image(
         painterResource(id = R.drawable.main_call_icon),
         contentDescription = "전화 걸기",
         modifier = Modifier
             .size(70.dp)
             .clip(CircleShape)
-            .clickable { // 화면 이동
+            .clickable {
+                // 오늘 통화 완료로 표시
+                DailyCallTracker.markTodayCallCompleted(context)
+
+                // 모든 예약된 알람 취소 (당일것만)
+                val alarmScheduler = AlarmScheduler(context)
+                val baseAlarmId = LocalDate.now().dayOfYear // 오늘 날짜 기반 알람 ID
+                alarmScheduler.cancelAllTodayAlarms(baseAlarmId, CallActionReceiver.MAX_RETRY_COUNT)
+
+                // 화면 이동
                 onIntent(MainIntent.NavigateToCallScreen)
             }
     )
