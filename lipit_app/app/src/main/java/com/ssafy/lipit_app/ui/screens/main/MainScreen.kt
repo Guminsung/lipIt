@@ -55,13 +55,12 @@ import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceState
 import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallScreen
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsIntent
 import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsScreen
+import com.ssafy.lipit_app.ui.screens.main.components.DailySentenceManager
 import com.ssafy.lipit_app.ui.screens.main.components.NextLevel
 import com.ssafy.lipit_app.ui.screens.main.components.ReportAndVoiceBtn
 import com.ssafy.lipit_app.ui.screens.main.components.TodaysSentence
 import com.ssafy.lipit_app.ui.screens.main.components.WeeklyCallsSection
 import com.ssafy.lipit_app.util.SharedPreferenceUtils
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -102,6 +101,8 @@ fun MainScreen(
         val memberId = SharedPreferenceUtils.getMemberId()
         viewModel.fetchUserLevel(memberId)
         viewModel.fetchWeeklySchedule(memberId)
+
+        DailySentenceManager.init(context)
     }
 
 
