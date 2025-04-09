@@ -129,7 +129,7 @@ fun MyVoiceScreen(
                         )
                     } else {
                         Image(
-                            painter = painterResource(id = R.drawable.ic_launcher_foreground), // 프로필 이미지
+                            painter = painterResource(id = R.drawable.img_add_image), // 프로필 이미지
                             contentDescription = "Profile Image",
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
