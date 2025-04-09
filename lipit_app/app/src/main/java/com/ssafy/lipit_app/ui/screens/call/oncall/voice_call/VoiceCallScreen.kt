@@ -31,6 +31,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -440,3 +441,68 @@ private fun cancelAllTodayAlarms(context: Context) {
     Log.d("VoiceCallScreen", "오늘 예정된 모든 알람 취소 완료")
 }
 
+@Preview(showBackground = true)
+@Composable
+fun VoiceCallScreenPreview() {
+    // 미리보기용 더미 ViewModel 생성
+    val previewViewModel = VoiceCallViewModel()
+    val previewTextViewModel = TextCallViewModel()
+    val previewNavController = rememberNavController()
+
+    // 더미 상태 설정
+    previewViewModel._state.value = VoiceCallState(
+        currentMode = "Voice",
+        voiceName = "Sarah",
+        leftTime = "04:30",
+        showSubtitle = true,
+        showTranslation = true,
+        isCallEnded = false,
+        isReportCreated = false
+    )
+
+    // 더미 메시지 추가
+    previewViewModel.addAiMessage("I'm doing well, thank you! How about you?", "잘 지내고 있어요, 감사합니다! 당신은 어떠세요?")
+
+    // 미리보기 렌더링
+    VoiceCallScreen(
+        onIntent = {},
+        viewModel = previewViewModel,
+        navController = previewNavController,
+        textCallViewModel = previewTextViewModel
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CallScreenPreview() {
+    // 미리보기용 더미 ViewModel 생성
+    val previewViewModel = VoiceCallViewModel()
+    val previewNavController = rememberNavController()
+
+    // 더미 상태 설정 (Voice 모드)
+    previewViewModel._state.value = VoiceCallState(
+        currentMode = "Voice",
+        voiceName = "Sarah",
+        leftTime = "04:30",
+        showSubtitle = true,
+        showTranslation = true,
+        isCallEnded = false,
+        isReportCreated = false
+    )
+
+    // 더미 메시지 추가
+    previewViewModel.addAiMessage("I'm doing well, thank you! How about you?", "잘 지내고 있어요, 감사합니다! 당신은 어떠세요?")
+
+    // 미리보기 렌더링
+    CallScreen(
+        voiceViewModel = previewViewModel,
+        navController = previewNavController
+    )
+}
+
+// NavController를 미리보기에서 사용하기 위한 도우미 함수
+@Composable
+fun rememberNavController(): NavController {
+    val context = LocalContext.current
+    return remember { NavController(context) }
+}

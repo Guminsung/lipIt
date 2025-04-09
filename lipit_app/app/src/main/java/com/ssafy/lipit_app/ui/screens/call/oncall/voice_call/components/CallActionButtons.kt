@@ -8,6 +8,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,13 +35,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.call.oncall.text_call.TextCallViewModel
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.CallScreen
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallIntent
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallState
 import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.VoiceCallViewModel
+import com.ssafy.lipit_app.ui.screens.call.oncall.voice_call.rememberNavController
 
 // 하단 버튼 모음
 @Composable
@@ -108,9 +112,13 @@ fun CallActionButtons(
                             modifier = Modifier
                                 .width(30.dp)
                                 .height(30.dp)
-
                                 //클릭하면 자막 켜기
-                                .clickable {
+                                .clickable(
+                                    indication = null,
+                                    interactionSource = remember {
+                                        MutableInteractionSource()
+                                    }
+                                ) {
                                     if (!state.showSubtitle) {
                                         onIntent(VoiceCallIntent.SubtitleOn(true))
                                     } else {
@@ -136,6 +144,10 @@ fun CallActionButtons(
                                 //클릭하면 번역 켜기
                                 .clickable(
                                     enabled = state.showSubtitle, // 번역 꺼져있으면 클릭 비활성화
+                                    indication = null,
+                                    interactionSource = remember {
+                                        MutableInteractionSource()
+                                    },
                                     onClick = {
                                         if (!state.showTranslation) {
                                             onIntent(VoiceCallIntent.TranslationOn(true))
@@ -286,6 +298,187 @@ fun CallActionButtons(
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text("녹음 중...", color = Color.Red)
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CallActionButtonsPreview() {
+    // 미리보기용 더미 상태 및 ViewModel 생성
+    val previewState = VoiceCallState(
+        currentMode = "Voice",
+        voiceName = "Sarah",
+        leftTime = "04:30",
+        showSubtitle = true,
+        showTranslation = true,
+        isCallEnded = false,
+        isReportCreated = false
+    )
+
+    val previewViewModel = VoiceCallViewModel()
+    val previewTextViewModel = TextCallViewModel()
+    val previewNavController = rememberNavController()
+    val textState = remember { mutableStateOf("") }
+
+    // 배경 설정을 위한 Box 추가
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .background(Color(0xFF4A4A4A)) // 어두운 배경으로 버튼 가시성 향상
+    ) {
+        // 미리보기 렌더링
+        CallActionButtons(
+            state = previewState,
+            onIntent = {},
+            viewModel = previewViewModel,
+            navController = previewNavController,
+            textState = textState,
+            textCallViewModel = previewTextViewModel
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CallActionButtonsExpandedPreview() {
+    // 미리보기용 더미 상태 및 ViewModel 생성
+    val previewState = VoiceCallState(
+        currentMode = "Voice",
+        voiceName = "Sarah",
+        leftTime = "04:30",
+        showSubtitle = true,
+        showTranslation = false,
+        isCallEnded = false,
+        isReportCreated = false
+    )
+
+    val previewViewModel = VoiceCallViewModel()
+    val previewTextViewModel = TextCallViewModel()
+    val textState = remember { mutableStateOf("") }
+
+    // 확장된 메뉴를 표시하기 위한 커스텀 구현
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(250.dp)
+            .background(Color(0xFF4A4A4A)) // 어두운 배경으로 버튼 가시성 향상
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(bottom = 60.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Bottom
+            ) {
+                Box(
+                    contentAlignment = Alignment.BottomCenter,
+                    modifier = Modifier
+                        .width(85.dp)
+                        .height(200.dp)
+                ) {
+                    // 확장된 메뉴 표시 (애니메이션 없이 바로 표시)
+                    Column(
+                        modifier = Modifier
+                            .height(200.dp)
+                            .fillMaxWidth()
+                            .padding(start = 5.dp, end = 5.dp)
+                            .background(
+                                color = Color(0x1AFDF8FF),
+                                shape = RoundedCornerShape(50.dp)
+                            ),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Spacer(modifier = Modifier.height(30.dp))
+
+                        // 자막 버튼 (켜짐)
+                        Icon(
+                            painterResource(id = R.drawable.oncall_on_subtitle_icon),
+                            contentDescription = "자막 켜기",
+                            modifier = Modifier
+                                .width(30.dp)
+                                .height(30.dp),
+                            tint = Color(0xFFFDF8FF)
+                        )
+
+                        Spacer(modifier = Modifier.height(25.dp))
+
+                        // 번역 버튼 (꺼짐)
+                        Icon(
+                            painterResource(id = R.drawable.oncall_off_translate_icon),
+                            contentDescription = "번역 켜기",
+                            modifier = Modifier
+                                .width(30.dp)
+                                .height(30.dp),
+                            tint = Color(0xFFFDF8FF)
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+                    }
+
+                    // 메뉴 버튼
+                    Box(
+                        modifier = Modifier
+                            .width(70.dp)
+                            .height(70.dp)
+                            .clip(CircleShape)
+                            .background(color = Color(0x1AFDF8FF)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painterResource(id = R.drawable.oncall_menu_icon),
+                            contentDescription = "메뉴",
+                            Modifier
+                                .width(39.dp)
+                                .height(62.dp),
+                            tint = Color(0xFFFDF8FF)
+                        )
+                    }
+                }
+            }
+
+            // 통화 끊기 버튼
+            Box(
+                modifier = Modifier
+                    .width(80.dp)
+                    .height(80.dp)
+                    .clip(CircleShape)
+                    .background(color = Color(0xFFFE3B31)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painterResource(id = R.drawable.oncall_hangup_icon),
+                    contentDescription = "전화 끊기 아이콘",
+                    Modifier
+                        .width(70.dp)
+                        .height(80.dp),
+                    tint = Color(0xFFFDF8FF)
+                )
+            }
+
+            // 음성 보내기 버튼
+            Box(
+                modifier = Modifier
+                    .width(70.dp)
+                    .height(70.dp)
+                    .clip(CircleShape)
+                    .background(color = Color(0x1AFDF8FF)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painterResource(id = R.drawable.call_mic_icon),
+                    contentDescription = "음성 보내기",
+                    Modifier
+                        .width(39.dp)
+                        .height(62.dp),
+                    tint = Color(0xFFFDF8FF)
+                )
+            }
         }
     }
 }
