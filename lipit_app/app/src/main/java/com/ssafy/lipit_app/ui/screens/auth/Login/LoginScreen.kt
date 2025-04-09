@@ -11,23 +11,30 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -45,6 +52,20 @@ fun LoginScreen(
     onSuccess: () -> Unit
 ) {
     val context = LocalContext.current
+    val scrollState = rememberScrollState()
+    val focusManager = LocalFocusManager.current
+
+    // 입력 필드 포커스 상태 추적
+    var isIdFocused by remember { mutableStateOf(false) }
+    var isPwFocused by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isIdFocused, isPwFocused) {
+        if (isIdFocused || isPwFocused) {
+            // 약간의 지연 후 스크롤 (키보드가 완전히 열린 후)
+            delay(300)
+            scrollState.animateScrollTo(scrollState.maxValue)
+        }
+    }
 
     LaunchedEffect(state.isLoginSuccess) {
         if (state.isLoginSuccess) {
@@ -77,7 +98,9 @@ fun LoginScreen(
 
         Column(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .imePadding()
+                .verticalScroll(scrollState),
             verticalArrangement = Arrangement.SpaceBetween, // 위–아래 간격 자동 분배
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
