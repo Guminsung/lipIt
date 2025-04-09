@@ -35,9 +35,7 @@ fun ReportBack(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-//            .aspectRatio(1f) // 가로:세로 = 1:1 비율 설정
             .height(with(density) { height.toDp() }) // ReportFront의 높이 적용
-
             .border(
                 BorderStroke(1.dp, color = Color.White),
                 shape = RoundedCornerShape(25.dp)
@@ -47,7 +45,6 @@ fun ReportBack(
                 painter = painterResource(id = R.drawable.report_background),
                 contentScale = ContentScale.FillBounds
             ),
-//            .padding(horizontal = 30.dp, vertical = 23.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
