@@ -44,7 +44,7 @@ async def start_call(
     # 자유 주제(topic = None)인 경우 뉴스/날씨 데이터로 topic 추출
     topic = request.topic
     if not topic:
-        news = await get_random_news(db, category="경제")  # 사회, 생활, 날씨, 경제, IT
+        news = await get_random_news(db, category="날씨")  # 사회, 생활, 날씨, 경제, IT
         if news:
             # 뉴스 제목과 내용을 함께 제공해서 AI가 대화하기 좋은 주제를 선택할 수 있게 함
             topic = f"뉴스 제목: {news.title}\n\n뉴스 내용: {news.content}"
