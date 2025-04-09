@@ -42,10 +42,16 @@ public class VoiceService {
 	private final VoiceMapper voiceMapper;
 
 	@Cacheable(value = "celebVoices", key = "'all'")
+	public List<Voice> getCelebVoices() {
+		List<Voice> voices = voiceRepository.findByType(VoiceType.CELEB);
+		System.out.println("Fetching from database: " + voices.size() + " voices"); // 캐시 동작 확인용
+		return voices;
+	}
+
 	public List<CelebVoiceResponseDto> getCelebVoicesByMemberId(Long memberId) {
 		validateMemberId(memberId);
 		Member member = findMemberById(memberId);
-		List<Voice> celebVoices = voiceRepository.findByType(VoiceType.CELEB);
+		List<Voice> celebVoices = getCelebVoices();
 		return mapToCelebVoiceResponseDtos(celebVoices, member.getLevel());
 	}
 
@@ -213,12 +219,12 @@ public class VoiceService {
 	}
 
 	private boolean determineVoiceActivation(String voiceName, int currentLevel) {
-		return switch (voiceName) {
-			case "Benedict" -> currentLevel >= 1;
-			case "Ariana" -> currentLevel >= 2;
-			case "Leonardo" -> currentLevel >= 3;
-			case "Taylor" -> currentLevel >= 4;
-			case "Jennie" -> currentLevel >= 5;
+		return switch (voiceName.toLowerCase()) {
+			case "benedict" -> currentLevel >= 1;
+			case "ariana" -> currentLevel >= 2;
+			case "leonardo" -> currentLevel >= 3;
+			case "taylor" -> currentLevel >= 4;
+			case "jennie" -> currentLevel >= 5;
 			default -> false;
 		};
 	}
