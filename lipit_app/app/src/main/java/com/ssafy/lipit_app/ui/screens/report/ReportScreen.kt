@@ -71,7 +71,7 @@ fun ReportScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .pullRefresh(pullRefreshState) // 여기에 추가
+            .pullRefresh(pullRefreshState)
     ) {
         Column(
             modifier = Modifier
