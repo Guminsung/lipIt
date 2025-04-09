@@ -20,8 +20,10 @@ async def search_relevant_call_memory(
     return [
         {
             "chunkId": match.id,
-            "content": match.metadata.get("content", ""),
             "score": match.score,
+            "content": match.metadata.get("content", ""),
+            "created_at": match.metadata.get("created_at", ""),
+            "summary_facts": match.metadata.get("summary_facts", ""),
         }
         for match in result.matches
         if match.score >= 0.5

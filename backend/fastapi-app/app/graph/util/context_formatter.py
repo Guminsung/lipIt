@@ -1,25 +1,8 @@
-# app/graph/util/convert_context.py
-from typing import List, Dict
+# app/graph/util/context_formatter.py
 
 
-def convert_context_to_memory_lines(contexts: List[Dict]) -> List[str]:
+def convert_context_to_memory_lines(contexts: list[dict]) -> list[str]:
     """
-    RAG로 검색된 context를 '기억하는 듯한 문장'으로 변환
-    각 context는 "human: ... ai: ..." 형식의 메시지임
+    RAG로 검색된 context를 그대로 memory로 사용 (이미 자연어 형태로 저장됨)
     """
-
-    memory_lines = []
-
-    for ctx in contexts:
-        content = ctx.get("content", "")
-        if not content:
-            continue
-
-        # 예시 변환: human: I love music. ai: Oh, what kind? -> You once said you love music.
-        if content.startswith("human:"):
-            first_line = content.split("ai:")[0].strip()
-            user_text = first_line.replace("human:", "").strip()
-            if user_text:
-                memory_lines.append(f'You once said: "{user_text}"')
-
-    return memory_lines
+    return [ctx["content"] for ctx in contexts if ctx.get("content")]

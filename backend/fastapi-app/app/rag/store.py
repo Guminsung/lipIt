@@ -2,6 +2,7 @@
 import asyncio
 from app.rag.embedding import get_embedding
 from app.rag.pinecone_client import get_index
+from app.util.datetime_utils import iso_now_kst
 
 
 async def store_meaningful_messages(call_id: int, member_id: int, messages: list[dict]):
@@ -22,6 +23,7 @@ async def store_meaningful_messages(call_id: int, member_id: int, messages: list
                             "content": content,
                             "tags": tags,
                             "summary_facts": summary_facts,
+                            "created_at": iso_now_kst(),  # UTC 시간 기준
                         },
                     }
                 ]

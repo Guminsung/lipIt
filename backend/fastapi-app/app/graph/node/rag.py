@@ -1,5 +1,6 @@
 # app/graph/node/rag.py
 from app.rag.search import search_relevant_call_memory
+from dateutil.parser import parse
 
 
 async def rag_node(state: dict) -> dict:
@@ -7,21 +8,25 @@ async def rag_node(state: dict) -> dict:
     user_input = state["input"]
 
     matches = await search_relevant_call_memory(
-        member_id=member_id, query=user_input, top_k=5
+        member_id=member_id, query=user_input, top_k=3
     )
 
-    # 유사도 필터링
+    # 유사도 필터링 + created_at 기준 정렬
     filtered = []
     for m in matches:
         if m["score"] >= 0.5:
             item = {
                 "content": m["content"],
                 "score": m["score"],
+                "created_at": m["created_at"],
             }
-            # summary_facts가 있다면 context로 활용할 수 있도록 추가
             if "summary_facts" in m:
                 item["summary_facts"] = m["summary_facts"]
             filtered.append(item)
+
+    # 최신 순 정렬
+    # 문자열을 datetime으로 바꿔 정렬
+    filtered = sorted(filtered, key=lambda x: parse(x["created_at"]), reverse=True)
 
     state["retrieved_context"] = filtered[:3]
     return state

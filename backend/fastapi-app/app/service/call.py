@@ -18,6 +18,7 @@ from app.exception.custom_exceptions import APIException
 from app.exception.error_code import Error
 from app.crud.call import get_call_by_id, save_call
 from app.crud.news import get_random_news
+from app.crud.member import get_member_by_id
 from app.model.call import Call
 from app.schema.call import (
     AIMessageResponse,
@@ -39,9 +40,14 @@ async def start_call(
     db: AsyncSession,
     request: StartCallRequest,
     member_id: int,
-    voice_name: str = "Benedict",
-    type: str = "CELEB",
+    voice_name: str,
+    type: str,
 ) -> StartCallResponse:
+    # member 정보 조회
+    member = await get_member_by_id(db, member_id)
+    if not member:
+        raise APIException(404, Error.MEMBER_NOT_FOUND)
+
     # 자유 주제(topic = None)인 경우 뉴스/날씨 데이터로 topic 추출
     topic = request.topic
     if not topic:
@@ -59,6 +65,7 @@ async def start_call(
         "messages": [],
         "voice_name": voice_name,
         "voice_type": type,
+        "member_interest": member.interest,
     }
 
     try:
@@ -90,14 +97,19 @@ async def add_message_to_call(
     call_id: int,
     request: UserMessageRequest,
     member_id: int,
-    voice_name: str = "Benedict",
-    type: str = "CELEB",
+    voice_name: str,
+    type: str,
 ) -> AIMessageResponse:
     call_record = await get_call_by_id(db, call_id)
     if not call_record:
         raise APIException(404, Error.CALL_NOT_FOUND)
     if call_record.end_time:
         raise APIException(400, Error.CALL_ALREADY_ENDED)
+
+    # member 정보 조회
+    member = await get_member_by_id(db, member_id)
+    if not member:
+        raise APIException(404, Error.MEMBER_NOT_FOUND)
 
     # 시간 초과 여부 확인
     duration = int((now_kst() - to_kst(call_record.start_time)).total_seconds())
@@ -111,6 +123,7 @@ async def add_message_to_call(
         "is_timeout": is_timeout,
         "voice_name": voice_name,
         "voice_type": type,
+        "member_interest": member.interest,
     }
 
     try:

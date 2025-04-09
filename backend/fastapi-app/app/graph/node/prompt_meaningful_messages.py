@@ -3,7 +3,6 @@
 
 async def prompt_meaningful_messages_node(state: dict) -> dict:
     history = state.get("messages", [])
-    print(f"📢 history = {history}")
 
     MEANINGLESS_HUMAN_UTTERANCES = {
         "bye",
@@ -19,7 +18,7 @@ async def prompt_meaningful_messages_node(state: dict) -> dict:
 
     # 대화에서 의미 있는 "human + ai" 쌍만 추출
     dialogue_pairs = []
-    current_human = None
+    current_ai = None
 
     def is_meaningful(text: str) -> bool:
         stripped = text.strip().lower()
@@ -36,46 +35,61 @@ async def prompt_meaningful_messages_node(state: dict) -> dict:
             role = "ai"
             content = msg.content
 
-        if role == "human":
+        if role == "ai":
+            current_ai = content.strip()
+        elif role == "human":
             if is_meaningful(content):
-                current_human = content.strip()
-            else:
-                current_human = None  # 무시
-        elif role == "ai" and current_human:
-            dialogue_pairs.append((current_human, content.strip()))
-            current_human = None
+                dialogue_pairs.append({"ai": current_ai, "human": content.strip()})
+            current_ai = None
 
     # 프롬프트
     base_suffix = """
 **Meaningful Messages with Tags and Summary Facts (meaningful_messages)**
 
-You will be given a list of meaningful exchanges between human and ai.
+You will be given a list of I → you exchanges from a phone conversation.
 
-- Only include exchanges where the human message is meaningful.
-- Extract up to 5 of the most interesting or engaging exchanges.
-- Each item must include:
-  - "content": a single line in the format "human: ... ai: ..."
-  - "tags": 3~5 specific, relevant English keywords
-  - "summary_facts": key facts explicitly stated by the user (e.g., name, location, numbers, interests)
-- Avoid vague tags like "English", "talk", "sentence"
-- Convert digits to words in English only (e.g., "3 books" → "three books") but keep digits in Korean (e.g., "2개")
-- Do not include fictional memory — only extract from the provided conversation
+Your task is to extract up to 5 meaningful responses along with the question that led to them.
 
-Return only valid JSON in the following structure:
+For each meaningful response:
+- Rephrase it into a full sentence that includes the original I-question if relevant.
+- Speak **directly to the user** (use "you").
+- Clearly describe what you (the user) said (e.g., your name, hobby, location, favorite song/lyric, etc.).
+- DO NOT include rhetorical or vague questions such as "Don't you know...?" or "You know what...?"
+
+Each item must include:
+- "content": A full sentence summarizing what you said, optionally including what I asked. Use natural language and second-person "you".
+- "tags": 3–5 specific and relevant English keywords
+- "summary_facts": concise facts you stated (e.g., "Your name is Sarah", "You enjoy painting", "Your favorite lyric is from Black or White")
+
+⚠️ DO NOT include vague replies like "okay", "thanks", "bye", or rhetorical questions like "Do you know my favorite song?"
+⚠️ Only include factual statements, not vague or generic ones.
+⚠️ Avoid generic tags like "sentence", "talk", or "English".
+✅ Convert numeric digits to words in English only, but keep digits in Korean.
+
+IMPORTANT:
+Use the extracted facts to help answer future questions accurately. For example, if the user later asks, "Do you remember my favorite song?", you should be able to recall it using this data.
+
+Return only valid JSON in the following format:
 
 {
   "meaningful_messages": [
     {
-      "content": "human: ... ai: ...",
-      "tags": ["...", "..."],
-      "summary_facts": ["..."]
+      "content": "You mentioned your favorite lyric is 'It don't matter if you're black or white.' when I asked about your favorite lyric.",
+      "tags": ["favorite lyric", "Michael Jackson", "music"],
+      "summary_facts": ["Your favorite lyric is from the song 'Black or White'"]
     }
   ]
 }
 """
 
-    examples = "\n\n".join([f"human: {h}\nai: {a}" for h, a in dialogue_pairs])
-    system_prompt = f"{base_suffix}\n\nConversation:\n{examples}"
+    examples = "\n\n".join(
+        [
+            f"ai: {pair['ai']}\nhuman: {pair['human']}"
+            for pair in dialogue_pairs
+            if pair["ai"] and pair["human"]
+        ]
+    )
 
+    system_prompt = f"{base_suffix}\n\nConversation:\n{examples}"
     state["chat_prompt"] = [{"role": "system", "content": system_prompt}]
     return state
