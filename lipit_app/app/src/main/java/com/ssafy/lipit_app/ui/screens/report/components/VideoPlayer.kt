@@ -2,6 +2,7 @@ package com.ssafy.lipit_app.ui.screens.report.components
 
 import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -41,7 +43,7 @@ fun VideoPlayer(
     var isError by remember { mutableStateOf(false) }
 
     // ExoPlayer 인스턴스 생성
-    val exoPlayer =  remember {
+    val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
             val mediaItem = videoUrl?.let { MediaItem.fromUri(it) }
             if (mediaItem != null) {
@@ -79,7 +81,11 @@ fun VideoPlayer(
         }
     }
 
-    Box(modifier = modifier) {
+    Box(
+        modifier = modifier
+//            .background(Color.Black) // 검은색 배경 추가
+            .clip(RoundedCornerShape(25.dp))
+    ) {
         if (isError) {
             // 오류 발생 시 대체 UI 표시
             Column(
@@ -105,6 +111,9 @@ fun VideoPlayer(
                         player = exoPlayer
                         useController = false
                         resizeMode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
+
+                        setBackgroundColor(android.graphics.Color.BLACK)
+                        setShutterBackgroundColor(android.graphics.Color.BLACK)
                     }
                 },
                 modifier = Modifier
