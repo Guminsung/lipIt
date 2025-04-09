@@ -34,32 +34,38 @@ fun TestLottieLoadingScreen(text: String = "로딩 중...") {
         LottieCompositionSpec.RawRes(R.raw.loader)
     )
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.6f)),
-        contentAlignment = Alignment.Center
-    ) {
+    Dialog(onDismissRequest = {}) {
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color.Black.copy(alpha = 0.6f), shape = RoundedCornerShape(20.dp)),
+            contentAlignment = Alignment.Center
         ) {
-            LottieAnimation(
-                composition = composition,
-                iterations = LottieConstants.IterateForever,
-                modifier = Modifier.size(120.dp)
-            )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Column(
+                modifier = Modifier
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                LottieAnimation(
+                    composition = composition,
+                    iterations = LottieConstants.IterateForever,
+                    modifier = Modifier.size(120.dp)
+                )
 
-            Text(
-                text = text,
-                color = Color(0xFFFAFAFA),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-            )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = text,
+                    color = Color(0xFFFAFAFA),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
         }
     }
+
 }
 
 
