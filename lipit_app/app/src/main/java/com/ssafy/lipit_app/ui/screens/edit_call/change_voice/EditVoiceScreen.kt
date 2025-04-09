@@ -346,14 +346,14 @@ fun VoiceItem(
                             .fillMaxSize()
                             .clip(CircleShape),
                         error = painterResource(
-                            id = R.drawable.profile_test_img
+                            id = R.drawable.img_add_image
                         )
                     )
                 } else {
                     // URL이 비어있을 경우 기본 이미지 표시
                     Image(
                         painter = painterResource(
-                            id = R.drawable.profile_test_img
+                            id = R.drawable.img_add_image
                         ),
                         contentDescription = "기본 프로필",
                         modifier = Modifier
