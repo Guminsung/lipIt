@@ -27,5 +27,6 @@ data class VoiceCallState(
     val isCallEnded: Boolean = false,
 
     val isReportCreated: Boolean = false,
-    val reportFailReason: String? = null
+    val reportFailReason: String? = null,
+
 )
