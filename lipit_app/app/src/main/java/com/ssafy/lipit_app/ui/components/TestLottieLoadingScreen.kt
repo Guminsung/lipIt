@@ -42,8 +42,6 @@ fun TestLottieLoadingScreen(text: String = "로딩 중...") {
     ) {
 
         Column(
-            modifier = Modifier
-                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             LottieAnimation(
@@ -74,8 +72,7 @@ fun PreviewTestLottieContentOnly() {
 
     Column(
         modifier = Modifier
-            .background(Color.White)
-            .padding(24.dp),
+            .background(Color.White),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 //        LottieAnimation(
