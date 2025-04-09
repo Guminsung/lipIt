@@ -344,7 +344,9 @@ fun VoiceCallScreen(
                             LottieAnimation(
                                 composition = composition,
                                 iterations = LottieConstants.IterateForever,
-                                modifier = Modifier.width(80.dp).height(80.dp)
+                                modifier = Modifier
+                                    .width(80.dp)
+                                    .height(80.dp)
                             )
                         }
                     }
