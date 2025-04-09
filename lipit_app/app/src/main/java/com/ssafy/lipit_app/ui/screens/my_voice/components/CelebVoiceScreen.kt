@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +53,7 @@ fun CelebVoiceScreen(
 
     // 카드가 뒤집혔는지 여부를 저장하는 상태
     var isFlipped by remember { mutableStateOf(false) }
+
     // 애니메이션 값: 0도에서 180도로 변화
     val rotation by animateFloatAsState(
         targetValue = if (isFlipped) 180f else 0f,
@@ -73,6 +75,11 @@ fun CelebVoiceScreen(
         stop = 1f,
         fraction = 1f - pageOffset.coerceIn(0f, 1f)
     )
+
+    // 페이지가 변경되면 카드를 앞면으로 리셋
+    LaunchedEffect(pagerState.currentPage) {
+        isFlipped = false
+    }
 
     val scale = lerp(0.80f, 1f, 1f - pageOffset)
 
