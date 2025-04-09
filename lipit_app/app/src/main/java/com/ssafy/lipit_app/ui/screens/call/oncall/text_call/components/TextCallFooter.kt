@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -55,7 +54,6 @@ fun TextCallFooter(
             onValueChange = { newText -> onIntent(TextCallIntent.UpdateInputText(newText)) },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(53.dp)
                 .focusable(true)
                 .weight(1f),
             shape = RoundedCornerShape(15.dp),
@@ -72,6 +70,8 @@ fun TextCallFooter(
 
                     )
             },
+            maxLines = Int.MAX_VALUE,
+
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Send // 키보드에 "전송" 표시
             ),

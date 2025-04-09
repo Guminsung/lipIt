@@ -14,7 +14,7 @@ object DailySentenceManager {
     private lateinit var sharedPreferences: SharedPreferences
 
     fun init(context: Context) {
-        sharedPreferences = context.getSharedPreferences("", Context.MODE_PRIVATE)
+        sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
     // 오늘의 문장 저장
