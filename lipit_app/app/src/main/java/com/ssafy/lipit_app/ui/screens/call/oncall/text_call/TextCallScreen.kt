@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -20,12 +21,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
@@ -138,6 +141,13 @@ fun TextCallScreen(
         listState.animateScrollToItem(state.messages.size)
     }
 
+    // 키보드가 열리면 마지막 메시지로 스크롤
+    LaunchedEffect(isKeyboardOpen) {
+        if (isKeyboardOpen && state.messages.isNotEmpty()) {
+            listState.animateScrollToItem(state.messages.size - 1)
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth(),
@@ -154,46 +164,63 @@ fun TextCallScreen(
                 .fillMaxSize()
         )
 
-        Column(
+        Box(
             modifier = Modifier
-                .padding(top = 55.dp, start = 20.dp, end = 20.dp, bottom = 40.dp)
                 .fillMaxSize()
-                .align(Alignment.TopStart)
+                .imePadding()
         ) {
-            // 모드 변경
-            ModeChangeButton(
-                currentMode = state.currentMode,
-                onToggle = {
-                    // 모드 전환: 텍스트 → 보이스로 바꾸는 시점이면 chatMessages 동기화
-                    voiceCallViewModel.syncFromTextMessages(viewModel.getMessages())
-                    onModeToggle()
-                }
-            )
-
-            // 헤더 (VoiceName, 남은 시간, 끊기 버튼)
-            TextCallHeader(
-                voiceName = voiceCallState.voiceName,
-                leftTime = voiceCallState.leftTime,
-                voiceCallViewModel = voiceCallViewModel
-            )
-
-
-            // 대화 내역(채팅 ver.)
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = 20.dp, end = 20.dp)
             ) {
-                TextVersionCall(state, onIntent, listState)
-            }
+                // 상단 여백
+                Spacer(modifier = Modifier.height(55.dp))
 
-            Spacer(modifier = Modifier.height(18.dp))
 
-            // 하단 영역 (텍스트 입력 공간, 번역 여부 및 텍스트 보내기 버튼)
-            TextCallFooter(state.inputText, state.showTranslation, onIntent = onIntent)
+                // 모드 변경
+                ModeChangeButton(
+                    currentMode = state.currentMode,
+                    onToggle = {
+                        // 모드 전환: 텍스트 → 보이스로 바꾸는 시점이면 chatMessages 동기화
+                        voiceCallViewModel.syncFromTextMessages(viewModel.getMessages())
+                        onModeToggle()
+                    }
+                )
 
-            if (isKeyboardOpen) {
-                Spacer(modifier = Modifier.height(30.dp)) // 키보드 열렸을 때만 여백 줌
-            } else {
-                Spacer(modifier = Modifier.height(5.dp))
+                // 헤더 (VoiceName, 남은 시간, 끊기 버튼)
+                TextCallHeader(
+                    voiceName = voiceCallState.voiceName,
+                    leftTime = voiceCallState.leftTime,
+                    voiceCallViewModel = voiceCallViewModel
+                )
+
+
+                // 대화 내역(채팅 ver.)
+                Box(
+                    modifier = Modifier.weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    TextVersionCall(state, onIntent, listState)
+                }
+
+                // 하단 영역 (텍스트 입력 공간, 번역 여부 및 텍스트 보내기 버튼)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                ) {
+
+                    Spacer(modifier = Modifier.height(18.dp))
+                    TextCallFooter(state.inputText, state.showTranslation, onIntent = onIntent)
+
+                    if (isKeyboardOpen) {
+                        Spacer(modifier = Modifier.height(30.dp)) // 키보드 열렸을 때만 여백 줌
+                    } else {
+                        Spacer(modifier = Modifier.height(5.dp))
+                    }
+                }
+
             }
         }
     }
@@ -218,3 +245,50 @@ fun isKeyboardOpen(): Boolean {
     return ime.getBottom(androidx.compose.ui.platform.LocalDensity.current) > 0
 }
 
+@Preview(showBackground = true)
+@Composable
+fun TextCallScreenPreview() {
+    // 미리보기용 더미 ViewModel 생성
+    val previewTextCallViewModel = TextCallViewModel()
+    val previewVoiceCallViewModel = VoiceCallViewModel()
+
+    // 더미 데이터 추가
+    previewTextCallViewModel.addMessage(
+        ChatMessageText(
+            text = "Hello, how are you?",
+            translatedText = "안녕하세요, 어떻게 지내세요?",
+            isFromUser = true
+        )
+    )
+
+    previewTextCallViewModel.addMessage(
+        ChatMessageText(
+            text = "I'm doing well, thank you! How about you?",
+            translatedText = "잘 지내고 있어요, 감사합니다! 당신은 어떠세요?",
+            isFromUser = false
+        )
+    )
+
+    // 더미 상태 설정
+    previewVoiceCallViewModel._state.value = previewVoiceCallViewModel._state.value.copy(
+        voiceName = "Sarah",
+        leftTime = "04:30",
+        currentMode = "Text"
+    )
+
+    // 미리보기 렌더링
+    TextCallScreen(
+        viewModel = previewTextCallViewModel,
+        onIntent = {},
+        navController = rememberNavController(),
+        onModeToggle = {},
+        voiceCallViewModel = previewVoiceCallViewModel
+    )
+}
+
+// 클래스 외부에 미리보기를 위한 보조 함수 추가
+@Composable
+fun rememberNavController(): NavController {
+    val context = LocalContext.current
+    return remember { NavController(context) }
+}
