@@ -6,10 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from app.graph.call_graph import (
     build_add_message_graph,
+    build_meaningful_messages_graph,
     build_start_call_graph,
-    build_end_call_graph,
 )
 from app.graph.node.memory import convert_to_lc_message, safe_convert_message_to_dict
+from app.rag.store import store_meaningful_messages
 from app.service.report import generate_report
 from app.util.datetime_utils import now_kst, to_kst, to_kst_isoformat
 from app.util.message_utils import append_messages_to_call
@@ -31,15 +32,15 @@ logger = logging.getLogger(__name__)
 
 start_call_graph = build_start_call_graph()
 add_message_graph = build_add_message_graph()
-end_call_graph = build_end_call_graph()
+get_build_meaningful_messages_graph = build_meaningful_messages_graph()
 
 
 async def start_call(
     db: AsyncSession,
     request: StartCallRequest,
     member_id: int,
-    voice_name: str,
-    type: int,
+    voice_name: str = "Benedict",
+    type: str = "CELEB",
 ) -> StartCallResponse:
     # 자유 주제(topic = None)인 경우 뉴스/날씨 데이터로 topic 추출
     topic = request.topic
@@ -89,8 +90,8 @@ async def add_message_to_call(
     call_id: int,
     request: UserMessageRequest,
     member_id: int,
-    voice_name: str,
-    type: int,
+    voice_name: str = "Benedict",
+    type: str = "CELEB",
 ) -> AIMessageResponse:
     call_record = await get_call_by_id(db, call_id)
     if not call_record:
@@ -153,7 +154,7 @@ async def add_message_to_call(
                 SET total_call_duration = COALESCE(total_call_duration, 0) + :duration
                 WHERE member_id = :member_id
             """
-            
+
             # reportCreated가 true인 경우에만 total_report_count 증가 포함
             if reportCreated:
                 update_sql = """
@@ -162,13 +163,13 @@ async def add_message_to_call(
                         total_call_duration = COALESCE(total_call_duration, 0) + :duration
                     WHERE member_id = :member_id
                 """
-            
+
             await db.execute(
                 text(update_sql),
                 {"member_id": call_record.member_id, "duration": duration},
             )
             await db.commit()
-            
+
             # 로그 메시지 조건부 변경
             if reportCreated:
                 logger.info(
@@ -182,6 +183,37 @@ async def add_message_to_call(
             logger.error(f"멤버 통계 업데이트 실패: {str(e)}")
             # 이 오류로 인해 전체 흐름이 중단되지 않도록 pass
             pass
+
+        # 의미 있는 메시지 + 태그 벡터 DB 저장
+        try:
+            # LangGraph 그래프 실행을 비동기 태스크로 실행
+            task = asyncio.create_task(
+                get_build_meaningful_messages_graph.ainvoke(state)
+            )
+
+            # 나중에 await하지 않고 백그라운드 실행되도록 처리
+            async def handle_background():
+                try:
+                    result_meaningful_messages = await task
+                    meaningful_messages = result_meaningful_messages.get(
+                        "meaningful_messages", []
+                    )
+
+                    print(f"⭐ meaningful_messages = {meaningful_messages}")
+
+                    if meaningful_messages:
+                        await store_meaningful_messages(
+                            call_id=call_id,
+                            member_id=call_record.member_id,
+                            messages=meaningful_messages,
+                        )
+                except Exception as e:
+                    print("⚠️ Background error in meaningful message saving:", e)
+
+            asyncio.create_task(handle_background())
+
+        except Exception:
+            raise APIException(500, Error.CALL_INTERNAL_ERROR)
 
         if reportCreated:
             # 리포트 생성
@@ -246,7 +278,7 @@ async def end_call(db: AsyncSession, call_id: int) -> EndCallResponse:
             SET total_call_duration = COALESCE(total_call_duration, 0) + :duration
             WHERE member_id = :member_id
         """
-        
+
         # reportCreated가 true인 경우에만 total_report_count 증가 포함
         if reportCreated:
             update_sql = """
@@ -255,13 +287,13 @@ async def end_call(db: AsyncSession, call_id: int) -> EndCallResponse:
                     total_call_duration = COALESCE(total_call_duration, 0) + :duration
                 WHERE member_id = :member_id
             """
-        
+
         await db.execute(
             text(update_sql),
             {"member_id": call_record.member_id, "duration": duration},
         )
         await db.commit()
-        
+
         # 로그 메시지 조건부 변경
         if reportCreated:
             logger.info(
@@ -275,6 +307,41 @@ async def end_call(db: AsyncSession, call_id: int) -> EndCallResponse:
         logger.error(f"멤버 통계 업데이트 실패: {str(e)}")
         # 이 오류로 인해 전체 흐름이 중단되지 않도록 pass
         pass
+
+    # 의미 있는 메시지 + 태그 벡터 DB 저장
+    state = {
+        "call_id": call_record.call_id,
+        "member_id": call_record.member_id,
+        "messages": [convert_to_lc_message(Message(**m)) for m in call_record.messages],
+    }
+
+    try:
+        # LangGraph 그래프 실행을 비동기 태스크로 실행
+        task = asyncio.create_task(get_build_meaningful_messages_graph.ainvoke(state))
+
+        # 나중에 await하지 않고 백그라운드 실행되도록 처리
+        async def handle_background():
+            try:
+                result_meaningful_messages = await task
+                meaningful_messages = result_meaningful_messages.get(
+                    "meaningful_messages", []
+                )
+
+                print(f"⭐ meaningful_messages = {meaningful_messages}")
+
+                if meaningful_messages:
+                    await store_meaningful_messages(
+                        call_id=call_id,
+                        member_id=call_record.member_id,
+                        messages=meaningful_messages,
+                    )
+            except Exception as e:
+                print("⚠️ Background error in meaningful message saving:", e)
+
+        asyncio.create_task(handle_background())
+
+    except Exception:
+        raise APIException(500, Error.CALL_INTERNAL_ERROR)
 
     if reportCreated:
         # 리포트 생성

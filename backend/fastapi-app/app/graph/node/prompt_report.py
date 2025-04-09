@@ -4,16 +4,19 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def prompt_report_node(state: dict) -> dict:
     messages = state["messages"]
     # 사용자 이름 가져오기 (없으면 기본값 사용)
     member_name = state.get("member_name", "사용자")
-    
+
     # 음성 이름 가져오기 (없으면 기본값 사용)
     voice_name = state.get("voice_name", "English Tutor")
-    
+
     # 디버깅을 위해 로그에 정보 기록
-    logger.info(f"📝 리포트를 위한 사용자 이름: '{member_name}', 음성 이름: '{voice_name}'")
+    logger.info(
+        f"📝 리포트를 위한 사용자 이름: '{member_name}', 음성 이름: '{voice_name}'"
+    )
 
     # 전체 대화 텍스트 - AI를 음성 이름으로 표시
     conversation_text = "\n".join(
@@ -85,26 +88,6 @@ From the user's original sentences below, extract **up to 3**. For each:
 - "keyword": one **key native idiom or phrase** from your version.
 - "keyword_kor": basic **dictionary-style** Korean translation of the keyword (e.g., "wrap up" → "마무리하다").
 
-
-5. 🏷 **Meaningful Messages with Tags (meaningful_messages)**
-
-- Extract up to 5 meaningful exchanges from the full conversation.
-- These should include both user statements and {voice_name}'s responses.
-- Include interesting questions, reactions, and interactions between {member_name} and {voice_name}.
-- Convert any numbers to words in English only (e.g., "3 times" → "three times"), but keep numbers as digits in Korean (e.g., "2개").
-- Tags must be specific and meaningful (e.g., "Michael Jackson", "favorite artist").
-- Avoid generic words like "sentence", "talk", "English".
-- Format each item like this:
-
-{{
-  "content": "{member_name}: I love Michael Jackson. {voice_name}: Oh, he's a legend!",
-  "tags": ["favorite artist", "Michael Jackson", "music", "hobby"]
-}}
-
-- Tags should be short phrases or keywords in English.
-- Do not repeat similar messages.
-- Output as a list of dicts.
-
 ---
 
 
@@ -142,12 +125,6 @@ Return your answer in **strict JSON format**:
     }},
     ...
   ],
-  "meaningful_messages": [
-    {{
-      "content": "...",
-      "tags": ["...", "...", "...", "..."]
-    }}
-  ]
 }}
 """.strip()
 
@@ -157,7 +134,9 @@ Return your answer in **strict JSON format**:
     ]
 
     # 디버깅을 위해 실제 프롬프트 출력
-    print(f"🔍 프롬프트에 포함된 사용자 이름: '{member_name}', 음성 이름: '{voice_name}'")
-    
+    print(
+        f"🔍 프롬프트에 포함된 사용자 이름: '{member_name}', 음성 이름: '{voice_name}'"
+    )
+
     state["chat_prompt"] = prompt
     return state

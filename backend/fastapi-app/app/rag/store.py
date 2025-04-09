@@ -9,6 +9,7 @@ async def store_meaningful_messages(call_id: int, member_id: int, messages: list
     for i, item in enumerate(messages):
         content = item["content"]
         tags = item["tags"]
+        summary_facts = item["summary_facts"]
         embedding = await get_embedding(content)
         await asyncio.to_thread(
             lambda: index.upsert(
@@ -20,6 +21,7 @@ async def store_meaningful_messages(call_id: int, member_id: int, messages: list
                             "member_id": str(member_id),
                             "content": content,
                             "tags": tags,
+                            "summary_facts": summary_facts,
                         },
                     }
                 ]

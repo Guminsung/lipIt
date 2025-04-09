@@ -3,24 +3,27 @@ from app.rag.search import search_relevant_call_memory
 
 
 async def rag_node(state: dict) -> dict:
-    """
-    Pinecone에서 과거 메시지를 벡터 기반으로 검색
-    """
     member_id = state["member_id"]
     user_input = state["input"]
 
     matches = await search_relevant_call_memory(
-        member_id=member_id, query=user_input, top_k=3
+        member_id=member_id, query=user_input, top_k=5
     )
 
-    # 유사도 필터링 및 상위 3개 선택
-    filtered = [
-        {"content": m["content"], "score": m["score"]}
-        for m in matches
-        if m["score"] >= 0.5
-    ][:3]
+    # 유사도 필터링
+    filtered = []
+    for m in matches:
+        if m["score"] >= 0.5:
+            item = {
+                "content": m["content"],
+                "score": m["score"],
+            }
+            # summary_facts가 있다면 context로 활용할 수 있도록 추가
+            if "summary_facts" in m:
+                item["summary_facts"] = m["summary_facts"]
+            filtered.append(item)
 
-    state["retrieved_context"] = filtered
+    state["retrieved_context"] = filtered[:3]
     return state
 
     # member_id = state["member_id"]

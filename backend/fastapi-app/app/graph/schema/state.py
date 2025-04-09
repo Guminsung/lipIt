@@ -27,3 +27,4 @@ class CallState(TypedDict, total=False):
     native_expressions: List[dict]
     meaningful_messages: List[dict]
     voice_name: str
+    voice_type: str

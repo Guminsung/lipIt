@@ -3,11 +3,12 @@ from langgraph.graph import StateGraph
 from app.graph.node import (
     memory_node,
     prompt_start_call_node,
-    prompt_end_call_node,
-    rag_node,
+    prompt_meaningful_messages_node,
     prompt_ai_response_node,
-    llm_node,
     parse_ai_response_node,
+    parse_meaningful_messages_node,
+    llm_node,
+    rag_node,
     tts_node,
 )
 
@@ -52,20 +53,16 @@ def build_add_message_graph():
     return builder.compile()
 
 
-def build_end_call_graph():
+def build_meaningful_messages_graph():
     builder = StateGraph(CallState)
     builder.add_node("memory", memory_node)
-    builder.add_node("end_prompt", prompt_end_call_node)
+    builder.add_node("meaningful_messages_prompt", prompt_meaningful_messages_node)
     builder.add_node("llm", llm_node)
-    builder.add_node("parse", parse_ai_response_node)
-    builder.add_node("tts", tts_node)
-    builder.add_node("memory2", memory_node)
+    builder.add_node("parse", parse_meaningful_messages_node)
 
     builder.set_entry_point("memory")
-    builder.add_edge("memory", "end_prompt")
-    builder.add_edge("end_prompt", "llm")
+    builder.add_edge("memory", "meaningful_messages_prompt")
+    builder.add_edge("meaningful_messages_prompt", "llm")
     builder.add_edge("llm", "parse")
-    builder.add_edge("parse", "tts")
-    builder.add_edge("tts", "memory2")
-    builder.set_finish_point("memory2")
+    builder.set_finish_point("parse")
     return builder.compile()
