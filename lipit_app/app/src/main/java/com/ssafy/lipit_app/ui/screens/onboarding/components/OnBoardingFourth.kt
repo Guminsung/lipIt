@@ -22,15 +22,38 @@ import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.util.calculateFontSize
 
 @Composable
 fun OnBoardingFourth(currentStep: Int, progressStep: Int, onNext: () -> Unit) {
+    // 화면 높이와 너비 가져오기
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+    val screenWidth = configuration.screenWidthDp.dp
+
+    // 상대적인 크기 계산
+    val titleFontSize = calculateFontSize(screenHeight, 0.035f)
+    val subtitleFontSize = calculateFontSize(screenHeight, 0.016f)
+    val buttonFontSize = calculateFontSize(screenHeight, 0.024f)
+
+    // 상대적인 여백 계산
+    val topSpacerHeight = screenHeight * 0.03f
+    val progressBarTopPadding = screenHeight * 0.02f
+    val titleTopSpacerHeight = screenHeight * 0.07f
+    val subtitleTopSpacerHeight = screenHeight * 0.02f
+    val contentBottomSpacerHeight = screenHeight * 0.03f
+    val buttonHeight = screenHeight * 0.1f
+    val imageOffsetY = screenHeight * 0.125f  // 기존 140dp 대신 화면 높이의 비율로 조정
 
     Box(
         modifier = Modifier
@@ -48,52 +71,58 @@ fun OnBoardingFourth(currentStep: Int, progressStep: Int, onNext: () -> Unit) {
                 .windowInsetsPadding(WindowInsets.safeDrawing),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(topSpacerHeight))
 
             StepProgressBar(
                 currentStep = currentStep,
                 totalSteps = progressStep,
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(progressBarTopPadding)
             )
 
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(titleTopSpacerHeight))
 
             Text(
                 text = "내가 원하는 목소리로\n커스텀 보이스 생성",
                 color = Color.White,
-                fontSize = 30.sp,
+                fontSize = titleFontSize,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-                lineHeight = 40.sp
+                lineHeight = titleFontSize * 1.3f
             )
 
-            Spacer(modifier = Modifier.height(19.dp))
+            Spacer(modifier = Modifier.height(subtitleTopSpacerHeight))
+
             Text(
                 text = "연인, 가족, 친구 목소리로 AI 통화 가능",
                 color = Color.White.copy(0.8f),
-                fontSize = 14.sp,
+                fontSize = subtitleFontSize,
                 fontWeight = FontWeight.Light,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                lineHeight = subtitleFontSize * 2.0f
             )
 
-            Spacer(modifier = Modifier.height(50.dp))
+            // 나머지 공간을 채우는 유연한 스페이서
+            Spacer(modifier = Modifier.weight(1f))
         }
 
+        // 이미지는 상대적인 위치에 배치
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .offset(y = 140.dp)
+                .offset(y = imageOffsetY)
+                .fillMaxWidth(0.9f) // 이미지 너비를 화면의 90%로 제한
         ) {
-            // 여기에 이미지 추가
             Image(
-                painter = painterResource(id = R.drawable.ic_onboarding4), // 실제 이미지로 교체
-                contentDescription = "Onboarding First Image",
+                painter = painterResource(id = R.drawable.ic_onboarding4),
+                contentDescription = "Onboarding Fourth Image",
+                contentScale = ContentScale.FillWidth,
                 modifier = Modifier
+                    .fillMaxWidth()
                     .graphicsLayer(
-                        scaleX = 0.8f,
-                        scaleY = 0.8f
+                        scaleX = 0.9f,
+                        scaleY = 0.9f
                     )
-                    .padding(bottom = 20.dp)
+                    .padding(bottom = contentBottomSpacerHeight)
             )
         }
 
@@ -101,7 +130,7 @@ fun OnBoardingFourth(currentStep: Int, progressStep: Int, onNext: () -> Unit) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(80.dp)
+                .height(buttonHeight)
                 .align(Alignment.BottomCenter)
                 .background(Color(0xff603981))
                 .clickable(onClick = onNext),
@@ -110,11 +139,10 @@ fun OnBoardingFourth(currentStep: Int, progressStep: Int, onNext: () -> Unit) {
             Text(
                 text = "다음",
                 color = Color.White,
-                fontSize = 20.sp,
+                fontSize = buttonFontSize,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 25.dp)
+                modifier = Modifier.padding(top = buttonHeight * 0.3f)
             )
         }
     }
-
 }
