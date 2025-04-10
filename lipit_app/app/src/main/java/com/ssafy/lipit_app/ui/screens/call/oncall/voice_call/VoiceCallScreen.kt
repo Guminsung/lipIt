@@ -291,60 +291,67 @@ fun VoiceCallScreen(
         )
 
         // 상단 영역: 헤더 + 자막
-        Box(
+        Column(
             modifier = Modifier
-                .padding(top = 55.dp, start = 20.dp, end = 20.dp)
                 .fillMaxSize()
+                .padding(top = 55.dp, start = 20.dp, end = 20.dp)
         ) {
-            Column {
-                ModeChangeButton(
-                    currentMode = state.currentMode,
-                    onToggle = {
-                        viewModel.toggleMode()
-                    }
-                )
-
-
-                VoiceCallHeader(state.leftTime, viewModel, state.voiceName)
-                Spacer(modifier = Modifier.height(28.dp))
-
-                VoiceVersionCall(state, onIntent)
-            }
-
-            /// 하단 영역: 버튼
+            // 상단 콘텐츠 영역 (weight로 남은 공간 모두 차지)
             Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.BottomCenter
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
             ) {
+                // 여기에 LazyColumn을 배치하여 스크롤 가능하게 만듦
                 LazyColumn(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    modifier = Modifier.fillMaxSize()
                 ) {
+                    // 모드 변경 버튼
                     item {
-                        if (viewModel.isListening) {
-                            ListeningUi()
-                        }
+                        ModeChangeButton(
+                            currentMode = state.currentMode,
+                            onToggle = {
+                                viewModel.toggleMode()
+                            }
+                        )
                     }
 
+                    // 헤더
                     item {
-                        CallActionButtons(
-                            state = state,
-                            onIntent = onIntent,
-                            viewModel = viewModel,
-                            navController = navController,
-                            textState = textState,
-                            textCallViewModel = textCallViewModel
-                        )
+                        VoiceCallHeader(state.leftTime, viewModel, state.voiceName)
+                        Spacer(modifier = Modifier.height(28.dp))
+                    }
+
+                    // 자막 영역
+                    item {
+                        VoiceVersionCall(state, onIntent)
+                    }
+
+                    // 필요에 따라 여기에 더 많은 item 추가 가능
+                    // 스크롤에 의해 자동으로 처리됨
+                }
+
+                // 음성 인식 중 표시 (화면 하단 가운데 위치)
+                if (viewModel.isListening) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        ListeningUi()
                     }
                 }
 
+                // 오디오 로딩 애니메이션
                 if (isAudioLoading) {
                     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.voice_loading))
                     if (composition != null) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(bottom = 160.dp),
-                            contentAlignment = Alignment.BottomCenter
+                                .padding(bottom = 100.dp),
+                            contentAlignment = Alignment.Center
                         ) {
                             LottieAnimation(
                                 composition = composition,
@@ -358,6 +365,15 @@ fun VoiceCallScreen(
                 }
             }
 
+            // 하단 버튼 영역 (고정 높이)
+            CallActionButtons(
+                state = state,
+                onIntent = onIntent,
+                viewModel = viewModel,
+                navController = navController,
+                textState = textState,
+                textCallViewModel = textCallViewModel
+            )
         }
     }
 
@@ -465,7 +481,10 @@ fun VoiceCallScreenPreview() {
     )
 
     // 더미 메시지 추가
-    previewViewModel.addAiMessage("I'm doing well, thank you! How about you?", "잘 지내고 있어요, 감사합니다! 당신은 어떠세요?")
+    previewViewModel.addAiMessage(
+        "I'm doing well, thank you! How about you?",
+        "잘 지내고 있어요, 감사합니다! 당신은 어떠세요?"
+    )
 
     // 미리보기 렌더링
     VoiceCallScreen(
@@ -495,7 +514,10 @@ fun CallScreenPreview() {
     )
 
     // 더미 메시지 추가
-    previewViewModel.addAiMessage("I'm doing well, thank you! How about you?", "잘 지내고 있어요, 감사합니다! 당신은 어떠세요?")
+    previewViewModel.addAiMessage(
+        "I'm doing well, thank you! How about you?",
+        "잘 지내고 있어요, 감사합니다! 당신은 어떠세요?"
+    )
 
     // 미리보기 렌더링
     CallScreen(
