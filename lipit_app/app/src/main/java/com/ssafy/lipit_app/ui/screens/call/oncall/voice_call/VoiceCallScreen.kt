@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -315,22 +316,25 @@ fun VoiceCallScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.BottomCenter
             ) {
-                Column(
+                LazyColumn(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
-                    if (viewModel.isListening) {
-                        ListeningUi()
+                    item {
+                        if (viewModel.isListening) {
+                            ListeningUi()
+                        }
                     }
 
-                    CallActionButtons(
-                        state = state,
-                        onIntent = onIntent,
-                        viewModel = viewModel,
-                        navController = navController,
-                        textState = textState,
-                        textCallViewModel = textCallViewModel
-                    )
+                    item {
+                        CallActionButtons(
+                            state = state,
+                            onIntent = onIntent,
+                            viewModel = viewModel,
+                            navController = navController,
+                            textState = textState,
+                            textCallViewModel = textCallViewModel
+                        )
+                    }
                 }
 
                 if (isAudioLoading) {
