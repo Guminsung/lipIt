@@ -157,7 +157,7 @@ async def add_message_to_call(
         )
 
         # 조건에 따라 reportCreated 설정
-        reportCreated = total_human_content_length > 50
+        reportCreated = total_human_content_length > 10
 
         # member의 통화 시간 업데이트 - raw SQL 사용
         try:
@@ -281,7 +281,7 @@ async def end_call(db: AsyncSession, call_id: int) -> EndCallResponse:
     )
 
     # 조건에 따라 reportCreated 설정
-    reportCreated = total_human_content_length > 50
+    reportCreated = total_human_content_length > 10
 
     # member의 통화 시간 업데이트 - raw SQL 사용
     try:
