@@ -37,12 +37,12 @@ public enum ErrorCode {
 	UNAUTHORIZED_USER(HttpStatus.UNAUTHORIZED, "AUTH-001", "인증되지 않은 사용자입니다. 로그인 후 다시 시도하세요."),
 	INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-002", "유효하지 않은 Access Token입니다."),
 	ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH-003", "만료된 Access Token입니다."),
-	ACCESS_TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "AUTH-004", "Access Token이 누락되었습니다."),
+	ACCESS_TOKEN_MISSING(HttpStatus.BAD_REQUEST, "AUTH-004", "Access Token이 누락되었습니다."),
 	INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-005", "유효하지 않은 Refresh Token입니다."),
 	REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH-006", "만료된 Refresh Token입니다. 다시 로그인해주세요."),
-	REFRESH_TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "AUTH-007", "Refresh Token이 누락되었습니다."),
+	REFRESH_TOKEN_MISSING(HttpStatus.BAD_REQUEST, "AUTH-007", "Refresh Token이 누락되었습니다."),
 	AUTHENTICATION_FAILED(HttpStatus.UNAUTHORIZED, "AUTH-008", "인증에 실패했습니다."),
-	FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "AUTH-009", "접근이 거부되었습니다. 권한을 확인해주세요."),
+	FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "AUTH-009", "해당 리소스에 접근할 권한이 없습니다."),
 
 	TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH-010", "만료된 JWT 토큰입니다."),
 	MALFORMED_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-011", "잘못된 형식의 JWT 토큰입니다."),
@@ -62,16 +62,25 @@ public enum ErrorCode {
 
 	// 회원(Member) 관련 에러
 	MEMBER_ID_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER-001", "해당 ID를 가진 사용자를 찾을 수 없습니다."),
+	MEMBER_ID_MISSING(HttpStatus.BAD_REQUEST, "MEMBER-002", "사용자 ID가 누락되었습니다."),
 	INVALID_FCM_TOKEN(HttpStatus.BAD_REQUEST, "FCM-001", "유효하지 않은 FCM 토큰 값입니다."),
 	UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "AUTH-010", "권한이 없습니다."),
 
 	// 추가 에러 코드를 HttpStatus 타입으로 수정
 	BAD_REQUEST(HttpStatus.BAD_REQUEST, "VOICE-001", "필수 정보가 누락되었습니다."),
 	INVALID_FORMAT(HttpStatus.BAD_REQUEST, "VOICE-002", "음성 정보 형식이 올바르지 않습니다."),
+	VOICE_NOT_EXIST(HttpStatus.NOT_FOUND, "VOICE-003", "요청한 음성을 찾을 수 없습니다."),
 	CONFLICT(HttpStatus.CONFLICT, "VOICE-004", "이미 존재하는 음성 이름입니다."),
 	INVALID_URL(HttpStatus.BAD_REQUEST, "VOICE-005", "유효하지 않은 URL 형식입니다."),
-	URL_RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "VOICE-006", "제공된 URL에서 리소스를 찾을 수 없습니다.");
-	
+	URL_RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "VOICE-006", "제공된 URL에서 리소스를 찾을 수 없습니다."),
+	CELEB_VOICE_NOT_FOUND(HttpStatus.NOT_FOUND, "VOICE-007", "해당 사용자의 셀럽 음성을 찾을 수 없습니다."),
+	INVALID_MEMBER_ID(HttpStatus.BAD_REQUEST, "VOICE-008", "유효하지 않은 memberId입니다."),
+	VOICE_NOT_FOUND(HttpStatus.NOT_FOUND, "VOICE-009", "해당 음성을 찾을 수 없습니다."),
+	VOICE_ALREADY_EXISTS(HttpStatus.CONFLICT, "VOICE-010", "이미 존재하는 음성 이름입니다."),
+	VOICE_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "VOICE-011", "음성 처리 중 서버 오류가 발생했습니다."),
+
+	FORBIDDEN(HttpStatus.FORBIDDEN, "AUTH-015", "접근이 금지되었습니다.");
+
 	private final HttpStatus status;
 	private final String errorCode;
 	private final String message;

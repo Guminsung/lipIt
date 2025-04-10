@@ -1,6 +1,7 @@
 from sqlalchemy import Column, BigInteger, String, DateTime, Text, func
 from sqlalchemy.dialects.postgresql import JSONB
 from app.db.session import Base
+from app.util.datetime_utils import now_kst
 
 
 class News(Base):
@@ -13,10 +14,8 @@ class News(Base):
     category = Column(String(50), nullable=True)
     updated_at = Column(
         DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now(),
+        default=now_kst,
+        onupdate=now_kst,
         nullable=False,
     )
-    created_at = Column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    ) 
+    created_at = Column(DateTime(timezone=True), default=now_kst, nullable=False)

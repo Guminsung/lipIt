@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from typing import Type, Dict, Any
 from pydantic import BaseModel
 from app.auth.dependencies import get_current_user
-from app.util.swagger_response import error_response, success_response
+from app.util.docs.swagger_response import error_response, success_response
 
 
 class BaseRouter(APIRouter):

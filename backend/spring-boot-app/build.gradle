@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.1'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.flywaydb.flyway' version "9.22.0"
 }
 
 group = 'com.arizona'
@@ -21,6 +22,12 @@ configurations {
 
 repositories {
     mavenCentral()
+}
+
+flyway {
+    url = System.getProperty("flyway.url")
+    user = System.getProperty("flyway.user")
+    password = System.getProperty("flyway.password")
 }
 
 dependencies {
@@ -66,6 +73,12 @@ dependencies {
 
     // OkHttp
     implementation 'com.squareup.okhttp3:okhttp:4.9.2'
+
+    // Flyway
+    implementation 'org.flywaydb:flyway-database-postgresql'
+
+    // Caffeine
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
 }
 
 tasks.named('test') {

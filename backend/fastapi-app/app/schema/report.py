@@ -1,5 +1,4 @@
 from typing import List, Optional
-from datetime import datetime
 from pydantic import BaseModel
 from app.schema.common import APIResponse
 
@@ -67,4 +66,4 @@ class NativeExpressionItem(BaseModel):
 
 # 리포트 원어민 표현 응답 DTO
 class ReportExpressionsResponse(BaseModel):
-    nativeExpressions: List[NativeExpressionItem] = [] 
+    nativeExpressions: List[NativeExpressionItem] = []

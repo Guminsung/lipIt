@@ -22,35 +22,44 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """애플리케이션 시작 시 DB 테이블 생성"""
+    """애플리케이션 시작 시 초기화 작업 실행"""
+
     # 로깅 설정
     setup_logging()
-    logger.info("서버 시작 중...")
+    logger.info("🚀 서버 시작 중...")
 
     # DB 초기화
     await init_db()
 
-    # 초기 크롤링 실행
+    # Embedding 모델 및 Pinecone 초기화 (warm-up)
+    try:
+        from app.rag.embedding import get_embedding
+        from app.rag.pinecone_client import get_index
+
+        logger.info("📦 임베딩 모델 및 Pinecone 인덱스 warm-up 중...")
+        await get_embedding("Warm-up test text")  # 모델 로딩
+        _ = get_index().describe_index_stats()  # 연결 확인
+        logger.info("✅ Embedding 및 Pinecone warm-up 완료")
+    except Exception as e:
+        logger.warning(f"⚠️ Warm-up 실패: {e}")
+
+    # 초기 뉴스/날씨 크롤링 실행
     # try:
-    # await crawl_news_job()
-    # logger.info("초기 뉴스 크롤링 완료")
+    #     await crawl_news_job()
+    #     logger.info("🗞️ 초기 뉴스 크롤링 완료")
 
-    # 날씨 크롤링 추가
-    # await crawl_weather_job()
-    # logger.info("초기 날씨 크롤링 완료")
+    #     await crawl_weather_job()
+    #     logger.info("🌤️ 초기 날씨 크롤링 완료")
     # except Exception as e:
-    #     logger.error(f"초기 크롤링 오류: {str(e)}")
+    #     logger.error(f"❌ 초기 크롤링 오류: {str(e)}", exc_info=True)
 
-    # 스케줄러 초기화
+    # 스케줄러 시작
     init_scheduler()
 
-    yield
+    yield  # <-- 여기 이후는 shutdown 영역!
 
-    # 서버 종료 시 스케줄러 종료
+    # 스케줄러 종료
     shutdown_scheduler()
-
-    # Embedding 모델 초기화
-    _ = get_embedding_model()
 
 
 app = FastAPI(

@@ -1,5 +1,6 @@
 package com.arizona.lipit.domain.voice.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,7 +11,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class VoiceResponseDto {
-    private String voiceName;
-    private String customImageUrl;
-    private Boolean activate;
+	@Schema(description = "음성 ID", example = "1")
+	private Long voiceId;
+
+	@Schema(description = "음성 이름", example = "내 목소리1")
+	private String voiceName;
+
+	@Schema(description = "음성 이미지 URL", example = "https://dlxayir1dj7sa.cloudfront.net/voice-image/voice_image_default.png")
+	private String customImageUrl;
+
+	@Schema(description = "음성 파일 URL", example = "https://example.com/audio.mp3", nullable = false)
+	private String audioUrl;
 }

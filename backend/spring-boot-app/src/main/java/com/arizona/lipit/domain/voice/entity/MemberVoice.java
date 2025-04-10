@@ -1,15 +1,24 @@
 package com.arizona.lipit.domain.voice.entity;
 
-import com.arizona.lipit.domain.auth.entity.Member;
-import jakarta.persistence.*;
+import java.sql.Timestamp;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import com.arizona.lipit.domain.member.entity.Member;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.sql.Timestamp;
 
 @Entity
 @Table(name = "member_voice")
@@ -19,24 +28,21 @@ import java.sql.Timestamp;
 @Builder
 public class MemberVoice {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long memberVoiceId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long memberVoiceId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private Member member;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "member_id")
+	private Member member;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "voice_id")
-    private Voice voice;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "voice_id")
+	private Voice voice;
 
-    @Column
-    private Boolean activate = true;
+	@CreationTimestamp
+	private Timestamp createdAt;
 
-    @CreationTimestamp
-    private Timestamp createdAt;
-
-    @UpdateTimestamp
-    private Timestamp updatedAt;
+	@UpdateTimestamp
+	private Timestamp updatedAt;
 }

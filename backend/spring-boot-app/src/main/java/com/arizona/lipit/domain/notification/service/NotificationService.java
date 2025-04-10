@@ -6,7 +6,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.springframework.stereotype.Service;
 
-import com.arizona.lipit.domain.auth.service.MemberService;
+import com.arizona.lipit.domain.member.service.MemberService;
 import com.arizona.lipit.domain.notification.dto.NotificationRequestDto;
 
 import lombok.RequiredArgsConstructor;
