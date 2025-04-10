@@ -48,13 +48,15 @@ async def prompt_meaningful_messages_node(state: dict) -> dict:
 
 You will be given a list of I → you exchanges from a phone conversation.
 
-Your task is to extract up to 5 meaningful responses along with the question that led to them.
+Your task is to extract up to 5 meaningful responses, but only if they actually exist in the conversation.
+If no meaningful facts are stated, return an empty list.
 
 For each meaningful response:
 - Rephrase it into a full sentence that includes the original I-question if relevant.
 - Speak **directly to the user** (use "you").
 - Clearly describe what you (the user) said (e.g., your name, hobby, location, favorite song/lyric, etc.).
 - DO NOT include rhetorical or vague questions such as "Don't you know...?" or "You know what...?"
+- DO NOT invent or assume anything that was not clearly said.
 
 Each item must include:
 - "content": A full sentence summarizing what you said, optionally including what I asked. Use natural language and second-person "you".
@@ -62,21 +64,22 @@ Each item must include:
 - "summary_facts": concise facts you stated (e.g., "Your name is Sarah", "You enjoy painting", "Your favorite lyric is from Black or White")
 
 ⚠️ DO NOT include vague replies like "okay", "thanks", "bye", or rhetorical questions like "Do you know my favorite song?"
-⚠️ Only include factual statements, not vague or generic ones.
+⚠️ DO NOT generate any message unless it was clearly said in the conversation.
 ⚠️ Avoid generic tags like "sentence", "talk", or "English".
 ✅ Convert numeric digits to words in English only, but keep digits in Korean.
 
 IMPORTANT:
 Use the extracted facts to help answer future questions accurately. For example, if the user later asks, "Do you remember my favorite song?", you should be able to recall it using this data.
 
-Return only valid JSON in the following format:
+Return only valid JSON in the structure shown below.
+The example is for format only — do not generate anything unless it was explicitly said.
 
 {
   "meaningful_messages": [
     {
-      "content": "You mentioned your favorite lyric is 'It don't matter if you're black or white.' when I asked about your favorite lyric.",
-      "tags": ["favorite lyric", "Michael Jackson", "music"],
-      "summary_facts": ["Your favorite lyric is from the song 'Black or White'"]
+      "content": "You said you enjoy painting in your free time.",
+      "tags": ["hobby", "painting", "art"],
+      "summary_facts": ["You enjoy painting"]
     }
   ]
 }
