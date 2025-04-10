@@ -1,28 +1,39 @@
 package com.ssafy.lipit_app.ui.screens.main
 
+import android.app.Activity
+import android.os.Build
 import android.util.Log
-import androidx.compose.animation.core.animateDpAsState
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,383 +42,388 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.auth.components.MypagePopup
+import com.ssafy.lipit_app.ui.screens.call.alarm.AlarmScheduler
+import com.ssafy.lipit_app.ui.screens.call.alarm.CallActionReceiver
+import com.ssafy.lipit_app.ui.screens.call.alarm.DailyCallTracker
+import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceScreen
+import com.ssafy.lipit_app.ui.screens.edit_call.change_voice.EditVoiceState
+import com.ssafy.lipit_app.ui.screens.edit_call.reschedule.EditCallScreen
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsIntent
+import com.ssafy.lipit_app.ui.screens.edit_call.weekly_calls.WeeklyCallsScreen
+import com.ssafy.lipit_app.ui.screens.main.components.DailySentenceManager
+import com.ssafy.lipit_app.ui.screens.main.components.NextLevel
+import com.ssafy.lipit_app.ui.screens.main.components.ReportAndVoiceBtn
+import com.ssafy.lipit_app.ui.screens.main.components.TodaysSentence
+import com.ssafy.lipit_app.ui.screens.main.components.WeeklyCallsSection
+import com.ssafy.lipit_app.util.SharedPreferenceUtils
+import java.time.LocalDate
 
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun MainScreen(
-    state: MainState,
-    onIntent: (MainIntent) -> Unit
+    onIntent: (MainIntent) -> Unit,
+    viewModel: MainViewModel,
+    onSuccess: () -> Unit
 ) {
-    //val state by viewModel.state.collectAsState()
-    var selectedDay by remember { mutableStateOf(state.selectedDay) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFFDF8FF))
-            .padding(horizontal = 20.dp, vertical = 60.dp)
-    ) {
-        UserInfoSection(state.userName) // 상단의 유저 이름, 등급 부분
-        TodaysSentence(state.sentenceOriginal, state.sentenceTranslated) // 오늘의 문장
-        WeeklyCallsSection(
-            selectedDay = selectedDay, //state의 selectedDay -> screen 안에서 정의한 selectedDay로 변경
-            callItems = state.callItems,
-            onIntent = {
-                if(it is MainIntent.OnDaySelected){
-                    selectedDay = it.day
-                }
-            }
-        )
-        //todo: 레벨업, Call Log 버튼, 전화 걸기 버튼 부분 추가
+    val state by viewModel.state.collectAsState() // 고정된 값이 아닌 상태 관찰 -> 실시간 UI 반영
+    val context = LocalContext.current
 
 
+    // ***** Bottom Sheet 관리 : show/hide 처리
+    val bottomSheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
+    LaunchedEffect(state.isSettingsSheetVisible) {
+        if (state.isSettingsSheetVisible) {
+            bottomSheetState.show()
+        } else {
+            bottomSheetState.hide()
+        }
+    }
+    LaunchedEffect(bottomSheetState.isVisible) {
+        if (!bottomSheetState.isVisible) {
+            onIntent(MainIntent.OnCloseSettingsSheet)
+            onIntent(MainIntent.ResetBottomSheetContent)
+
+            onIntent(MainIntent.RefreshAfterVoiceChange) // 바텀 시트 닫히면 새로고침
+        }
     }
 
+
+
+    LaunchedEffect(Unit) {
+        val memberId = SharedPreferenceUtils.getMemberId()
+        viewModel.fetchUserLevel(memberId)
+        viewModel.fetchWeeklySchedule(memberId)
+
+        DailySentenceManager.init(context)
+    }
+
+
+    // ***** 뒤로가기 핸들링
+    // BottomSheet 가 있으면 닫기 / 아무것도 없을 경우 두번 빠르게 눌러 앱 종료
+    BackHandler(enabled = bottomSheetState.isVisible) {
+        // 바텀시트가 열려있을 때 → 닫기
+        onIntent(MainIntent.OnCloseSettingsSheet)
+        onIntent(MainIntent.ResetBottomSheetContent)
+    }
+
+    var backPressedTime by remember { mutableStateOf(0L) }
+    BackHandler(enabled = !bottomSheetState.isVisible) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - backPressedTime < 2000) {
+            // 앱 종료
+            (context as? Activity)?.finish()
+        } else {
+            backPressedTime = currentTime
+            Toast.makeText(context, "한 번 더 누르면 종료됩니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // ***** BottomSheet 분기를위한 필드
+    val editVoiceState: EditVoiceState = EditVoiceState()
+
+
+    // 로그아웃 관련
+    LaunchedEffect(key1 = state.isLogoutSuccess) {
+        if (state.isLogoutSuccess) {
+            Log.d("auth", "MainScreen: LaunchedEffect onSuccess 호출")
+            onSuccess()
+            onIntent(MainIntent.OnLogoutHandled)
+        }
+    }
+
+    // 회원 등급 및 weekly call 스케줄 관련
+    LaunchedEffect(Unit) {
+        val memberId = SharedPreferenceUtils.getMemberId()
+        viewModel.fetchUserLevel(memberId)
+        //viewModel.fetchWeeklySchedule(memberId)
+    }
+
+
+    //val state by viewModel.state.collectAsState()
+    // 1. (default: hide) BottomSheet 3가지 종류 : 일주일 스케줄, 수정, 보유 음성
+    // 2. (Base) MainScreen
+    ModalBottomSheetLayout(
+        sheetState = bottomSheetState,
+        sheetBackgroundColor = Color.Transparent,
+        sheetContent = {
+            Surface(
+                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                color = Color(0xFFFDF8FF),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.9f)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(vertical = 10.dp)
+                ) {
+                    // 핸들바
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(vertical = 8.dp)
+                            .size(width = 40.dp, height = 4.dp)
+                            .background(Color.LightGray, RoundedCornerShape(2.dp))
+                    )
+
+                    // 상태에 따라 바텀시트 내용 분기
+                    when (state.bottomSheetContent) {
+                        BottomSheetContent.WEEKLY_CALLS -> {
+                            WeeklyCallsScreen(
+                                state = state.weeklyCallsState,
+                                onIntent = { intent ->
+                                    when (intent) {
+                                        is WeeklyCallsIntent.OnEditSchedule -> {
+                                            onIntent(MainIntent.SelectSchedule(intent.schedule))
+                                            onIntent(MainIntent.ShowRescheduleScreen(intent.schedule))
+                                        }
+
+                                        is WeeklyCallsIntent.OnChangeVoice -> {
+                                            onIntent(MainIntent.ShowMyVoicesScreen)
+                                        }
+
+                                        else -> {}
+                                    }
+                                },
+                                onMainIntent = onIntent
+                            )
+                        }
+
+                        BottomSheetContent.RESCHEDULE_CALL -> {
+                            val schedule = state.selectedSchedule
+                            EditCallScreen(
+                                schedule = schedule!!,
+                                onBack = {
+                                    onIntent(MainIntent.ShowWeeklyCallsScreen)
+                                },
+                                onSuccess = { updatedSchedule, isEditMode ->
+                                    // 알람 수정, 삭제 작업이 성공적으로 완료되면 이쪽으로 onSuccess 응답이 온다.
+                                    Log.d(
+                                        "MainScreen",
+                                        "Plan ${if (isEditMode) "수정" else "추가"} OK: $updatedSchedule"
+                                    )
+
+
+                                    // 먼저 데이터 갱신
+                                    onIntent(MainIntent.RefreshAfterVoiceChange)  // 메인 화면 데이터 갱신
+                                    onIntent(MainIntent.OnSettingsClicked)        // 바텀시트 데이터 갱신
+                                    onIntent(MainIntent.ShowWeeklyCallsScreen)    // 바텀시트 화면 전환
+
+                                }
+                            )
+                        }
+
+                        BottomSheetContent.MY_VOICES -> {
+                            EditVoiceScreen(
+                                onBack = {
+                                    onIntent(MainIntent.RefreshAfterVoiceChange)
+                                    onIntent(MainIntent.OnCloseSettingsSheet)
+                                },
+                                onNavigateToAddVoice = {
+                                    onIntent(MainIntent.NavigateToAddVoice)
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    ) {
+        // ***** 기존 MainScreen UI
+        var selectedDay by remember { mutableStateOf(state.selectedDay) }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFFDF8FF))
+                .padding(start = 20.dp, end = 20.dp, top = 70.dp),
+
+            ) {
+
+            // 스크롤 버전 영역
+            Column(
+                modifier = Modifier
+                    .weight(0.88f)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                UserInfoSection(state.userName, state, onIntent, state.level) // 상단의 유저 이름, 등급 부분
+                TodaysSentence(viewModel, context) // 오늘의 문장
+
+                WeeklyCallsSection(
+                    selectedDay = selectedDay,
+                    callItems = state.callItems,
+                    onIntent = {
+                        Log.d("TAG", "MainScreen: ${state.callItems}")
+                        if (it is MainIntent.OnDaySelected) {
+                            selectedDay = it.day
+                        } else {
+                            onIntent(it) // 나머지 이벤트 넘기기 (예: OnSettingsClicked)
+                        }
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // 리포트 & 마이 보이스로 넘어가는 버튼들
+                ReportAndVoiceBtn(onIntent)
+
+                // 레벨업 파트
+                NextLevel(
+                    reportPercentage = state.reportPercent,
+                    callTimePercentage = state.callPercent
+                )
+            }
+
+
+            // 전화 걸기 버튼
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.12f),
+                contentAlignment = Alignment.Center
+            ) {
+                CallButton(onIntent)
+            }
+
+            Spacer(modifier = Modifier.weight(0.06f))
+
+        }
+    }
+}
+
+
+// 전화 걸기 버튼
+@Composable
+fun CallButton(onIntent: (MainIntent) -> Unit) {
+
+    val context = LocalContext.current
+    Image(
+        painterResource(id = R.drawable.main_call_icon),
+        contentDescription = "전화 걸기",
+        modifier = Modifier
+            .size(70.dp)
+            .clip(CircleShape)
+            .clickable {
+                // 오늘 통화 완료로 표시
+                DailyCallTracker.markTodayCallCompleted(context)
+
+                // 모든 예약된 알람 취소 (당일것만)
+                val alarmScheduler = AlarmScheduler(context)
+                val baseAlarmId = LocalDate.now().dayOfYear // 오늘 날짜 기반 알람 ID
+                alarmScheduler.cancelAllTodayAlarms(baseAlarmId, CallActionReceiver.MAX_RETRY_COUNT)
+
+                // 화면 이동
+                onIntent(MainIntent.NavigateToCallScreen)
+            }
+    )
 }
 
 
 // 사용자 정보 (이름 & 등급)
 @Composable
-fun UserInfoSection(userName: String) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        //  사용자 이름
-        Text(
-            text = "Hello, $userName",
-            style = androidx.compose.ui.text.TextStyle(
-                fontSize = 20.sp,
-                lineHeight = 50.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFF000000),
-            )
-        )
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        // 사용자 등급
-        Image(
-            painter = painterResource(id = R.drawable.user_level_2),
-            contentDescription = "사용자 등급",
-            modifier = Modifier.size(26.dp)
-        )
-    }
-}
-
-// 오늘의 문장
-@Composable
-fun TodaysSentence(sentenceOriginal: String, sentenceTranslated: String) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 9.dp),
-    ) {
-        // 배경
-        Image(
-            painter = painterResource(id = R.drawable.main_todays_sentence_background),
-            contentDescription = "오늘의 명언 배경",
-            contentScale = ContentScale.FillWidth,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(110.dp)
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(110.dp)
-        ) {
-            // 오늘의 문장 원문 + 번역 텍스트
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .align(Alignment.CenterVertically)
-                    .padding(top = 21.dp, start = 27.dp, bottom = 21.dp, end = 6.dp)
-            ) {
-                Text(
-                    text = sentenceOriginal,
-                    style = TextStyle(
-                        fontSize = 15.sp,
-                        lineHeight = 20.sp,
-                        fontWeight = FontWeight(400),
-                        color = Color(0xFFFFFFFF),
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(7.dp))
-
-                Text(
-                    text = "$sentenceTranslated  ✦˚",
-                    style = TextStyle(
-                        fontSize = 14.sp,
-                        lineHeight = 20.sp,
-                        fontWeight = FontWeight(700),
-                        color = Color(0xFFFFFFFF),
-                    )
-                )
-            }
-
-            Image(
-                painterResource(id = R.drawable.main_todays_sentance_img),
-                contentDescription = "오늘의 문장 이미지",
-                modifier = Modifier
-                    .height(120.dp)
-                    .width(80.dp)
-                    .align(Alignment.Top)
-                    .padding(start = 0.dp, top = 12.dp, bottom = 20.dp, end = 15.dp)
-            )
-        }
-
-    }
-}
-
-// 주간 전화 일정 한 눈에 보기
-@Composable
-fun WeeklyCallsSection(
-    selectedDay: String,
-    callItems: List<CallItem>,
-    onIntent: (MainIntent) -> Unit
+fun UserInfoSection(
+    userName: String,
+    state: MainState,
+    onIntent: (MainIntent) -> Unit,
+    level: Int
 ) {
-    Column(
-        modifier = Modifier
-            .padding(top = 25.dp)
+    var showPopup by remember { mutableStateOf(false) } // 로그아웃 팝업 관련
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        // 제목 + 버튼 영역
         Row(
-            Modifier.padding(bottom = 14.dp)
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                // 누르면 팝업으로 로그아웃 버튼 (추후 다른 버튼도 추가하던지..)
+                .clickable(
+                    indication = null,
+                    interactionSource = remember {
+                        MutableInteractionSource()
+                    }
+                ) {
+                    showPopup = true
+                }
         ) {
+            //  사용자 이름
             Text(
-                text = "Weekly Calls",
+                text = "Hello, $userName",
                 style = TextStyle(
-                    fontSize = 25.sp,
+                    fontSize = 24.sp,
                     lineHeight = 50.sp,
-                    fontWeight = FontWeight(700),
+                    fontWeight = FontWeight.Medium,
                     color = Color(0xFF000000),
                 )
             )
 
-            // 편집 버튼
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                Button(
-                    onClick = { /*todo: 전화 일정 편집 화면으로 넘어감*/ },
-                    Modifier
-                        .width(50.dp)
-                        .height(25.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFA37BBD)
-                    ),
-                    contentPadding = PaddingValues(0.dp) // 내부 여백 (기본 여백 제거해서 텍스트에 맞춰서 재설정)
-                ) {
-                    Text(
-                        text = "편집",
-                        style = TextStyle(
-                            fontSize = 12.sp,
-                            lineHeight = 15.sp,
-                            fontWeight = FontWeight(590),
-                            color = Color(0xFFFFFFFF),
-                            textAlign = TextAlign.Center
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
+            Spacer(modifier = Modifier.width(8.dp))
 
+            // 사용자 등급
+            Image(
+                painter = painterResource(id = getLevelIcon(level)),
+                contentDescription = "사용자 등급",
+                modifier = Modifier.size(26.dp)
+            )
+
+            // 로그아웃 팝업 관련
+            if (showPopup) {
+                MypagePopup(
+                    onDismissRequest = { showPopup = false },
+                    onConfirmation = {
+                        showPopup = false
+                        // 로그아웃 로직 처리
+                        onIntent(MainIntent.OnLogoutClicked)
+                    },
+                    dialogTitle = "로그아웃 하시겠습니까?",
+                    dialogText = "로그아웃하고 앱에서 나가기"
+                )
+            }
         }
 
-        // 전화 일정 출력 영역
-        // 요일 선택 커스텀 탭
-        DaySelector(
-            onDaySelected = { day ->
-                onIntent(MainIntent.OnDaySelected(day))
-                Log.d("selectedDay", "selectedDay: $day")
-             },
-            selectedDay
-        )
-
-        // 스케줄 카드뷰
-        dailyCallSchedule(callItems)
-    }
-}
-
-// 요일별 call 카드뷰
-@Composable
-fun dailyCallSchedule(callItems: List<CallItem>) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 2.dp)
-    ) {
-        // 배경 박스
         Image(
-            painter = painterResource(id = R.drawable.main_weekly_calls_background),
-            contentDescription = "요일별 Calls 스케줄 카드",
-            contentScale = ContentScale.FillWidth,
+            painter = painterResource(id = R.drawable.ic_logout),
+            contentDescription = null,
             modifier = Modifier
-                .fillMaxWidth()
-                .height(100.dp)
-        )
-
-        // 내용
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                //todo: 현재는 임시로 패딩을 통해 위치 지정 했는데 시간 남으면
-                //todo: 박스랑 상대적인 위치를 고려해서 중앙 배치 수정하기!
-                .padding(top = 24.dp, start = 22.dp, end = 20.dp)
-        ) {
-            // url을 통해 이미지 받아오기
-            AsyncImage(
-                modifier = Modifier
-                    .size(52.dp)
-                    .clip(CircleShape),
-                model = callItems[0].imageUrl, //임시
-                contentDescription = "voice 프로필 사진"
-            )
-
-            Log.d("ImageCheck", "URL: ${callItems.getOrNull(0)?.imageUrl}")
-
-
-            Column(
-                modifier = Modifier
-                    .padding(start = 15.dp, end = 105.dp)
-                    .align(Alignment.CenterVertically)
-
-            ) {
-                // 보이스 이름
-                Text(
-                    text = callItems[0].name,
-                    style = TextStyle(
-                        fontSize = 16.sp,
-                        lineHeight = 15.sp,
-                        fontWeight = FontWeight(590),
-                        color = Color(0xFF000000))
-                )
-
-                // 대화 주제 (토픽)
-                Text(
-                    text = callItems[0].topic,
-                    style = TextStyle(
-                        fontSize = 15.sp,
-                        lineHeight = 15.sp,
-                        fontWeight = FontWeight(400),
-                        color = Color(0xFF5F5F61),
-
-                        )
-                )
-            }
-
-            // 정해진 call 시간
-            Box(
-                modifier = Modifier
-                    .align(Alignment.Bottom)
-                    .padding(bottom = 7.dp)
-            ){
-                Text(
-                    text = "At " + callItems[0].time,
-                    style = TextStyle(
-                        fontSize = 12.sp,
-                        lineHeight = 15.sp,
-                        fontWeight = FontWeight(400),
-                        color = Color(0xFF5F5F61),
-                        //textAlign = TextAlign.End
-                    )
-                )
-            }
-
-
-        }
-    }
-}
-
-// 커스텀 탭 레이아웃
-@Composable
-fun DaySelector(
-    onDaySelected: (String) -> Unit,
-    selectedDay: String
-) {
-    val days = listOf("월", "화", "수", "목", "금", "토", "일")
-    val selectedIndex = days.indexOf(selectedDay)
-
-    // 애니메이션 효과 추가
-    // 슬라이딩 형식으로 배경 이동
-    val itemWidth = 41.dp // 박스 가로 길이
-    val animatedOffsetX by animateDpAsState(
-        targetValue = (selectedIndex * 48).dp,
-        label="offsetX"
-    )
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(36.dp)
-            .background(
-                color = Color(0xB2F3E7F9),
-                shape = RoundedCornerShape(size = 20.dp)
-            )
-            .padding(horizontal = 3.dp)
-    ) {
-        days.forEach { day ->
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .height(26.dp)
-                    .padding(horizontal = 4.dp)
-                    .background(
-                        if (day == selectedDay) Color(0xFFA37BBD) else Color(0xB2F3E7F9),
-                        shape = RoundedCornerShape(size = 50.dp)
-                    )
-                    .clickable {
-                        onDaySelected(day)
+                .size(22.dp)
+                .clickable(
+                    indication = null,
+                    interactionSource = remember {
+                        MutableInteractionSource()
                     }
-                    .align(Alignment.CenterVertically),
-                Alignment.Center
-            ){
-                Text(
-                    text = day,
-                    fontWeight = if(day == selectedDay) FontWeight(600) else FontWeight(400),
-                    color = if(day == selectedDay) Color.White else Color.Black,
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-
+                ) {
+                    showPopup = true
+                }
+        )
     }
 }
 
 
-@Preview(showBackground = true)
+// 레벨 등급에 따른 아이콘 매핑
 @Composable
-fun MainScreenPreview() {
-    MainScreen(
-        state = MainState(
-            userName = "Sarah",
-            selectedDay = "월",
-            callItems = listOf(
-                CallItem(id = 1, name = "Harry Potter", topic = "자유주제", time = "08:00", imageUrl = "https://file.notion.so/f/f/87d6e907-21b3-47d8-98dc-55005c285cce/7a38e4c0-9789-42d0-b8a0-2e3d8c421433/image.png?table=block&id=1c0fd4f4-17d0-80ed-9fa9-caa1056dc3f9&spaceId=87d6e907-21b3-47d8-98dc-55005c285cce&expirationTimestamp=1742824800000&signature=3tw9F7cAaX__HcAYxwEFal6KBsvDg2Gt0kd7VnZ4LcY&downloadName=image.png", "월")
-            ),
-            sentenceProgress = 90,
-            wordProgress = 50,
-            attendanceCount = 20,
-            attendanceTotal = 20,
-            sentenceOriginal = "With your talent and hard work, sky’s the limit!",
-            sentenceTranslated = "너의 재능과 노력이라면, 한계란 없지!",
-        ),
-        onIntent = { }
-    )
+fun getLevelIcon(level: Int): Int {
+    return when (level) {
+        1 -> R.drawable.user_level_1
+        2 -> R.drawable.user_level_2
+        3 -> R.drawable.user_level_3
+        4 -> R.drawable.user_level_4
+        5 -> R.drawable.user_level_5
+        else -> R.drawable.user_level_1 // 기본값
+    }
 }
 
 
