@@ -1,5 +1,13 @@
 package com.ssafy.lipit_app.ui.screens.call.incoming
 
+import android.app.Activity
+import android.util.Log
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,30 +20,69 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.ui.screens.call.alarm.CallNotificationHelper
+import com.ssafy.lipit_app.util.SharedPreferenceUtils
 
 @Composable
 fun IncomingCallScreen(
-    state: IncomingCallState,
-    onIntent: (IncomingCallIntent) -> Unit
+    onIntent: (IncomingCallIntent) -> Unit,
+    viewModel: IncomingCallViewModel,
+    navController: NavController
 ) {
+
+    val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        val memberId = SharedPreferenceUtils.getMemberId()
+        viewModel.fetchSelectedVoiceName(memberId)
+    }
+
+
+    LaunchedEffect(state.callDeclined) {
+        if (state.callDeclined) {
+
+            CallNotificationHelper.stopVibration(context)
+
+            val activity = (context as? Activity)
+            activity?.finishAffinity() // 앱 종료
+        }
+    }
+
+    LaunchedEffect(state.callAccepted) {
+        if (state.callAccepted) {
+            Log.d("IncomingCall", "✅ 수락됨 - 네비게이션 이동 시도")
+
+            navController.navigate("call_screen") {
+                popUpTo("incoming_call") { inclusive = true }
+            }
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -52,7 +99,7 @@ fun IncomingCallScreen(
 
         Column(
             modifier = Modifier
-                .padding(top = 100.dp, start = 20.dp, end = 20.dp, bottom = 40.dp)
+                .padding(top = 150.dp, start = 20.dp, end = 20.dp, bottom = 40.dp)
                 .align(Alignment.TopCenter)
         ) {
             // 보이스 이름 출력 영역
@@ -99,10 +146,16 @@ fun IncomingCallScreen(
 
         ) {
             // 전화 받기 버튼
-            AcceptCallBtn(onClick = {})
+            AcceptCallBtn(onClick = {
+                CallNotificationHelper.stopVibration(context)
+                onIntent(IncomingCallIntent.Accept)
+            })
 
             // 전화 거절 버튼
-            DeclineCallBtn(onClick = { })
+            DeclineCallBtn(onClick = {
+                CallNotificationHelper.stopVibration(context)
+                onIntent(IncomingCallIntent.Decline)
+            })
         }
     }
 }
@@ -114,15 +167,16 @@ fun DeclineCallBtn(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+
         Box(
             modifier = Modifier
                 .width(90.dp)
                 .height(90.dp)
                 .clip(CircleShape)
-                .background(Color(0x33FDF8FF))
                 .clickable { onClick() },
             contentAlignment = Alignment.Center
         ) {
+            RippleEffect()
             Box(
                 modifier = Modifier
                     .width(69.dp)
@@ -158,6 +212,31 @@ fun DeclineCallBtn(
     }
 }
 
+
+// 버튼 ripple 효과(pulse)
+@Composable
+private fun RippleEffect(
+    modifier: Modifier = Modifier
+) {
+    val infiniteTransition = rememberInfiniteTransition()
+    val animation = infiniteTransition.animateFloat(
+        initialValue = 0.8f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ), label = ""
+    )
+
+    Box(
+        modifier = modifier
+            .scale(animation.value)
+            .size(120.dp) // 버튼보다 크게!
+            .clip(CircleShape)
+            .background(Color(0x33FDF8FF)) // 살짝 투명하게
+    )
+}
+
 // 전화 받기
 @Composable
 fun AcceptCallBtn(
@@ -171,17 +250,21 @@ fun AcceptCallBtn(
                 .width(90.dp)
                 .height(90.dp)
                 .clip(CircleShape)
-                .background(Color(0x33FDF8FF))
                 .clickable { onClick() },
             contentAlignment = Alignment.Center
         ) {
+
+            RippleEffect()
+
             Box(
                 modifier = Modifier
                     .width(69.dp)
                     .height(69.dp)
                     .clip(CircleShape)
                     .background(Color(0xFFFDF8FF))
-                    .clickable { onClick() },
+                    .clickable {
+                        onClick()
+                    },
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.incoming_call_accept),
@@ -209,16 +292,4 @@ fun AcceptCallBtn(
         )
     }
 
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun IncomingCallScreenPreview() {
-    IncomingCallScreen(
-        state = IncomingCallState(
-            voiceName = "Harry Potter"
-        ),
-        onIntent = {}
-    )
 }

@@ -1,8 +1,18 @@
+import java.io.FileInputStream
+import java.util.Properties
+
+// local.properties 읽기
+val localProperties = Properties().apply {
+    load(FileInputStream(rootProject.file("local.properties")))
+}
+val serverUrl_spring = localProperties["SERVER_URL_SPRING"] as String
+val serverUrl_fastapi = localProperties["SERVER_URL_FASTAPI"] as String
+val open_ai_key = localProperties["OPEN_AI_KEY"] as String
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
-
 }
 
 android {
@@ -25,6 +35,18 @@ android {
     }
 
     buildTypes {
+        getByName("debug") {
+            buildConfigField("String", "SERVER_URL_SPRING", "\"$serverUrl_spring\"")
+            buildConfigField("String", "SERVER_URL_FASTAPI", "\"$serverUrl_fastapi\"")
+            buildConfigField("String", "OPEN_AI_KEY", "\"$open_ai_key\"")
+        }
+
+        getByName("release") {
+            buildConfigField("String", "SERVER_URL_SPRING", "\"$serverUrl_spring\"")
+            buildConfigField("String", "SERVER_URL_FASTAPI", "\"$serverUrl_fastapi\"")
+            buildConfigField("String", "OPEN_AI_KEY", "\"$open_ai_key\"")
+        }
+
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -44,6 +66,7 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.10"
     }
+
 }
 
 dependencies {
@@ -66,14 +89,18 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.ui.test.android)
+    implementation(libs.androidx.compose.testing)
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+//    androidTestImplementation(libs.androidx.junit)
+//    androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    androidTestImplementation ("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation ("androidx.test.espresso:espresso-core:3.5.0")
+    androidTestImplementation ("androidx.compose.ui:ui-test-junit4:1.7.8")
 
     implementation("androidx.compose.material:material:1.7.5")     // material2 지원
     implementation("com.kizitonwose.calendar:compose:2.6.2")
@@ -138,15 +165,39 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer-dash:1.6.0")
     implementation("androidx.media3:media3-ui:1.6.0")
 
-    implementation(kotlin("script-runtime"))
 
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation("androidx.compose.material3:material3:1.1.2")
     implementation("androidx.compose.ui:ui-tooling-preview:1.5.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("androidx.compose.ui:ui-tooling:1.5.1") // Preview용
+    implementation("androidx.compose.ui:ui:1.5.1")
 
     // url을 통해 이미지를 불러오기 위한 이미지 라이브러리 - Coil
     implementation("io.coil-kt:coil-compose:2.4.0")
 
+    //바텀시트 구현 관련
+    implementation(platform("androidx.compose:compose-bom:2023.06.01"))
+
+    //FCM 관련
+    apply(plugin = "com.google.gms.google-services")
+
+    // WebSocket
+    implementation("org.java-websocket:Java-WebSocket:1.5.3")
+
+    // 그리드 리스트 화면
+    implementation("com.cheonjaeung.compose.grid:grid:2.2.1")
+
+    // 로딩화면 관련
+    implementation("com.airbnb.android:lottie-compose:6.0.0")
+
+    // 상태바 색상 변경 관련
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.31.3-beta")
+    // 음성파일 병합 위한 라이브러리
+    implementation("com.arthenica:ffmpeg-kit-full:6.0")
+
+    implementation ("androidx.compose.foundation:foundation-layout:1.3.1")
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.33.2-alpha")
+
 }
+
