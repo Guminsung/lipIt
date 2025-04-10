@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.ssafy.lipit_app.ui.screens.auth.Login.LoginState
 
 @Composable
@@ -46,6 +47,11 @@ fun CustomOutlinedButton(text: String, modifier: Modifier = Modifier, onClick: (
             contentColor = Color.White
         )
     ) {
-        Text(text = text, color = Color.White, fontWeight = FontWeight.Bold)
+        Text(
+            text = text,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp
+        )
     }
 }

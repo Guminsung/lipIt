@@ -93,7 +93,7 @@ fun AuthStartScreen(
                     modifier = Modifier.align(Alignment.Start)
                 )
 
-                Spacer(modifier = Modifier.height(50.dp))
+                Spacer(modifier = Modifier.height(30.dp))
 
                 // 가운데 정렬 버튼 + 회원가입 텍스트
                 Column(
@@ -105,7 +105,7 @@ fun AuthStartScreen(
                         onSignupClick()
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(15.dp))
 
                     Text(
                         text = "I already have an account",
@@ -114,7 +114,8 @@ fun AuthStartScreen(
                         modifier = Modifier.clickable {
 //                            Toast.makeText(context, "로그인 화면 이동", Toast.LENGTH_SHORT).show()
                             onLoginClick()
-                        }
+                        },
+                        fontSize = 16.sp
                     )
                 }
 
