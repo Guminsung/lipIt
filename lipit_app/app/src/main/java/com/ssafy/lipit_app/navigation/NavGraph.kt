@@ -2,6 +2,7 @@ package com.ssafy.lipit_app.navigation
 
 import android.os.Build
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -430,6 +431,15 @@ fun NavGraph(
             LaunchedEffect(shouldRefresh) {
                 if (shouldRefresh) {
                     viewModel.refreshReportList()  // 새로고침 강제 트리거
+                }
+            }
+
+            // 뒤로가기 처리 추가
+            BackHandler {
+                // 뒤로가기 시 메인으로 직접 이동
+                navController.navigate("main") {
+                    popUpTo("main") { inclusive = false }
+                    launchSingleTop = true
                 }
             }
 
