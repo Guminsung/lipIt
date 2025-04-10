@@ -40,18 +40,46 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.ssafy.lipit_app.R
+import com.ssafy.lipit_app.util.calculateFontSize
 
 @Composable
 fun OnBoardingSixth(onNext: () -> Unit) {
+    // 화면 높이와 너비 가져오기
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+    val screenWidth = configuration.screenWidthDp.dp
+
+    // 상대적인 크기 계산
+    val titleFontSize = calculateFontSize(screenHeight, 0.03f)
+    val subtitleFontSize = calculateFontSize(screenHeight, 0.018f)
+    val buttonFontSize = calculateFontSize(screenHeight, 0.024f)
+    val permissionTitleFontSize = calculateFontSize(screenHeight, 0.021f)
+    val permissionItemFontSize = calculateFontSize(screenHeight, 0.018f)
+    val permissionStatusFontSize = calculateFontSize(screenHeight, 0.016f)
+    val noticeFontSize = calculateFontSize(screenHeight, 0.016f)
+
+    // 상대적인 여백 계산
+    val topSpacerHeight = screenHeight * 0.15f
+    val subtitleTopSpacerHeight = screenHeight * 0.04f
+    val permissionItemVerticalPadding = screenHeight * 0.012f
+    val noticeTopSpacerHeight = screenHeight * 0.06f
+    val horizontalPadding = screenWidth * 0.08f
+    val buttonHeight = screenHeight * 0.1f
+
+    // 아이콘 크기 계산
+    val iconSize = screenHeight * 0.03f
 
     val context = LocalContext.current
     var showPermissionToast by remember { mutableStateOf(false) }
@@ -124,11 +152,6 @@ fun OnBoardingSixth(onNext: () -> Unit) {
             true // Android 13 미만에서는 알림 권한이 필요하지 않음
         }
 
-        Log.d(
-            "Permissions",
-            "마이크: $microphonePermissionGranted, 저장소: $storagePermissionGranted, 알림: $notificationPermissionGranted"
-        )
-
         return microphonePermissionGranted && storagePermissionGranted &&
                 (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || notificationPermissionGranted)
     }
@@ -171,48 +194,27 @@ fun OnBoardingSixth(onNext: () -> Unit) {
     val multiplePermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        var updatedAny = false
-
         permissions.entries.forEach { (permission, isGranted) ->
             when (permission) {
                 Manifest.permission.RECORD_AUDIO -> {
                     microphonePermissionGranted = isGranted
-                    updatedAny = true
-                    Log.d("Permissions", "마이크 권한 업데이트: $isGranted")
                 }
-
                 Manifest.permission.READ_EXTERNAL_STORAGE -> {
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                         storagePermissionGranted = isGranted
-                        updatedAny = true
-                        Log.d("Permissions", "저장소 권한(READ_EXTERNAL_STORAGE) 업데이트: $isGranted")
                     }
                 }
-
                 Manifest.permission.READ_MEDIA_IMAGES -> {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         storagePermissionGranted = isGranted
-                        updatedAny = true
-                        Log.d("Permissions", "저장소 권한(READ_MEDIA_IMAGES) 업데이트: $isGranted")
                     }
                 }
-
                 Manifest.permission.POST_NOTIFICATIONS -> {
                     notificationPermissionGranted = isGranted
-                    updatedAny = true
-                    Log.d("Permissions", "알림 권한 업데이트: $isGranted")
                 }
             }
         }
-
-        if (updatedAny) {
-            Log.d(
-                "Permissions",
-                "최종 권한 상태 - 마이크: $microphonePermissionGranted, 저장소: $storagePermissionGranted, 알림: $notificationPermissionGranted"
-            )
-        }
     }
-
 
     fun openAppSettings() {
         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -223,79 +225,12 @@ fun OnBoardingSixth(onNext: () -> Unit) {
 
     // 모든 필요한 권한 요청 함수
     fun requestMissingPermissions() {
-        // 실시간 권한 상태 확인
-        val hasAudioPermission = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.RECORD_AUDIO
-        ) == PackageManager.PERMISSION_GRANTED
-
-        val hasStoragePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.READ_MEDIA_IMAGES
-            ) == PackageManager.PERMISSION_GRANTED
-        } else {
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            ) == PackageManager.PERMISSION_GRANTED
-        }
-
-        val hasNotificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-        } else {
-            true
-        }
-
-        // 빈 목록으로 시작해 필요한 권한 추가
         val permissionsToRequest = mutableListOf<String>()
 
-        // 누락된 권한 추가
-        if (!hasAudioPermission) {
-            permissionsToRequest.add(Manifest.permission.RECORD_AUDIO)
-        }
-
-        if (!hasStoragePermission) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                permissionsToRequest.add(Manifest.permission.READ_MEDIA_IMAGES)
-            } else {
-                permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
-            }
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !hasNotificationPermission) {
-            permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
-        }
-
-        // 한 번에 모든 필요한 권한 요청
-        if (permissionsToRequest.isNotEmpty()) {
-            Log.d("Permissions", "요청할 권한: $permissionsToRequest")
-            multiplePermissionLauncher.launch(permissionsToRequest.toTypedArray())
-        } else {
-            // 특별한 케이스: 알림 권한이 거부된 경우 설정 화면으로 안내
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !hasNotificationPermission) {
-                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = Uri.fromParts("package", context.packageName, null)
-                }
-                Toast.makeText(context, "설정 화면에서 알림 권한을 활성화해주세요", Toast.LENGTH_LONG).show()
-                context.startActivity(intent)
-            }
-        }
-    }
-
-    // 모든 필요한 권한 요청 함수
-    fun requestAllPermissions() {
-        val permissionsToRequest = mutableListOf<String>()
-
-        // 마이크 권한 확인
         if (!microphonePermissionGranted) {
             permissionsToRequest.add(Manifest.permission.RECORD_AUDIO)
         }
 
-        // 저장소 권한 확인
         if (!storagePermissionGranted) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 permissionsToRequest.add(Manifest.permission.READ_MEDIA_IMAGES)
@@ -304,16 +239,43 @@ fun OnBoardingSixth(onNext: () -> Unit) {
             }
         }
 
-        // 알림 권한 확인
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !notificationPermissionGranted) {
             permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
         }
 
         if (permissionsToRequest.isNotEmpty()) {
-            Log.d("Permissions", "한 번에 요청할 권한: $permissionsToRequest")
             multiplePermissionLauncher.launch(permissionsToRequest.toTypedArray())
-        } else {
-            Log.d("Permissions", "요청할 권한 없음, 모든 권한 이미 허용됨")
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !notificationPermissionGranted) {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", context.packageName, null)
+            }
+            Toast.makeText(context, "설정 화면에서 알림 권한을 활성화해주세요", Toast.LENGTH_LONG).show()
+            context.startActivity(intent)
+        }
+    }
+
+    // 모든 필요한 권한 요청 함수
+    fun requestAllPermissions() {
+        val permissionsToRequest = mutableListOf<String>()
+
+        if (!microphonePermissionGranted) {
+            permissionsToRequest.add(Manifest.permission.RECORD_AUDIO)
+        }
+
+        if (!storagePermissionGranted) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                permissionsToRequest.add(Manifest.permission.READ_MEDIA_IMAGES)
+            } else {
+                permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !notificationPermissionGranted) {
+            permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        if (permissionsToRequest.isNotEmpty()) {
+            multiplePermissionLauncher.launch(permissionsToRequest.toTypedArray())
         }
     }
 
@@ -345,31 +307,31 @@ fun OnBoardingSixth(onNext: () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 30.dp)
+                .padding(horizontal = horizontalPadding)
                 .windowInsetsPadding(WindowInsets.safeDrawing),
             horizontalAlignment = Alignment.Start
         ) {
-            Spacer(modifier = Modifier.height(120.dp))
-
+            Spacer(modifier = Modifier.height(topSpacerHeight))
 
             Text(
                 text = "앱 사용을 위해\n접근 권한을 허용해주세요",
                 color = Color.White,
-                fontSize = 25.sp,
+                fontSize = titleFontSize,
                 fontWeight = FontWeight.ExtraBold,
                 textAlign = TextAlign.Start,
-                lineHeight = 40.sp
+                lineHeight = titleFontSize * 1.6f
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(subtitleTopSpacerHeight))
+
             Text(
                 text = "필수 권한",
                 color = Color.White.copy(0.7f),
-                fontSize = 20.sp,
+                fontSize = permissionTitleFontSize,
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(permissionItemVerticalPadding))
 
             // 권한 상태 표시
             CustomText(
@@ -381,7 +343,12 @@ fun OnBoardingSixth(onNext: () -> Unit) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                     }
-                }
+                },
+                iconSize = iconSize,
+                titleFontSize = permissionItemFontSize,
+                contentFontSize = permissionItemFontSize,
+                statusFontSize = permissionStatusFontSize,
+                verticalPadding = permissionItemVerticalPadding
             )
 
             CustomText(
@@ -395,7 +362,12 @@ fun OnBoardingSixth(onNext: () -> Unit) {
                     } else {
                         requestStoragePermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
                     }
-                }
+                },
+                iconSize = iconSize,
+                titleFontSize = permissionItemFontSize,
+                contentFontSize = permissionItemFontSize,
+                statusFontSize = permissionStatusFontSize,
+                verticalPadding = permissionItemVerticalPadding
             )
 
             CustomText(
@@ -405,43 +377,42 @@ fun OnBoardingSixth(onNext: () -> Unit) {
                 isGranted = microphonePermissionGranted,
                 onRequestPermission = {
                     requestMicrophonePermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                }
+                },
+                iconSize = iconSize,
+                titleFontSize = permissionItemFontSize,
+                contentFontSize = permissionItemFontSize,
+                statusFontSize = permissionStatusFontSize,
+                verticalPadding = permissionItemVerticalPadding
             )
 
-            Spacer(modifier = Modifier.height(50.dp))
+            Spacer(modifier = Modifier.height(noticeTopSpacerHeight))
 
             Text(
                 text = "필수 권한의 경우 허용하지 않으면 주요 기능 사용이\n" +
                         "불가능하여 서비스 이용이 제한됩니다.",
                 color = Color(0xffC494D9),
-                fontSize = 15.sp,
+                fontSize = noticeFontSize,
                 fontWeight = FontWeight.Light,
-                lineHeight = 30.sp
+                lineHeight = noticeFontSize * 2.0f
             )
         }
-
 
         // 하단 버튼 - 박스 맨 아래에 배치
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(80.dp)
+                .height(buttonHeight)
                 .align(Alignment.BottomCenter)
                 .background(Color(0xff603981))
                 .clickable(onClick = {
-                    Log.d("OnBoardingSixth", "다음 버튼 클릭됨, 권한 상태 확인 중")
-
                     // 모든 권한이 허용되었는지 확인
                     val allGranted = areAllPermissionsGranted()
-                    Log.d("OnBoardingSixth", "모든 권한 허용 여부: $allGranted")
 
                     if (allGranted) {
                         // 모든 권한이 허용되었으면 다음으로 진행
-                        Log.d("OnBoardingSixth", "모든 권한 허용됨, 다음 화면으로 이동")
                         onNext()
                     } else {
                         // 권한이 없으면 권한 요청 다이얼로그 표시 후 토스트 메시지
-                        Log.d("OnBoardingSixth", "일부 권한 누락, 권한 요청 다이얼로그 표시")
                         requestMissingPermissions()
                         openAppSettings()
                         showPermissionToast = true
@@ -452,9 +423,9 @@ fun OnBoardingSixth(onNext: () -> Unit) {
             Text(
                 text = "다음",
                 color = Color.White,
-                fontSize = 20.sp,
+                fontSize = buttonFontSize,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 25.dp)
+                modifier = Modifier.padding(top = buttonHeight * 0.3f)
             )
         }
     }
@@ -466,12 +437,17 @@ fun CustomText(
     title: String,
     content: String,
     isGranted: Boolean = false,
-    onRequestPermission: () -> Unit = {}
+    onRequestPermission: () -> Unit = {},
+    iconSize: Dp,
+    titleFontSize: TextUnit,
+    contentFontSize: TextUnit,
+    statusFontSize: TextUnit,
+    verticalPadding: Dp
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 10.dp)
+            .padding(vertical = verticalPadding)
             .clickable(onClick = onRequestPermission),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -479,20 +455,20 @@ fun CustomText(
         Image(
             painter = painterResource(id = image),
             contentDescription = null,
-            modifier = Modifier.size(25.dp)
+            modifier = Modifier.size(iconSize)
         )
 
         Text(
             text = title,
             color = Color.White,
-            fontSize = 18.sp,
+            fontSize = titleFontSize,
             fontWeight = FontWeight.Bold
         )
 
         Text(
             text = content,
             color = Color(0xffC494D9),
-            fontSize = 15.sp
+            fontSize = contentFontSize
         )
 
         Spacer(modifier = Modifier.weight(1f))
@@ -501,7 +477,7 @@ fun CustomText(
         Text(
             text = if (isGranted) "허용됨" else "허용 필요",
             color = if (isGranted) Color.Green else Color(0xFFFFAA00),
-            fontSize = 14.sp,
+            fontSize = statusFontSize,
             fontWeight = FontWeight.Medium
         )
     }

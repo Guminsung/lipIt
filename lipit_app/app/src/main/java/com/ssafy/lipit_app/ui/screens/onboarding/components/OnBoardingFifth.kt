@@ -32,16 +32,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ssafy.lipit_app.R
 import com.ssafy.lipit_app.ui.screens.onboarding.OnBoardingIntent
 import com.ssafy.lipit_app.ui.screens.onboarding.OnboardingViewModel
+import com.ssafy.lipit_app.util.calculateFontSize
 
 
 @Composable
@@ -49,6 +54,28 @@ fun OnBoardingFifth(
     onNext: () -> Unit,
     onboardingViewModel: OnboardingViewModel = viewModel()
 ) {
+    // 화면 높이와 너비 가져오기
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+    val screenWidth = configuration.screenWidthDp.dp
+
+    // 상대적인 크기 계산
+    val titleFontSize = calculateFontSize(screenHeight, 0.03f)
+    val subtitleFontSize = calculateFontSize(screenHeight, 0.016f)
+    val buttonFontSize = calculateFontSize(screenHeight, 0.024f)
+    val hintFontSize = calculateFontSize(screenHeight, 0.016f)
+
+    // 상대적인 여백 계산
+    val topSpacerHeight = screenHeight * 0.15f
+    val titleTopSpacerHeight = screenHeight * 0.03f
+    val subtitleTopSpacerHeight = screenHeight * 0.015f
+    val inputBoxTopSpacerHeight = screenHeight * 0.04f
+    val buttonHeight = screenHeight * 0.1f
+
+    // 입력 상자 크기 계산
+    val inputBoxMinHeight = screenHeight * 0.3f
+    val inputBoxMaxHeight = screenHeight * 0.4f
+    val inputBoxPadding = screenHeight * 0.02f
 
     val state by onboardingViewModel.state.collectAsState()
     var interest by remember { mutableStateOf("") }
@@ -75,45 +102,47 @@ fun OnBoardingFifth(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 30.dp)
+                .padding(horizontal = screenWidth * 0.08f)
                 .windowInsetsPadding(WindowInsets.safeDrawing),
             horizontalAlignment = Alignment.Start
         ) {
-            Spacer(modifier = Modifier.height(120.dp))
-
+            Spacer(modifier = Modifier.height(topSpacerHeight))
 
             Text(
                 text = "본인에 대한 추가 정보를\n제공해주세요",
                 color = Color.White,
-                fontSize = 25.sp,
+                fontSize = titleFontSize,
                 fontWeight = FontWeight.ExtraBold,
                 textAlign = TextAlign.Start,
-                lineHeight = 40.sp
+                lineHeight = titleFontSize * 1.6f
             )
 
-            Spacer(modifier = Modifier.height(11.dp))
+            Spacer(modifier = Modifier.height(subtitleTopSpacerHeight))
+
             Text(
                 text = "AI가 더욱 실감나는 대화를 할 수 있어요!",
                 color = Color(0xffC494D9),
-                fontSize = 14.sp,
+                fontSize = subtitleFontSize,
                 fontWeight = FontWeight.Light
             )
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(inputBoxTopSpacerHeight))
 
             ExpandableTextInputBox(
                 value = interest,
-                onValueChange = { interest = it }
+                onValueChange = { interest = it },
+                hintFontSize = hintFontSize,
+                minHeight = inputBoxMinHeight,
+                maxHeight = inputBoxMaxHeight,
+                padding = inputBoxPadding
             )
-
         }
-
 
         // 하단 버튼 - 박스 맨 아래에 배치
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(80.dp)
+                .height(buttonHeight)
                 .align(Alignment.BottomCenter)
                 .background(Color(0xff603981))
                 .clickable(onClick = {
@@ -127,29 +156,30 @@ fun OnBoardingFifth(
             Text(
                 text = "다음",
                 color = Color.White,
-                fontSize = 20.sp,
+                fontSize = buttonFontSize,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 25.dp)
+                modifier = Modifier.padding(top = buttonHeight * 0.3f)
             )
         }
     }
-
 }
 
 @Composable
 fun ExpandableTextInputBox(
     value: String,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
+    hintFontSize: TextUnit,
+    minHeight: Dp,
+    maxHeight: Dp,
+    padding: Dp
 ) {
-
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 250.dp, max = 400.dp)
+            .heightIn(min = minHeight, max = maxHeight)
             .background(Color.White.copy(0.3f), shape = RoundedCornerShape(20.dp))
             .border(1.dp, color = Color.White, shape = RoundedCornerShape(20.dp))
-            .padding(18.dp)
+            .padding(padding)
     ) {
         BasicTextField(
             value = value,
@@ -160,7 +190,7 @@ fun ExpandableTextInputBox(
                 if (value.isEmpty()) {
                     Text(
                         text = "이 곳에 입력해주세요.",
-                        fontSize = 14.sp,
+                        fontSize = hintFontSize,
                         color = Color.White.copy(0.5f)
                     )
                 }
@@ -168,10 +198,4 @@ fun ExpandableTextInputBox(
             }
         )
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun Preview() {
-    OnBoardingFifth(onNext = { /*TODO*/ })
 }
